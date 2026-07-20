@@ -26,7 +26,9 @@
 # Note: Supporting GCC on NDK is already deprecated and GCC will be removed from NDK soon.
 #NDK_TOOLCHAIN_VERSION := 4.9
 
-APP_PLATFORM := android-21
+# Bumped to android-26 for 16 KB page size support and modern NDK compatibility.
+# Android 15+ devices with 16 KB pages require libraries built against a newer platform.
+APP_PLATFORM := android-26
 APP_ABI := armeabi-v7a arm64-v8a
 #APP_OPTIM := debug
 APP_OPTIM := release

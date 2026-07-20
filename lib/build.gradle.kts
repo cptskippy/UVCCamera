@@ -17,6 +17,9 @@ android {
 
         ndk {
             abiFilters += mutableSetOf("armeabi-v7a", "arm64-v8a")
+            // NDK r28+ defaults to 16 KB page alignment — required for Android 15+
+            // https://developer.android.com/ndk/downloads/release_history#28-0
+            version = "28.0.13004108"
         }
     }
 

@@ -30,8 +30,8 @@ jobs:
       - name: Setup Android SDK + NDK r28
         uses: android-actions/setup-android@v3
         with:
-          ndk-version: 28.0.13004108
-
+          packages: ndk;28.0.13004108
+      
       - name: Build
         run: ./gradlew :lib:assembleRelease
 
@@ -65,6 +65,7 @@ jobs:
         run: |
           echo "has_maven=${{ secrets.MAVEN_CENTRAL_USERNAME != '' && secrets.MAVEN_CENTRAL_PASSWORD != '' }}" >> $GITHUB_OUTPUT
           echo "has_gpg=${{ secrets.GPG_PUBLIC_KEY != '' && secrets.GPG_PRIVATE_KEY != '' }}" >> $GITHUB_OUTPUT
+          echo "has_pat=${{ secrets.GITHUB_TOKEN != '' }}" >> $GITHUB_OUTPUT
 
       - name: Publish snapshot artifacts (Maven Central)
         if: >-
@@ -81,7 +82,7 @@ jobs:
         run: ./gradlew jreleaserDeploy --no-configuration-cache -Puvccamera.version=main-SNAPSHOT
 
       - name: Publish to GitHub Packages
-        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        if: ${{ steps.check-secrets.outputs.has_pat == 'true' && github.event_name == 'push' && github.ref_name == 'main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository -Puvccamera.version=main-SNAPSHOT

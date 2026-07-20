@@ -121,7 +121,12 @@ jobs:
       - name: Stage library artifacts
         run: ./gradlew :lib:publishReleasePublicationToStagingDeployRepository -Puvccamera.version=${{ github.ref_name }}
 
-      - name: Publish library artifacts
+      - name: Publish library artifacts (Maven Central)
+        if: >-
+          ${{ secrets.MAVEN_CENTRAL_USERNAME != ''
+             && secrets.MAVEN_CENTRAL_PASSWORD != ''
+             && secrets.GPG_PUBLIC_KEY != ''
+             && secrets.GPG_PRIVATE_KEY != '' }}
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}

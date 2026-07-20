@@ -59,8 +59,13 @@ jobs:
           ./gradlew :lib:publishReleasePublicationToStagingDeployRepository
           -Puvccamera.version=${{ github.event_name == 'pull_request' && format('PR-{0}-SNAPSHOT', github.event.pull_request.number) || 'main-SNAPSHOT' }}
 
-      - name: Publish snapshot artifacts
-        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      - name: Publish snapshot artifacts (Maven Central)
+        if: >-
+          ${{ github.event_name == 'push' && github.ref_name == 'main'
+             && secrets.MAVEN_CENTRAL_USERNAME != ''
+             && secrets.MAVEN_CENTRAL_PASSWORD != ''
+             && secrets.GPG_PUBLIC_KEY != ''
+             && secrets.GPG_PRIVATE_KEY != '' }}
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_NEXUS2_SNAPSHOTS_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -121,6 +126,8 @@ jobs:
     steps:
       - name: Set up Git Hub Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: false
 
       - name: Publish GitHub Pages
         id: publish-github-pages

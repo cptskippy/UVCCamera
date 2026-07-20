@@ -90,9 +90,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection = "scm:git:git://github.com/alexey-pelykh/UVCCamera.git"
-                    developerConnection = "scm:git:ssh://github.com:alexey-pelykh/UVCCamera.git"
-                    url = "https://github.com/alexey-pelykh/UVCCamera"
+                    connection = "scm:git:git://github.com/cptskippy/UVCCamera.git"
+                    developerConnection = "scm:git:ssh://github.com:cptskippy/UVCCamera.git"
+                    url = "https://github.com/cptskippy/UVCCamera"
                 }
             }
         }
@@ -102,6 +102,14 @@ publishing {
         maven {
             name = "StagingDeploy"
             url = uri(layout.buildDirectory.dir("staging-deploy"))
+        }
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/cptskippy/UVCCamera")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
         }
     }
 }

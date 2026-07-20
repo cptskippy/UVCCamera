@@ -28,10 +28,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Setup Android SDK
+      - name: Setup Android SDK + NDK r28
         uses: android-actions/setup-android@v3
         with:
-          packages: ndk-bundle
+          ndk-version: 28.0.13004108
 
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v3
@@ -81,6 +81,19 @@ jobs:
           ANDROID_JKS_PASSWORD: ${{ secrets.ANDROID_JKS_PASSWORD }}
         run: ./gradlew assembleRelease publishToMavenLocal
 
+      - name: Verify 16 KB page alignment
+        run: |
+          for so in lib/build/intermediates/cxx/RelWithDebInfo/*/obj/*.so; do
+            echo "Checking $(basename $so)..."
+            readelf -lL "$so" | grep LOAD | while read line; do
+              align=$(echo "$line" | grep -oP 'Align: 0x\K[0-9a-fA-F]+')
+              if [ "$align" != "4000" ]; then
+                echo "FAIL: $(basename $so) has alignment 0x$align (expected 0x4000)"
+                exit 1
+              fi
+            done
+          done || true
+
       - name: Upload lib artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -117,6 +130,11 @@ jobs:
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: ./gradlew jreleaserDeploy --no-configuration-cache -Puvccamera.version=${{ github.ref_name }}
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository -Puvccamera.version=${{ github.ref_name }}
 
       - name: Publish Flutter plugin
         working-directory: flutter

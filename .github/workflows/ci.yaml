@@ -59,14 +59,18 @@ jobs:
         run: >
           ./gradlew :lib:publishReleasePublicationToStagingDeployRepository
           -Puvccamera.version=${{ github.event_name == 'pull_request' && format('PR-{0}-SNAPSHOT', github.event.pull_request.number) || 'main-SNAPSHOT' }}
+      
+      - name: Check secrets
+        id: check-secrets
+        run: |
+          echo "has_maven=${{ secrets.MAVEN_CENTRAL_USERNAME != '' && secrets.MAVEN_CENTRAL_PASSWORD != '' }}" >> $GITHUB_OUTPUT
+          echo "has_gpg=${{ secrets.GPG_PUBLIC_KEY != '' && secrets.GPG_PRIVATE_KEY != '' }}" >> $GITHUB_OUTPUT
 
       - name: Publish snapshot artifacts (Maven Central)
         if: >-
-          ${{ github.event_name == 'push' && github.ref_name == 'main'
-             && secrets.MAVEN_CENTRAL_USERNAME != ''
-             && secrets.MAVEN_CENTRAL_PASSWORD != ''
-             && secrets.GPG_PUBLIC_KEY != ''
-             && secrets.GPG_PRIVATE_KEY != '' }}
+          github.event_name == 'push' && github.ref_name == 'main'
+          && steps.check-secrets.outputs.has_maven == 'true'
+          && steps.check-secrets.outputs.has_gpg == 'true'
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_NEXUS2_SNAPSHOTS_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}

@@ -1,7 +1,7 @@
 # UVCCamera
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/alexey-pelykh/UVCCamera?style=flat&logo=github)](https://github.com/alexey-pelykh/UVCCamera)
-[![GitHub License](https://img.shields.io/github/license/alexey-pelykh/UVCCamera)](./LICENSE.md)
+[![GitHub Repo stars](https://img.shields.io/github/stars/cptskippy/UVCCamera?style=flat&logo=github)](https://github.com/cptskippy/UVCCamera)
+[![GitHub License](https://img.shields.io/github/license/cptskippy/UVCCamera)](./LICENSE.md)
 [![Maven Central Version](https://img.shields.io/maven-central/v/org.uvccamera/lib)](https://mvnrepository.com/artifact/org.uvccamera/lib)
 [![Pub Version](https://img.shields.io/pub/v/uvccamera)](https://pub.dev/packages/uvccamera)
 
@@ -12,23 +12,73 @@ brought to you by [Alexey Pelykh](https://alexey-pelykh.com) with a great gratit
 author [saki4510t](https://github.com/saki4510t/) and its community of contributors. It includes some improvements from
 the original project's forks and PRs.
 
+## 16 KB Page Size Support
+
+This fork adds full support for Android devices with **16 KB memory pages** (Android 15+), ensuring compatibility with
+next-generation hardware such as Pixel 10 and other devices shipping with 16 KB page sizes.
+
+### What changed
+
+- **Linker flag**: `APP_LDFLAGS := -Wl,-z,max-page-size=16384` in [`Application.mk`](lib/src/main/jni/Application.mk)
+  forces all native libraries (`libUVCCamera`, `libuvc`, `libusb`, `libjpeg`) to align LOAD segments to 16 KB boundaries.
+- **NDK r28+**: The build requires NDK `28.0.13004108` or later, which defaults to 16 KB page alignment.
+- **Platform bump**: `APP_PLATFORM` raised from `android-21` to `android-26` for modern NDK compatibility.
+
+### Supported ABIs
+
+| ABI | Status |
+|-----|--------|
+| `armeabi-v7a` | ✅ Supported |
+| `arm64-v8a` | ✅ Supported |
+
+### Minimum Android API level
+
+- **Native libraries**: API 26+ (Android 8.0) due to `APP_PLATFORM := android-26`
+- **Library minSdk**: API 21 (Android 5.0) — note that native code requires API 26+ at runtime
+
 ## Usage
 
 ### Android library
 
-The library is available on Maven Central. To use it in your project, add the following dependency:
+The library is available on Maven Central and GitHub Packages.
 
-either to your `build.gradle` file in the `dependencies` block:
+#### Maven Central
+
+Add the following dependency to your `build.gradle` file:
 
 ```groovy
 implementation 'org.uvccamera:lib:0.1.0'
 ```
 
-or to your `build.gradle.kts` file in the `dependencies` block:
+Or to your `build.gradle.kts` file:
 
 ```kotlin
 implementation("org.uvccamera:lib:0.1.0")
 ```
+
+#### GitHub Packages
+
+For the latest builds including 16 KB support, use GitHub Packages:
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/cptskippy/UVCCamera")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
+// build.gradle.kts
+implementation("org.uvccamera:lib:<version>")
+```
+
+> **Note**: GitHub Packages requires authentication. For private repos, generate a [personal access token](https://github.com/settings/tokens) with `read:packages` scope and set it as `gpr.key` in your `gradle.properties`.
 
 ### Flutter plugin
 
@@ -42,35 +92,98 @@ dependencies:
 
 See the [Flutter example](https://pub.dev/packages/uvccamera/example) for an app that uses the plugin.
 
-## Development & Contribution
+## Building Locally
 
-This section describes how to build the Android library and the Flutter plugin from the source code locally.
+### Prerequisites
 
-### Building Android library
+- **JDK 17** (Temurin recommended)
+- **Android SDK** with Build Tools and platform SDK
+- **NDK r28+** (`28.0.13004108` or later)
 
-The Android library is built using Gradle. To build the library, run the following command:
+### Setup NDK
+
+```shell
+sdkmanager "ndk;28.0.13004108"
+```
+
+### Build native libraries
+
+```shell
+cd lib/src/main/jni
+ndk-build -j$(nproc)
+```
+
+### Build AAR
 
 ```shell
 ./gradlew :lib:assembleRelease
 ```
 
-There are number of test applications available.
+### Publish to local Maven
 
-### Building Flutter plugin example
-
-A prerequisite for building the Flutter plugin example locally is to have the Android library built and published to the
-machine's local Maven repository. To publish the library to the local Maven repository, run the following command:
+Required before building the Flutter plugin example:
 
 ```shell
 ./gradlew :lib:publishToMavenLocal
 ```
 
-After that, you can build the Flutter plugin example by running the following command:
+### Build Flutter plugin example
 
 ```shell
 cd flutter/example
 flutter build apk
 ```
+
+### Full build chain
+
+```shell
+./gradlew assembleRelease publishToMavenLocal && cd flutter/example && flutter build apk
+```
+
+## Verification
+
+Verify that your `.so` files are 16 KB aligned:
+
+```shell
+# Check a single library
+readelf -lL libUVCCamera.so | grep LOAD
+
+# Expected output shows alignment of 0x4000 (16384 bytes):
+# LOAD           0x000000 0x00000000 0x00000000 0x00000 0x00000 R E 0x4000
+
+# Check all libraries in the output directory
+for so in lib/build/intermediates/cxx/RelWithDebInfo/*/obj/*.so; do
+  echo "=== $(basename $so) ==="
+  readelf -lL "$so" | grep LOAD
+done
+```
+
+Every `LOAD` segment should show `Align: 0x4000` (16 KB). If you see `Align: 0x200000` (2 MB) or `Align: 0x1000` (4 KB),
+the library is not properly aligned for 16 KB devices.
+
+## Development & Contribution
+
+This section describes how to build the Android library and the Flutter plugin from the source code locally.
+
+### Commit conventions
+
+Format: `(type) scope: description`
+
+| Type | Meaning |
+|------|---------|
+| `fix` | Bug fix |
+| `imp` | Improvement/enhancement |
+| `chore` | Maintenance (deps, CI, tooling) |
+| `docs` | Documentation |
+
+Scope prefix when targeting a specific module: `flutter:`, `ci:`, `lib:`
+
+### Branch naming
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Feature | `feat/description` | `feat/flutter/pause-resume-preview` |
+| Fix | `fix/description` | `fix/preview-size-comparison` |
 
 ## License
 

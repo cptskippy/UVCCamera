@@ -2,13 +2,11 @@
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/cptskippy/UVCCamera?style=flat&logo=github)](https://github.com/cptskippy/UVCCamera)
 [![GitHub License](https://img.shields.io/github/license/cptskippy/UVCCamera)](./LICENSE.md)
-[![Maven Central Version](https://img.shields.io/maven-central/v/org.uvccamera/lib)](https://mvnrepository.com/artifact/org.uvccamera/lib)
-[![Pub Version](https://img.shields.io/pub/v/uvccamera)](https://pub.dev/packages/uvccamera)
 
-A USB Video Class (UVC) camera library for Android and a plugin for Flutter.
+A USB Video Class (UVC) camera library for Android.
 
 This project is a hard fork of the original [UVCCamera by saki4510t](https://github.com/saki4510t/UVCCamera) and is
-brought to you by [Alexey Pelykh](https://alexey-pelykh.com) with a great gratitude to the original project's
+brought to you by [Alexey Pelykh](https://alexey-pelykh.com) with great gratitude to the original project's
 author [saki4510t](https://github.com/saki4510t/) and its community of contributors. It includes some improvements from
 the original project's forks and PRs.
 
@@ -40,25 +38,7 @@ next-generation hardware such as Pixel 10 and other devices shipping with 16 KB 
 
 ### Android library
 
-The library is available on Maven Central and GitHub Packages.
-
-#### Maven Central
-
-Add the following dependency to your `build.gradle` file:
-
-```groovy
-implementation 'org.uvccamera:lib:0.1.0'
-```
-
-Or to your `build.gradle.kts` file:
-
-```kotlin
-implementation("org.uvccamera:lib:0.1.0")
-```
-
-#### GitHub Packages
-
-For the latest builds including 16 KB support, use GitHub Packages:
+The library is available on GitHub Packages.
 
 ```kotlin
 // settings.gradle.kts
@@ -78,19 +58,7 @@ dependencyResolutionManagement {
 implementation("org.uvccamera:lib:<version>")
 ```
 
-> **Note**: GitHub Packages requires authentication. For private repos, generate a [personal access token](https://github.com/settings/tokens) with `read:packages` scope and set it as `gpr.key` in your `gradle.properties`.
-
-### Flutter plugin
-
-The Flutter plugin is available on [pub.dev](https://pub.dev/packages/uvccamera). To use it in your Flutter project, add
-the following dependency:
-
-```yaml
-dependencies:
-  uvccamera: ^0.1.0
-```
-
-See the [Flutter example](https://pub.dev/packages/uvccamera/example) for an app that uses the plugin.
+> **Note**: GitHub Packages requires authentication. Generate a [personal access token](https://github.com/settings/tokens) with `read:packages` scope and set it as `gpr.key` in your `gradle.properties`.
 
 ## Building Locally
 
@@ -121,23 +89,8 @@ ndk-build -j$(nproc)
 
 ### Publish to local Maven
 
-Required before building the Flutter plugin example:
-
 ```shell
 ./gradlew :lib:publishToMavenLocal
-```
-
-### Build Flutter plugin example
-
-```shell
-cd flutter/example
-flutter build apk
-```
-
-### Full build chain
-
-```shell
-./gradlew assembleRelease publishToMavenLocal && cd flutter/example && flutter build apk
 ```
 
 ## Verification
@@ -163,8 +116,6 @@ the library is not properly aligned for 16 KB devices.
 
 ## Development & Contribution
 
-This section describes how to build the Android library and the Flutter plugin from the source code locally.
-
 ### Commit conventions
 
 Format: `(type) scope: description`
@@ -176,13 +127,13 @@ Format: `(type) scope: description`
 | `chore` | Maintenance (deps, CI, tooling) |
 | `docs` | Documentation |
 
-Scope prefix when targeting a specific module: `flutter:`, `ci:`, `lib:`
+Scope prefix when targeting a specific module: `ci:`, `lib:`
 
 ### Branch naming
 
 | Type | Pattern | Example |
 |------|---------|---------|
-| Feature | `feat/description` | `feat/flutter/pause-resume-preview` |
+| Feature | `feat/description` | `feat/pause-resume-preview` |
 | Fix | `fix/description` | `fix/preview-size-comparison` |
 
 ## License
@@ -208,8 +159,3 @@ The original license applies to the relevant parts of this project as well:
 > see the respective files.
 
 Some dependencies may have different licenses, so please check the dependencies' licenses before using this project.
-
-## Upstreams
-
-Most of the contributions picked from the original project's forks and PRs are attributed to the respective authors in
-the commit messages and stored or referenced in the [upstreams](./upstreams) folder.

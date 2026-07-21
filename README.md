@@ -5,10 +5,14 @@
 
 A USB Video Class (UVC) camera library for Android.
 
-This project is a hard fork of the original [UVCCamera by saki4510t](https://github.com/saki4510t/UVCCamera) and is
-brought to you by [Alexey Pelykh](https://alexey-pelykh.com) with great gratitude to the original project's
-author [saki4510t](https://github.com/saki4510t/) and its community of contributors. It includes some improvements from
-the original project's forks and PRs.
+This is a hard fork of [Alexey Pelykh's UVCCamera](https://github.com/cptskippy/UVCCamera) (itself a fork of the
+original [UVCCamera by saki4510t](https://github.com/saki4510t/UVCCamera)), modernized for compatibility with the latest
+Android SDK, NDK r28+, and Play Store requirements. Full 16 KB page size support is included out of the box for
+Android 15+ devices.
+
+Great gratitude to [saki4510t](https://github.com/saki4510t/) for the original library,
+[Alexey Pelykh](https://alexey-pelykh.com) for his fork and contributions, and the broader community of contributors
+whose PRs and patches made this possible.
 
 ## 16 KB Page Size Support
 

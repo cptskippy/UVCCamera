@@ -9,7 +9,7 @@ project:
     homepage: https://uvccamera.org
   languages:
     java:
-      groupId: org.uvccamera
+      groupId: com.github.cptskippy.uvccamera
       version: 17
   versionPattern: CUSTOM
 

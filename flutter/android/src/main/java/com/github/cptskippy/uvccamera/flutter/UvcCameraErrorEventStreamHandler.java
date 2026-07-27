@@ -1,18 +1,18 @@
-package org.uvccamera.flutter;
+package com.github.cptskippy.uvccamera.flutter;
 
 import android.util.Log;
 
 import io.flutter.plugin.common.EventChannel;
 
 /**
- * "uvccamera/device_events" event stream handler
+ * Camera error event stream handler
  */
-/* package-private */ class UvcCameraDeviceEventStreamHandler implements EventChannel.StreamHandler {
+/* package-private */ class UvcCameraErrorEventStreamHandler implements EventChannel.StreamHandler {
 
     /**
      * Log tag
      */
-    private static final String TAG = UvcCameraDeviceEventStreamHandler.class.getCanonicalName();
+    private static final String TAG = UvcCameraErrorEventStreamHandler.class.getCanonicalName();
 
     /**
      * The event sink
@@ -39,14 +39,18 @@ import io.flutter.plugin.common.EventChannel;
     public void onListen(Object arguments, EventChannel.EventSink eventSink) {
         Log.v(TAG, "onListen: arguments=" + arguments + ", eventSink=" + eventSink);
 
-        this.eventSink = eventSink;
+        synchronized (eventSinkLock) {
+            this.eventSink = eventSink;
+        }
     }
 
     @Override
     public void onCancel(Object arguments) {
         Log.v(TAG, "onCancel: arguments=" + arguments);
 
-        eventSink = null;
+        synchronized (eventSinkLock) {
+            this.eventSink = null;
+        }
     }
 
 }

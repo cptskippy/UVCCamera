@@ -59,7 +59,7 @@ dependencyResolutionManagement {
 }
 
 // build.gradle.kts
-implementation("org.uvccamera:lib:<version>")
+implementation("com.github.cptskippy.uvccamera:lib:<version>")
 ```
 
 > **Note**: GitHub Packages requires authentication. Generate a [personal access token](https://github.com/settings/tokens) with `read:packages` scope and set it as `gpr.key` in your `gradle.properties`.

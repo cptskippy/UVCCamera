@@ -1,18 +1,18 @@
-package org.uvccamera.flutter;
+package com.github.cptskippy.uvccamera.flutter;
 
 import android.util.Log;
 
 import io.flutter.plugin.common.EventChannel;
 
 /**
- * Camera error event stream handler
+ * Camera button event stream handler
  */
-/* package-private */ class UvcCameraErrorEventStreamHandler implements EventChannel.StreamHandler {
+/* package-private */ class UvcCameraStatusEventStreamHandler implements EventChannel.StreamHandler {
 
     /**
      * Log tag
      */
-    private static final String TAG = UvcCameraErrorEventStreamHandler.class.getCanonicalName();
+    private static final String TAG = UvcCameraStatusEventStreamHandler.class.getCanonicalName();
 
     /**
      * The event sink

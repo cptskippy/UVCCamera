@@ -23,7 +23,7 @@ def getJksPassword = {
 def jksPassword = getJksPassword()
 
 android {
-    namespace = "org.uvccamera.flutter_example"
+    namespace = "com.github.cptskippy.uvccamera.flutter_example"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.uvccamera.flutter_example"
+        applicationId = "com.github.cptskippy.uvccamera.flutter_example"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

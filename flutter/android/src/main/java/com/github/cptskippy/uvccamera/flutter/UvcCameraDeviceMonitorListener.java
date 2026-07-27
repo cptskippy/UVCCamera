@@ -1,4 +1,4 @@
-package org.uvccamera.flutter;
+package com.github.cptskippy.uvccamera.flutter;
 
 import android.hardware.usb.UsbDevice;
 import android.util.Log;

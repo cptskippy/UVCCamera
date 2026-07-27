@@ -1,4 +1,4 @@
-package org.uvccamera.flutter;
+package com.github.cptskippy.uvccamera.flutter;
 
 import java.io.File;
 

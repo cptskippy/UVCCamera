@@ -13,13 +13,13 @@
 | **Target ABIs** | armeabi-v7a, arm64-v8a |
 | **Gradle** | 8.13, Kotlin DSL, version catalog |
 | **Flutter** | >=3.29.2, Dart SDK >=3.7.0 |
-| **Distribution** | Maven Central (`org.uvccamera:lib`), pub.dev (`uvccamera`), GitHub Packages |
+| **Distribution** | Maven Central (`com.github.cptskippy.uvccamera:lib`), pub.dev (`uvccamera`), GitHub Packages |
 
 ## Structure
 
 | Path | Purpose |
 |------|---------|
-| `lib/` | Android library module (`org.uvccamera.lib`) |
+| `lib/` | Android library module (`com.github.cptskippy.uvccamera.lib`) |
 | `lib/src/main/java/` | Java API (UVCCamera, USBMonitor, DeviceFilter) |
 | `lib/src/main/jni/` | Native C/C++ (libuvc, libusb, libjpeg, UVCCamera JNI) |
 | `flutter/` | Flutter plugin (`uvccamera`) |
@@ -64,8 +64,8 @@ Co-authored-by: Original Author <email>
 ### Naming
 
 - Java packages: `com.serenegiant.usb` / `com.serenegiant.utils` (legacy upstream)
-- Library namespace: `org.uvccamera.lib`
-- Flutter plugin package: `org.uvccamera.flutter`
+- Library namespace: `com.github.cptskippy.uvccamera.lib`
+- Flutter plugin package: `com.github.cptskippy.uvccamera.flutter`
 - Dart files: `uvccamera_*.dart` (snake_case with prefix)
 - Gradle modules: camelCase (`usbCameraTest`, `usbCameraCommon`)
 

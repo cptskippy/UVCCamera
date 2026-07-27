@@ -10,7 +10,7 @@ version = run {
 }
 
 android {
-    namespace = "org.uvccamera.flutter"
+    namespace = "com.github.cptskippy.uvccamera.flutter"
     compileSdk = 34
 
     defaultConfig {
@@ -25,7 +25,7 @@ android {
 
 dependencies {
     implementation("androidx.annotation:annotation:1.9.1")
-    implementation("org.uvccamera:lib:$version") // NOTE: Use org.uvccamera:lib of the same version as the plugin.
+    implementation("com.github.cptskippy.uvccamera:lib:$version") // NOTE: Use com.github.cptskippy.uvccamera:lib of the same version as the plugin.
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:5.0.0")
 }

@@ -1,4 +1,4 @@
-package org.uvccamera.flutter;
+package com.github.cptskippy.uvccamera.flutter;
 
 /**
  * Handler to be notified when the device permission request result is available.

@@ -6,7 +6,7 @@ plugins {
 version = findProperty("uvccamera.version") as String? ?: "0.0.0-SNAPSHOT"
 
 android {
-    namespace = "org.uvccamera.lib"
+    namespace = "com.github.cptskippy.uvccamera.lib"
     compileSdk = 34
 
     defaultConfig {
@@ -62,12 +62,12 @@ publishing {
                 from(components["release"])
             }
 
-            groupId = "org.uvccamera"
+            groupId = "com.github.cptskippy.uvccamera"
             artifactId = project.name
             version = project.version.toString()
 
             pom {
-                name = "org.uvccamera:${project.name}"
+                name = "com.github.cptskippy.uvccamera:${project.name}"
                 description = "USB Video (UVC) Camera Library for Android"
                 url = "https://uvccamera.org"
 

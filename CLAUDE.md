@@ -109,7 +109,7 @@ git tag X.Y.Z
 git push origin X.Y.Z
 ```
 
-The CI workflow automatically publishes to Maven Central, pub.dev, and GitHub Packages.
+The CI workflow automatically publishes to Maven Central and GitHub Packages.
 
 ## CI
 

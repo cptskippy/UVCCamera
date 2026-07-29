@@ -3,7 +3,12 @@ name: Release
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.2.3, without leading v)'
+        required: true
 
 jobs:
   package:
@@ -14,6 +19,18 @@ jobs:
       packages: write
 
     steps:
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Strip leading 'v' from tag name
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -68,7 +85,7 @@ jobs:
           path: lib/build/outputs/aar/*-release.aar
 
       - name: Stage library artifacts
-        run: ./gradlew :lib:publishReleasePublicationToStagingDeployRepository -Puvccamera.version=${{ github.ref_name }}
+        run: ./gradlew :lib:publishReleasePublicationToStagingDeployRepository -Puvccamera.version=${{ steps.version.outputs.VERSION }}
 
       - name: Check secrets
         id: check-secrets
@@ -88,10 +105,10 @@ jobs:
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        run: ./gradlew jreleaserDeploy --no-configuration-cache -Puvccamera.version=${{ github.ref_name }}
+        run: ./gradlew jreleaserDeploy --no-configuration-cache -Puvccamera.version=${{ steps.version.outputs.VERSION }}
 
       - name: Publish to GitHub Packages
         if: ${{ steps.check-secrets.outputs.has_pat == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository -Puvccamera.version=${{ github.ref_name }}
+        run: ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository -Puvccamera.version=${{ steps.version.outputs.VERSION }}

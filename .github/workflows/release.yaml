@@ -1,5 +1,4 @@
 name: Release
-
 on:
   push:
     tags:
@@ -19,6 +18,9 @@ jobs:
       packages: write
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Resolve version
         id: version
         run: |
@@ -30,9 +32,6 @@ jobs:
             VERSION="${VERSION#v}"
           fi
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Set up temurin-jdk-17
         uses: actions/setup-java@v4
@@ -48,7 +47,15 @@ jobs:
         with:
           packages: ndk;28.0.13004108
 
+      - name: Check secrets
+        id: check-secrets
+        run: |
+          echo "has_keystore=${{ secrets.ANDROID_JKS != '' && secrets.ANDROID_JKS_SHA256 != '' && secrets.ANDROID_JKS_PASSWORD != '' }}" >> $GITHUB_OUTPUT
+          echo "has_maven=${{ secrets.MAVEN_CENTRAL_USERNAME != '' && secrets.MAVEN_CENTRAL_PASSWORD != '' }}" >> $GITHUB_OUTPUT
+          echo "has_gpg=${{ secrets.GPG_PUBLIC_KEY != '' && secrets.GPG_PRIVATE_KEY != '' }}" >> $GITHUB_OUTPUT
+
       - name: Inflate Keystore
+        if: steps.check-secrets.outputs.has_keystore == 'true'
         env:
           ANDROID_JKS: ${{ secrets.ANDROID_JKS }}
           ANDROID_JKS_SHA256: ${{ secrets.ANDROID_JKS_SHA256 }}
@@ -56,6 +63,7 @@ jobs:
           JKS_FILE="$(mktemp -p "${RUNNER_TEMP}" -d)/android.jks"
           echo -n "$ANDROID_JKS" | base64 --decode > "$JKS_FILE"
           if [ "${ANDROID_JKS_SHA256} *-" != "$(cat $JKS_FILE | sha256sum -b)" ]; then
+            echo "::error::Keystore SHA256 mismatch — secret may be corrupted or truncated"
             exit 1
           fi
           echo "ANDROID_JKS_FILE=$JKS_FILE" >> $GITHUB_ENV
@@ -67,16 +75,18 @@ jobs:
 
       - name: Verify 16 KB page alignment
         run: |
+          failed=0
           for so in lib/build/intermediates/cxx/RelWithDebInfo/*/obj/*.so; do
-            echo "Checking $(basename $so)..."
-            readelf -lL "$so" | grep LOAD | while read line; do
+            echo "Checking $(basename "$so")..."
+            while read -r line; do
               align=$(echo "$line" | grep -oP 'Align: 0x\K[0-9a-fA-F]+')
               if [ "$align" != "4000" ]; then
-                echo "FAIL: $(basename $so) has alignment 0x$align (expected 0x4000)"
-                exit 1
+                echo "FAIL: $(basename "$so") has alignment 0x$align (expected 0x4000)"
+                failed=1
               fi
-            done
-          done || true
+            done < <(readelf -lL "$so" | grep LOAD)
+          done
+          exit $failed
 
       - name: Upload lib artifacts
         uses: actions/upload-artifact@v4
@@ -85,14 +95,9 @@ jobs:
           path: lib/build/outputs/aar/*-release.aar
 
       - name: Stage library artifacts
-        run: ./gradlew :lib:publishReleasePublicationToStagingDeployRepository -Puvccamera.version=${{ steps.version.outputs.VERSION }}
-
-      - name: Check secrets
-        id: check-secrets
-        run: |
-          echo "has_maven=${{ secrets.MAVEN_CENTRAL_USERNAME != '' && secrets.MAVEN_CENTRAL_PASSWORD != '' }}" >> $GITHUB_OUTPUT
-          echo "has_gpg=${{ secrets.GPG_PUBLIC_KEY != '' && secrets.GPG_PRIVATE_KEY != '' }}" >> $GITHUB_OUTPUT
-          echo "has_pat=${{ secrets.GITHUB_TOKEN != '' }}" >> $GITHUB_OUTPUT
+        run: >
+          ./gradlew :lib:publishReleasePublicationToStagingDeployRepository
+          -Puvccamera.version=${{ steps.version.outputs.VERSION }}
 
       - name: Publish to Maven Central
         if: >-
@@ -105,10 +110,13 @@ jobs:
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        run: ./gradlew jreleaserDeploy --no-configuration-cache -Puvccamera.version=${{ steps.version.outputs.VERSION }}
+        run: >
+          ./gradlew jreleaserDeploy --no-configuration-cache
+          -Puvccamera.version=${{ steps.version.outputs.VERSION }}
 
       - name: Publish to GitHub Packages
-        if: ${{ steps.check-secrets.outputs.has_pat == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository -Puvccamera.version=${{ steps.version.outputs.VERSION }}
+        run: >
+          ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository
+          -Puvccamera.version=${{ steps.version.outputs.VERSION }}

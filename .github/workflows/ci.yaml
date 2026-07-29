@@ -7,12 +7,15 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
 
   build-lib:
     runs-on: ubuntu-24.04
-
+    permissions:
+      packages: write
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,13 +29,26 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Setup Android SDK
+      - name: Setup Android SDK + NDK r28
         uses: android-actions/setup-android@v3
         with:
-          packages: ndk-bundle
-
+          packages: ndk;28.0.13004108
+      
       - name: Build
         run: ./gradlew :lib:assembleRelease
+
+      - name: Verify 16 KB page alignment
+        run: |
+          for so in lib/build/intermediates/cxx/RelWithDebInfo/*/obj/*.so; do
+            echo "Checking $(basename $so)..."
+            readelf -lL "$so" | grep LOAD | while read line; do
+              align=$(echo "$line" | grep -oP 'Align: 0x\K[0-9a-fA-F]+')
+              if [ "$align" != "4000" ]; then
+                echo "FAIL: $(basename $so) has alignment 0x$align (expected 0x4000)"
+                exit 1
+              fi
+            done
+          done || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -45,9 +61,19 @@ jobs:
         run: >
           ./gradlew :lib:publishReleasePublicationToStagingDeployRepository
           -Puvccamera.version=${{ github.event_name == 'pull_request' && format('PR-{0}-SNAPSHOT', github.event.pull_request.number) || 'main-SNAPSHOT' }}
+      
+      - name: Check secrets
+        id: check-secrets
+        run: |
+          echo "has_maven=${{ secrets.MAVEN_CENTRAL_USERNAME != '' && secrets.MAVEN_CENTRAL_PASSWORD != '' }}" >> $GITHUB_OUTPUT
+          echo "has_gpg=${{ secrets.GPG_PUBLIC_KEY != '' && secrets.GPG_PRIVATE_KEY != '' }}" >> $GITHUB_OUTPUT
+          echo "has_pat=${{ secrets.GITHUB_TOKEN != '' }}" >> $GITHUB_OUTPUT
 
-      - name: Publish snapshot artifacts
-        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      - name: Publish snapshot artifacts (Maven Central)
+        if: >-
+          github.event_name == 'push' && github.ref_name == 'main'
+          && steps.check-secrets.outputs.has_maven == 'true'
+          && steps.check-secrets.outputs.has_gpg == 'true'
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_NEXUS2_SNAPSHOTS_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -57,52 +83,8 @@ jobs:
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: ./gradlew jreleaserDeploy --no-configuration-cache -Puvccamera.version=main-SNAPSHOT
 
-  build-github-pages:
-    runs-on: ubuntu-24.04
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build
-        run: |
-          sudo apt-get install -y pandoc
-
-          mkdir -p build/gh-pages
-          pandoc \
-            -f gfm -t html5 -s --shift-heading-level-by=-1 --lua-filter=gh-pages/filter.lua -H gh-pages/header.html \
-            -o build/gh-pages/index.html gh-pages/metadata.md README.md
-
-          mkdir -p build/gh-pages/upstreams
-          pandoc \
-            -f gfm -t html5 -s --shift-heading-level-by=-1 --lua-filter=gh-pages/filter.lua -H gh-pages/header.html \
-            -o build/gh-pages/upstreams/index.html gh-pages/metadata.md upstreams/README.md
-
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build/gh-pages
-
-  publish-github-pages:
-    if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-
-    runs-on: ubuntu-24.04
-
-    permissions:
-      pages: write
-      id-token: write
-
-    needs:
-      - build-github-pages
-
-    environment:
-      name: github-pages
-      url: ${{ steps.publish-github-pages.outputs.page_url }}
-
-    steps:
-      - name: Set up Git Hub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Publish GitHub Pages
-        id: publish-github-pages
-        uses: actions/deploy-pages@v4
+      - name: Publish to GitHub Packages
+        if: ${{ steps.check-secrets.outputs.has_pat == 'true' && github.event_name == 'push' && github.ref_name == 'main' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository -Puvccamera.version=main-SNAPSHOT

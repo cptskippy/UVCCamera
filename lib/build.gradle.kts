@@ -6,7 +6,7 @@ plugins {
 version = findProperty("uvccamera.version") as String? ?: "0.0.0-SNAPSHOT"
 
 android {
-    namespace = "org.uvccamera.lib"
+    namespace = "com.github.cptskippy.uvccamera.lib"
     compileSdk = 34
 
     defaultConfig {
@@ -17,6 +17,9 @@ android {
 
         ndk {
             abiFilters += mutableSetOf("armeabi-v7a", "arm64-v8a")
+            // NDK r28+ defaults to 16 KB page alignment — required for Android 15+
+            // https://developer.android.com/ndk/downloads/release_history#28-0
+            version = "28.0.13004108"
         }
     }
 
@@ -59,12 +62,12 @@ publishing {
                 from(components["release"])
             }
 
-            groupId = "org.uvccamera"
+            groupId = "com.github.cptskippy.uvccamera"
             artifactId = project.name
             version = project.version.toString()
 
             pom {
-                name = "org.uvccamera:${project.name}"
+                name = "com.github.cptskippy.uvccamera:${project.name}"
                 description = "USB Video (UVC) Camera Library for Android"
                 url = "https://uvccamera.org"
 
@@ -87,9 +90,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection = "scm:git:git://github.com/alexey-pelykh/UVCCamera.git"
-                    developerConnection = "scm:git:ssh://github.com:alexey-pelykh/UVCCamera.git"
-                    url = "https://github.com/alexey-pelykh/UVCCamera"
+                    connection = "scm:git:git://github.com/cptskippy/UVCCamera.git"
+                    developerConnection = "scm:git:ssh://github.com:cptskippy/UVCCamera.git"
+                    url = "https://github.com/cptskippy/UVCCamera"
                 }
             }
         }
@@ -99,6 +102,14 @@ publishing {
         maven {
             name = "StagingDeploy"
             url = uri(layout.buildDirectory.dir("staging-deploy"))
+        }
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/cptskippy/UVCCamera")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
         }
     }
 }

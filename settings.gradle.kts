@@ -22,13 +22,21 @@ dependencyResolutionManagement {
 
 rootProject.name = "UVCCamera"
 include(":lib")
-include(":usbCameraCommon")
-include(":usbCameraTest")
-include(":usbCameraTest0")
-include(":usbCameraTest2")
-include(":usbCameraTest3")
-include(":usbCameraTest4")
-include(":usbCameraTest5")
-include(":usbCameraTest6")
-include(":usbCameraTest7")
-include(":usbCameraTest8")
+
+// Sample apps — moved from root to samples/
+val sampleModules = listOf(
+    "usbCameraCommon",
+    "usbCameraTest",
+    "usbCameraTest0",
+    "usbCameraTest2",
+    "usbCameraTest3",
+    "usbCameraTest4",
+    "usbCameraTest5",
+    "usbCameraTest6",
+    "usbCameraTest7",
+    "usbCameraTest8"
+)
+sampleModules.forEach { name ->
+    include(":$name")
+    project(":$name").projectDir = file("samples/$name")
+}

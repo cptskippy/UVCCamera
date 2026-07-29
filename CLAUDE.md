@@ -13,21 +13,21 @@
 | **Target ABIs** | armeabi-v7a, arm64-v8a |
 | **Gradle** | 8.13, Kotlin DSL, version catalog |
 | **Flutter** | >=3.29.2, Dart SDK >=3.7.0 |
-| **Distribution** | Maven Central (`org.uvccamera:lib`), pub.dev (`uvccamera`), GitHub Packages |
+| **Distribution** | Maven Central (`com.github.cptskippy.uvccamera:lib`), GitHub Packages |
 
 ## Structure
 
 | Path | Purpose |
 |------|---------|
-| `lib/` | Android library module (`org.uvccamera.lib`) |
+| `lib/` | Android library module (`com.github.cptskippy.uvccamera.lib`) |
 | `lib/src/main/java/` | Java API (UVCCamera, USBMonitor, DeviceFilter) |
 | `lib/src/main/jni/` | Native C/C++ (libuvc, libusb, libjpeg, UVCCamera JNI) |
-| `flutter/` | Flutter plugin (`uvccamera`) |
-| `flutter/lib/` | Dart API |
-| `flutter/android/` | Flutter Android platform implementation (Java) |
-| `flutter/example/` | Flutter example app |
-| `usbCameraCommon/` | Shared Android UI utilities for test apps |
-| `usbCameraTest*/` | Android test/demo applications |
+| `samples/flutter/` | Flutter plugin reference (`uvccamera`) |
+| `samples/flutter/lib/` | Dart API |
+| `samples/flutter/android/` | Flutter Android platform implementation (Java) |
+| `samples/flutter/example/` | Flutter example app |
+| `samples/usbCameraCommon/` | Shared Android UI utilities for test apps |
+| `samples/usbCameraTest*/` | Android test/demo applications |
 | `upstreams/` | Git submodules referencing upstream forks |
 | `gh-pages/` | GitHub Pages build assets |
 | `gradle/libs.versions.toml` | Dependency version catalog |
@@ -64,8 +64,8 @@ Co-authored-by: Original Author <email>
 ### Naming
 
 - Java packages: `com.serenegiant.usb` / `com.serenegiant.utils` (legacy upstream)
-- Library namespace: `org.uvccamera.lib`
-- Flutter plugin package: `org.uvccamera.flutter`
+- Library namespace: `com.github.cptskippy.uvccamera.lib`
+- Flutter plugin package: `com.github.cptskippy.uvccamera.flutter`
 - Dart files: `uvccamera_*.dart` (snake_case with prefix)
 - Gradle modules: camelCase (`usbCameraTest`, `usbCameraCommon`)
 
@@ -90,14 +90,14 @@ Per `.editorconfig`: 4-space indent, 120 char max, LF line endings, UTF-8. YAML 
 ### Build Flutter example
 
 ```shell
-cd flutter/example
+cd samples/flutter/example
 flutter build apk
 ```
 
 ### Run full build chain
 
 ```shell
-./gradlew assembleRelease publishToMavenLocal && cd flutter/example && flutter build apk
+./gradlew assembleRelease publishToMavenLocal && cd samples/flutter/example && flutter build apk
 ```
 
 ## Release
@@ -109,7 +109,7 @@ git tag X.Y.Z
 git push origin X.Y.Z
 ```
 
-The CI workflow automatically publishes to Maven Central, pub.dev, and GitHub Packages.
+The CI workflow automatically publishes to Maven Central and GitHub Packages.
 
 ## CI
 

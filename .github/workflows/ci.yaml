@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       packages: write
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,22 +33,24 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           packages: ndk;28.0.13004108
-      
+
       - name: Build
         run: ./gradlew :lib:assembleRelease
 
       - name: Verify 16 KB page alignment
         run: |
+          failed=0
           for so in lib/build/intermediates/cxx/RelWithDebInfo/*/obj/*.so; do
-            echo "Checking $(basename $so)..."
-            readelf -lL "$so" | grep LOAD | while read line; do
+            echo "Checking $(basename "$so")..."
+            while read -r line; do
               align=$(echo "$line" | grep -oP 'Align: 0x\K[0-9a-fA-F]+')
               if [ "$align" != "4000" ]; then
-                echo "FAIL: $(basename $so) has alignment 0x$align (expected 0x4000)"
-                exit 1
+                echo "FAIL: $(basename "$so") has alignment 0x$align (expected 0x4000)"
+                failed=1
               fi
-            done
-          done || true
+            done < <(readelf -lL "$so" | grep LOAD)
+          done
+          exit $failed
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -56,20 +58,34 @@ jobs:
           name: lib
           path: lib/build/outputs/aar/*-release.aar
 
+      # Only publish snapshots on push to main or on PRs from the same repo (not forks)
+      - name: Resolve snapshot version
+        id: version
+        if: >-
+          (github.event_name == 'push' && github.ref_name == 'main') ||
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.head.repo.full_name == github.repository)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "VERSION=PR-${{ github.event.pull_request.number }}-SNAPSHOT" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=main-SNAPSHOT" >> $GITHUB_OUTPUT
+          fi
+
       - name: Stage snapshot artifacts
-        if: ${{ (github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: steps.version.outputs.VERSION != ''
         run: >
           ./gradlew :lib:publishReleasePublicationToStagingDeployRepository
-          -Puvccamera.version=${{ github.event_name == 'pull_request' && format('PR-{0}-SNAPSHOT', github.event.pull_request.number) || 'main-SNAPSHOT' }}
-      
+          -Puvccamera.version=${{ steps.version.outputs.VERSION }}
+
       - name: Check secrets
         id: check-secrets
+        if: steps.version.outputs.VERSION != ''
         run: |
           echo "has_maven=${{ secrets.MAVEN_CENTRAL_USERNAME != '' && secrets.MAVEN_CENTRAL_PASSWORD != '' }}" >> $GITHUB_OUTPUT
           echo "has_gpg=${{ secrets.GPG_PUBLIC_KEY != '' && secrets.GPG_PRIVATE_KEY != '' }}" >> $GITHUB_OUTPUT
-          echo "has_pat=${{ secrets.GITHUB_TOKEN != '' }}" >> $GITHUB_OUTPUT
 
-      - name: Publish snapshot artifacts (Maven Central)
+      - name: Publish snapshot to Maven Central
         if: >-
           github.event_name == 'push' && github.ref_name == 'main'
           && steps.check-secrets.outputs.has_maven == 'true'
@@ -83,8 +99,11 @@ jobs:
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: ./gradlew jreleaserDeploy --no-configuration-cache -Puvccamera.version=main-SNAPSHOT
 
-      - name: Publish to GitHub Packages
-        if: ${{ steps.check-secrets.outputs.has_pat == 'true' && github.event_name == 'push' && github.ref_name == 'main' }}
+      - name: Publish snapshot to GitHub Packages
+        if: >-
+          github.event_name == 'push' && github.ref_name == 'main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository -Puvccamera.version=main-SNAPSHOT
+        run: >
+          ./gradlew :lib:publishReleasePublicationToGitHubPackagesRepository
+          -Puvccamera.version=main-SNAPSHOT

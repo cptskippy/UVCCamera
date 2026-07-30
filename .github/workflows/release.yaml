@@ -71,7 +71,7 @@ jobs:
       - name: Build
         env:
           ANDROID_JKS_PASSWORD: ${{ secrets.ANDROID_JKS_PASSWORD }}
-        run: ./gradlew assembleRelease publishToMavenLocal
+        run: ./gradlew :lib:assembleRelease
 
       - name: Verify 16 KB page alignment
         run: |

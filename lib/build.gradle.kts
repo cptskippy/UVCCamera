@@ -3,7 +3,8 @@ plugins {
     id("maven-publish")
 }
 
-version = findProperty("uvccamera.version") as String? ?: "0.0.0-SNAPSHOT"
+val libraryVersion = findProperty("uvccamera.version") as String? ?: "0.0.0-SNAPSHOT"
+version = libraryVersion
 
 android {
     namespace = "com.github.cptskippy.uvccamera.lib"
@@ -64,7 +65,7 @@ publishing {
 
             groupId = "com.github.cptskippy.uvccamera"
             artifactId = project.name
-            version = project.version.toString()
+            version = libraryVersion   // use captured val
 
             pom {
                 name = "com.github.cptskippy.uvccamera:${project.name}"

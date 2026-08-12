@@ -54,6 +54,14 @@ import com.serenegiant.usb.Size;
 import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.usbcameratest4.R;
 
+/**
+ * Handler for camera service messages.
+ *
+ * Processes camera control messages.
+ *
+ * Thread Safety:
+ *     Handler runs on Looper thread.
+ */
 public final class CameraServer extends Handler {
 	private static final boolean DEBUG = true;
 	private static final String TAG = "CameraServer";

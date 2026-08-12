@@ -28,36 +28,126 @@ import android.util.AttributeSet;
 import android.view.TextureView;
 
 /**
- * change the view size with keeping the specified aspect ratio.
- * if you set this view with in a FrameLayout and set property "android:layout_gravity="center",
- * you can show this view in the center of screen and keep the aspect ratio of content
- * XXX it is better that can set the aspect raton a a xml property
+ * Display camera preview in a TextureView while maintaining a requested aspect ratio.
+ *
+ * Extends TextureView to provide aspect-ratio-aware measurement for UVC camera preview.
+ * Lifecycle hooks onResume/onPause are no-ops; actual camera control is external.
+ *
+ * Properties:
+ *     mRequestedAspect: Desired width/height ratio; -1.0 means no constraint.
+ *
+ * Thread Safety:
+ *     Must be used on UI thread. Measurement and layout occur on UI thread.
+ *
+ * State Machine:
+ *     Uninitialized → Measured → LaidOut
+ *     Aspect ratio changes trigger remeasure.
  */
 public class SimpleUVCCameraTextureView extends TextureView	// API >= 14
 	implements AspectRatioViewInterface {
 
     private double mRequestedAspect = -1.0;
 
+	/**
+	 * Create SimpleUVCCameraTextureView with default style.
+	 *
+	 * Args:
+	 *     context: Context used for inflating view resources.
+	 *
+	 * Side Effects:
+	 *     Delegates to three-argument constructor.
+	 *
+	 * Code Paths:
+	 *     1. Always delegates to constructor with null attrs and defStyle 0.
+	 */
 	public SimpleUVCCameraTextureView(final Context context) {
 		this(context, null, 0);
 	}
 
+	/**
+	 * Create SimpleUVCCameraTextureView from XML attributes.
+	 *
+	 * Args:
+	 *     context: Context used for inflating view resources.
+	 *     attrs: AttributeSet from XML layout.
+	 *
+	 * Side Effects:
+	 *     Delegates to three-argument constructor.
+	 *
+	 * Code Paths:
+	 *     1. Always delegates to constructor with defStyle 0.
+	 */
 	public SimpleUVCCameraTextureView(final Context context, final AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
 
+	/**
+	 * Create SimpleUVCCameraTextureView with explicit style.
+	 *
+	 * Args:
+	 *     context: Context used for inflating view resources.
+	 *     attrs: AttributeSet from XML layout; may be null.
+	 *     defStyle: Default style resource identifier.
+	 *
+	 * Side Effects:
+	 *     Calls super constructor to initialize TextureView.
+	 *
+	 * Code Paths:
+	 *     1. Always initializes TextureView with provided parameters.
+	 */
 	public SimpleUVCCameraTextureView(final Context context, final AttributeSet attrs, final int defStyle) {
 		super(context, attrs, defStyle);
 	}
 
+	/**
+	 * Handle resume event from hosting component.
+	 *
+	 * No-op implementation; camera control is managed externally.
+	 *
+	 * Side Effects:
+	 *     None.
+	 *
+	 * Code Paths:
+	 *     1. Always returns without action.
+	 */
 	@Override
 	public void onResume() {
 	}
 
+	/**
+	 * Handle pause event from hosting component.
+	 *
+	 * No-op implementation; camera control is managed externally.
+	 *
+	 * Side Effects:
+	 *     None.
+	 *
+	 * Code Paths:
+	 *     1. Always returns without action.
+	 */
 	@Override
 	public void onPause() {
 	}
 
+	/**
+	 * Set desired aspect ratio for view measurement.
+	 *
+	 * Updates requested aspect ratio and triggers layout if changed.
+	 *
+	 * Args:
+	 *     aspectRatio: Width divided by height; must be >= 0.
+	 *
+	 * Raises:
+	 *     IllegalArgumentException: If aspectRatio is negative.
+	 *
+	 * Side Effects:
+	 *     Updates mRequestedAspect and requests layout when ratio changes.
+	 *
+	 * Code Paths:
+	 *     1. If aspectRatio < 0 → throws IllegalArgumentException.
+	 *     2. If aspectRatio equals current → no action.
+	 *     3. If aspectRatio differs → updates field and requests layout.
+	 */
 	@Override
     public void setAspectRatio(final double aspectRatio) {
         if (aspectRatio < 0) {

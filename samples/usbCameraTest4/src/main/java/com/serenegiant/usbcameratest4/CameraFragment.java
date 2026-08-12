@@ -56,6 +56,17 @@ import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.widget.CameraViewInterface;
 
+/**
+ * Fragment displaying UVC camera preview.
+ *
+ * Manages camera lifecycle within fragment.
+ *
+ * Properties:
+ *     mUVCCameraView: View for preview.
+ *
+ * Thread Safety:
+ *     UI operations on main thread.
+ */
 public class CameraFragment extends BaseFragment {
 
 	private static final boolean DEBUG = true;

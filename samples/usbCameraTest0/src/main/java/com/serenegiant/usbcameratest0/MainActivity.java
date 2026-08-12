@@ -41,6 +41,24 @@ import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usb.UVCCamera;
 
+/**
+ * Demonstrate USB UVC camera preview using SurfaceView.
+ *
+ * Manages USB permission, camera connection, and preview lifecycle using SurfaceView.
+ * Follows Activity lifecycle with synchronized camera access.
+ *
+ * Properties:
+ *     mUVCCamera: Current UVCCamera instance; null when inactive.
+ *     mUSBMonitor: USBMonitor for device events.
+ *     mUVCCameraView: SurfaceView rendering preview.
+ *     isActive/isPreview: Track camera state.
+ *
+ * State Machine:
+ *     Idle → Connecting → Active → Previewing → Released
+ *
+ * Thread Safety:
+ *     Camera operations guarded by mSync; UI updates on main thread.
+ */
 public class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// TODO set false when production
 	private static final String TAG = "MainActivity";
@@ -207,14 +225,37 @@ public class MainActivity extends BaseActivity implements CameraDialog.CameraDia
 	};
 
 	/**
-	 * to access from CameraDialog
-	 * @return
+	 * Return the USBMonitor instance for CameraDialog access.
+	 *
+	 * Provides monitor to CameraDialog for permission handling.
+	 *
+	 * Returns:
+	 *     USBMonitor instance; may be null if not initialized.
+	 *
+	 * Side Effects:
+	 *     None.
+	 *
+	 * Code Paths:
+	 *     1. Always returns mUSBMonitor reference.
 	 */
 	@Override
 	public USBMonitor getUSBMonitor() {
 		return mUSBMonitor;
 	}
 
+	/**
+	 * Handle result from CameraDialog.
+	 *
+	 * Args:
+	 *     canceled: True if dialog was dismissed without permission.
+	 *
+	 * Side Effects:
+	 *     Schedules empty UI task when canceled.
+	 *
+	 * Code Paths:
+	 *     1. If canceled → posts empty Runnable to UI thread.
+	 *     2. If not canceled → does nothing.
+	 */
 	@Override
 	public void onDialogResult(boolean canceled) {
 		if (canceled) {

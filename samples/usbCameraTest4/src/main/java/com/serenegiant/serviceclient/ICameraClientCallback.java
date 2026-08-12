@@ -23,6 +23,9 @@
 
 package com.serenegiant.serviceclient;
 
+/**
+ * Callback for camera client events.
+ */
 public interface ICameraClientCallback {
 	public void onConnect();
 	public void onDisconnect();

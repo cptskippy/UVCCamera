@@ -41,6 +41,17 @@ import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usbcameratest4.MainActivity;
 import com.serenegiant.usbcameratest4.R;
 
+/**
+ * Service for managing UVC camera.
+ *
+ * Provides camera access via bound clients.
+ *
+ * Properties:
+ *     mUVCCamera: Camera instance.
+ *
+ * Thread Safety:
+ *     Service methods on main thread; camera ops synchronized.
+ */
 public class UVCService extends BaseService {
 	private static final boolean DEBUG = true;
 	private static final String TAG = "UVCService";

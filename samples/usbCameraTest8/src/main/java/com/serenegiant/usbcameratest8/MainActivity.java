@@ -50,6 +50,22 @@ import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.utils.ViewAnimationHelper;
 import com.serenegiant.widget.CameraViewInterface;
 
+/**
+ * Demonstrate USB UVC camera preview with latest features.
+ *
+ * Manages camera preview and lifecycle.
+ * Follows Activity lifecycle with synchronized camera access.
+ *
+ * Properties:
+ *     mUVCCamera: Current UVCCamera instance.
+ *     mUVCCameraView: TextureView for preview.
+ *
+ * State Machine:
+ *     Idle → Previewing → Released
+ *
+ * Thread Safety:
+ *     Camera operations guarded by mSync; UI updates on main thread.
+ */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MainActivity";

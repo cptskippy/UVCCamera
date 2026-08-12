@@ -33,6 +33,20 @@ import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.util.Log;
 
+/**
+ * Abstract base for video encoding with runnable thread.
+ *
+ * Provides synchronized access and lifecycle hooks for encoders.
+ *
+ * Properties:
+ *     mSync: Monitor for thread-safe operations.
+ *
+ * Thread Safety:
+ *     Operations guarded by mSync; run() executes on encoder thread.
+ *
+ * State Machine:
+ *     Initialized → Running → Stopped
+ */
 public abstract class Encoder implements Runnable {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "Encoder";

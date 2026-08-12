@@ -32,6 +32,20 @@ import android.media.MediaMuxer;
 import android.util.Log;
 import android.view.Surface;
 
+/**
+ * Encode video frames from Surface input.
+ *
+ * Manages MediaCodec encoder and surface for video output.
+ *
+ * Properties:
+ *     mSurface: Encoder input surface.
+ *
+ * Thread Safety:
+ *     Operations guarded by mSync; run() on encoder thread.
+ *
+ * State Machine:
+ *     Initialized → Configuring → Encoding → Stopped
+ */
 public class SurfaceEncoder extends Encoder {
 	private static final boolean DEBUG = true;	// set false when releasing
 	private static final String TAG = "SurfaceEncoder";

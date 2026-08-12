@@ -57,6 +57,23 @@ import com.serenegiant.video.Encoder.EncodeListener;
 import com.serenegiant.video.SurfaceEncoder;
 import com.serenegiant.widget.SimpleUVCCameraTextureView;
 
+/**
+ * Demonstrate USB UVC camera preview with video recording.
+ *
+ * Manages camera preview, recording toggle, and file output using SimpleUVCCameraTextureView.
+ * Follows Activity lifecycle with synchronized camera access.
+ *
+ * Properties:
+ *     mUVCCamera: Current UVCCamera instance.
+ *     mSurfaceEncoder: Encoder for video output.
+ *     mUVCCameraView: TextureView for preview.
+ *
+ * State Machine:
+ *     Idle → Previewing → Recording → Previewing → Released
+ *
+ * Thread Safety:
+ *     Camera operations guarded by mSync; UI updates on main thread.
+ */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// set false when releasing
 	private static final String TAG = "MainActivity";

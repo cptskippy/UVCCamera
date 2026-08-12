@@ -44,6 +44,26 @@ import com.serenegiant.widget.SimpleUVCCameraTextureView;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Manages USB UVC camera lifecycle and preview for the main activity.
+ *
+ * Initializes UI components, registers USB monitor, and handles camera connect/disconnect events.
+ * Lifecycle follows Android Activity lifecycle with synchronized access to camera resources.
+ *
+ * Properties:
+ *     mUVCCamera: Current UVCCamera instance; null when no camera is active.
+ *     mUSBMonitor: USBMonitor handling device permission and connection events.
+ *     mUVCCameraView: TextureView for rendering camera preview.
+ *     mPreviewSurface: Surface used for camera preview output.
+ *     mToast: Active Toast for status messages.
+ *
+ * State Machine:
+ *     Idle → CameraConnected → Previewing → Released
+ *     CameraConnected can transition to Error on open failure
+ *
+ * Thread Safety:
+ *     All camera operations are guarded by mSync. UI updates run on main thread.
+ */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 
 	private final Object mSync = new Object();
@@ -250,14 +270,39 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 	}
 
 	/**
-	 * to access from CameraDialog
-	 * @return
+	 * Return the USBMonitor instance for CameraDialog access.
+	 *
+	 * Provides the monitor to CameraDialog to request USB permissions and track device connections.
+	 *
+	 * Returns:
+	 *     USBMonitor instance used for USB device monitoring; may be null if not initialized.
+	 *
+	 * Side Effects:
+	 *     None. Read-only accessor.
+	 *
+	 * Code Paths:
+	 *     1. Always returns mUSBMonitor reference.
 	 */
 	@Override
 	public USBMonitor getUSBMonitor() {
 		return mUSBMonitor;
 	}
 
+	/**
+	 * Handle result from CameraDialog.
+	 *
+	 * Processes dialog cancellation and schedules UI work on main thread.
+	 *
+	 * Args:
+	 *     canceled: True if user dismissed the dialog without granting permission.
+	 *
+	 * Side Effects:
+	 *     Schedules empty Runnable on UI thread when canceled.
+	 *
+	 * Code Paths:
+	 *     1. If canceled → posts empty Runnable to UI thread.
+	 *     2. If not canceled → does nothing.
+	 */
 	@Override
 	public void onDialogResult(boolean canceled) {
 		if (canceled) {

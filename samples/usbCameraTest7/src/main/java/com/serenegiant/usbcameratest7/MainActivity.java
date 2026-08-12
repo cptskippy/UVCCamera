@@ -49,6 +49,22 @@ import com.serenegiant.widget.UVCCameraTextureView;
  * audio because of limitation of Android AudioRecord(only one instance of AudioRecord is available
  * on the device) now.
  */
+/**
+ * Demonstrate USB UVC camera preview with custom processing.
+ *
+ * Manages camera preview and image processing pipeline.
+ * Follows Activity lifecycle with synchronized camera access.
+ *
+ * Properties:
+ *     mUVCCamera: Current UVCCamera instance.
+ *     mUVCCameraView: TextureView for preview.
+ *
+ * State Machine:
+ *     Idle → Previewing → Released
+ *
+ * Thread Safety:
+ *     Camera operations guarded by mSync; UI updates on main thread.
+ */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = false;	// FIXME set false when production
 	private static final String TAG = "MainActivity";

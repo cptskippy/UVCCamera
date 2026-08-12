@@ -46,6 +46,22 @@ import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.widget.CameraViewInterface;
 
+/**
+ * Demonstrate USB UVC camera preview with custom texture view.
+ *
+ * Manages camera preview and lifecycle using UVCCameraTextureView2.
+ * Follows Activity lifecycle with synchronized camera access.
+ *
+ * Properties:
+ *     mUVCCamera: Current UVCCamera instance.
+ *     mUVCCameraView: Custom TextureView for preview.
+ *
+ * State Machine:
+ *     Idle → Previewing → Released
+ *
+ * Thread Safety:
+ *     Camera operations guarded by mSync; UI updates on main thread.
+ */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MainActivity";

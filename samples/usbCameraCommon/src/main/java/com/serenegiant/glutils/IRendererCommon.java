@@ -22,6 +22,42 @@ import android.support.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+/**
+ * Manages IRendererCommon functionality.
+ *
+ * Responsibility: Provides core IRendererCommon operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of IRendererCommon
+ */
+/**
+ * Manages IRendererCommon functionality.
+ *
+ * Responsibility: Provides core IRendererCommon operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of IRendererCommon
+ */
+
+
 
 public interface IRendererCommon {
 	public static final int MIRROR_NORMAL = 0;

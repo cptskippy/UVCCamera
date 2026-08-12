@@ -20,7 +20,31 @@
  *
  * All files in the folder are under this Apache License, Version 2.0.
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
-*/
+ */
+
+/**
+ * \brief Implements UVC camera control and streaming for Android via libuvc.
+ *
+ * Provides JNI bridge for USB Video Class cameras, handling device open/close,
+ * preview/capture pipelines, and UVC control parameter management.
+ *
+ * Exports:
+ *     UVCCamera: Main camera controller class with connect/release/preview/capture APIs
+ *     update_ctrl_values: Internal helper to query control min/max/default values
+ *     internalSetCtrlValue: Internal helper to set control values with clamping
+ *
+ * Dependencies:
+ *     - libuvc: UVC protocol implementation for USB camera access
+ *     - libusb: Low-level USB device communication
+ *     - Parameters.h: UVC control parameter definitions
+ *     - UVCPreview: Preview frame handling and display
+ *     - UVCStatusCallback/UVCButtonCallback: Event callbacks
+ *
+ * Architecture Note:
+ *     UVCCamera owns the libuvc device handle and coordinates preview/capture pipelines.
+ *     Control parameters are cached per-device to avoid repeated queries. All public
+ *     methods check device handle validity before delegating to underlying components.
+ */
 
 #define LOG_TAG "UVCCamera"
 #if 1	// デバッグ情報を出さない時1
@@ -88,6 +112,15 @@ UVCCamera::~UVCCamera() {
 	EXIT();
 }
 
+/**
+ * \brief Implements clearCameraParams.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCCamera::clearCameraParams() {
 	mCtrlSupports = mPUSupports = 0;
 	mScanningMode.min = mScanningMode.max = mScanningMode.def = 0;
@@ -188,6 +221,15 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 }
 
 // カメラを開放する
+/**
+ * \brief Implements release.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::release() {
 	ENTER();
 	stopPreview();
@@ -219,6 +261,15 @@ int UVCCamera::release() {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Implements setStatusCallback.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setStatusCallback(JNIEnv *env, jobject status_callback_obj) {
 	ENTER();
 	int result = EXIT_FAILURE;
@@ -228,6 +279,15 @@ int UVCCamera::setStatusCallback(JNIEnv *env, jobject status_callback_obj) {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements setButtonCallback.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setButtonCallback(JNIEnv *env, jobject button_callback_obj) {
 	ENTER();
 	int result = EXIT_FAILURE;
@@ -237,6 +297,15 @@ int UVCCamera::setButtonCallback(JNIEnv *env, jobject button_callback_obj) {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements getSupportedSize.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 char *UVCCamera::getSupportedSize() {
 	ENTER();
 	if (mDeviceHandle) {
@@ -246,6 +315,15 @@ char *UVCCamera::getSupportedSize() {
 	RETURN(NULL, char *);
 }
 
+/**
+ * \brief Implements setPreviewSize.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setPreviewSize(int width, int height, int min_fps, int max_fps, int mode, float bandwidth) {
 	ENTER();
 	int result = EXIT_FAILURE;
@@ -255,6 +333,15 @@ int UVCCamera::setPreviewSize(int width, int height, int min_fps, int max_fps, i
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements setPreviewDisplay.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setPreviewDisplay(ANativeWindow *preview_window) {
 	ENTER();
 	int result = EXIT_FAILURE;
@@ -264,6 +351,15 @@ int UVCCamera::setPreviewDisplay(ANativeWindow *preview_window) {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements setFrameCallback.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format) {
 	ENTER();
 	int result = EXIT_FAILURE;
@@ -273,6 +369,15 @@ int UVCCamera::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pix
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements startPreview.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::startPreview() {
 	ENTER();
 
@@ -283,6 +388,15 @@ int UVCCamera::startPreview() {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements stopPreview.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::stopPreview() {
 	ENTER();
 	if (LIKELY(mPreview)) {
@@ -291,6 +405,15 @@ int UVCCamera::stopPreview() {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Implements setCaptureDisplay.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setCaptureDisplay(ANativeWindow *capture_window) {
 	ENTER();
 	int result = EXIT_FAILURE;
@@ -302,6 +425,15 @@ int UVCCamera::setCaptureDisplay(ANativeWindow *capture_window) {
 
 //======================================================================
 // カメラのサポートしているコントロール機能を取得する
+/**
+ * \brief Implements getCtrlSupports.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getCtrlSupports(uint64_t *supports) {
 	ENTER();
 	uvc_error_t ret = UVC_ERROR_NOT_FOUND;
@@ -327,6 +459,15 @@ int UVCCamera::getCtrlSupports(uint64_t *supports) {
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Implements getProcSupports.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getProcSupports(uint64_t *supports) {
 	ENTER();
 	uvc_error_t ret = UVC_ERROR_NOT_FOUND;
@@ -827,6 +968,15 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint32_t value,
 
 //======================================================================
 // スキャニングモード
+/**
+ * \brief Implements updateScanningModeLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateScanningModeLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -837,6 +987,15 @@ int UVCCamera::updateScanningModeLimit(int &min, int &max, int &def) {
 }
 
 // スキャニングモードをセット
+/**
+ * \brief Implements setScanningMode.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setScanningMode(int mode) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -848,6 +1007,15 @@ int UVCCamera::setScanningMode(int mode) {
 }
 
 // スキャニングモード設定を取得
+/**
+ * \brief Implements getScanningMode.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getScanningMode() {
 
 	ENTER();
@@ -865,6 +1033,15 @@ int UVCCamera::getScanningMode() {
 
 //======================================================================
 // 露出モード
+/**
+ * \brief Implements updateExposureModeLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateExposureModeLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -875,6 +1052,15 @@ int UVCCamera::updateExposureModeLimit(int &min, int &max, int &def) {
 }
 
 // 露出をセット
+/**
+ * \brief Implements setExposureMode.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setExposureMode(int mode) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -886,6 +1072,15 @@ int UVCCamera::setExposureMode(int mode) {
 }
 
 // 露出設定を取得
+/**
+ * \brief Implements getExposureMode.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getExposureMode() {
 
 	ENTER();
@@ -903,6 +1098,15 @@ int UVCCamera::getExposureMode() {
 
 //======================================================================
 // 露出優先設定
+/**
+ * \brief Implements updateExposurePriorityLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateExposurePriorityLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -913,6 +1117,15 @@ int UVCCamera::updateExposurePriorityLimit(int &min, int &max, int &def) {
 }
 
 // 露出優先設定をセット
+/**
+ * \brief Implements setExposurePriority.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setExposurePriority(int priority) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -924,6 +1137,15 @@ int UVCCamera::setExposurePriority(int priority) {
 }
 
 // 露出優先設定を取得
+/**
+ * \brief Implements getExposurePriority.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getExposurePriority() {
 
 	ENTER();
@@ -941,6 +1163,15 @@ int UVCCamera::getExposurePriority() {
 
 //======================================================================
 // 露出(絶対値)設定
+/**
+ * \brief Implements updateExposureLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateExposureLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -951,6 +1182,15 @@ int UVCCamera::updateExposureLimit(int &min, int &max, int &def) {
 }
 
 // 露出(絶対値)設定をセット
+/**
+ * \brief Implements setExposure.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setExposure(int ae_abs) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -962,6 +1202,15 @@ int UVCCamera::setExposure(int ae_abs) {
 }
 
 // 露出(絶対値)設定を取得
+/**
+ * \brief Implements getExposure.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getExposure() {
 
 	ENTER();
@@ -979,6 +1228,15 @@ int UVCCamera::getExposure() {
 
 //======================================================================
 // 露出(相対値)設定
+/**
+ * \brief Implements updateExposureRelLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateExposureRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -989,6 +1247,15 @@ int UVCCamera::updateExposureRelLimit(int &min, int &max, int &def) {
 }
 
 // 露出(相対値)設定をセット
+/**
+ * \brief Implements setExposureRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setExposureRel(int ae_rel) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1000,6 +1267,15 @@ int UVCCamera::setExposureRel(int ae_rel) {
 }
 
 // 露出(相対値)設定を取得
+/**
+ * \brief Implements getExposureRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getExposureRel() {
 
 	ENTER();
@@ -1017,6 +1293,15 @@ int UVCCamera::getExposureRel() {
 
 //======================================================================
 // オートフォーカス
+/**
+ * \brief Implements updateAutoFocusLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateAutoFocusLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1027,6 +1312,15 @@ int UVCCamera::updateAutoFocusLimit(int &min, int &max, int &def) {
 }
 
 // オートフォーカスをon/off
+/**
+ * \brief Implements setAutoFocus.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setAutoFocus(bool autoFocus) {
 	ENTER();
 
@@ -1038,6 +1332,15 @@ int UVCCamera::setAutoFocus(bool autoFocus) {
 }
 
 // オートフォーカスのon/off状態を取得
+/**
+ * \brief Implements getAutoFocus.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 bool UVCCamera::getAutoFocus() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1052,6 +1355,15 @@ bool UVCCamera::getAutoFocus() {
 
 //======================================================================
 // フォーカス(絶対値)調整
+/**
+ * \brief Implements updateFocusLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateFocusLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1062,6 +1374,15 @@ int UVCCamera::updateFocusLimit(int &min, int &max, int &def) {
 }
 
 // フォーカス(絶対値)を設定
+/**
+ * \brief Implements setFocus.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setFocus(int focus) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1072,6 +1393,15 @@ int UVCCamera::setFocus(int focus) {
 }
 
 // フォーカス(絶対値)の現在値を取得
+/**
+ * \brief Implements getFocus.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getFocus() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_ABS) {
@@ -1088,6 +1418,15 @@ int UVCCamera::getFocus() {
 
 //======================================================================
 // フォーカス(相対値)調整
+/**
+ * \brief Implements updateFocusRelLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateFocusRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1098,6 +1437,15 @@ int UVCCamera::updateFocusRelLimit(int &min, int &max, int &def) {
 }
 
 // フォーカス(相対値)を設定
+/**
+ * \brief Implements setFocusRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setFocusRel(int focus_rel) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1108,6 +1456,15 @@ int UVCCamera::setFocusRel(int focus_rel) {
 }
 
 // フォーカス(相対値)の現在値を取得
+/**
+ * \brief Implements getFocusRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getFocusRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_REL) {
@@ -1126,6 +1483,15 @@ int UVCCamera::getFocusRel() {
 //======================================================================
 /*
 // フォーカス(シンプル)調整
+/**
+ * \brief Implements updateFocusSimpleLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateFocusSimpleLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1136,6 +1502,15 @@ int UVCCamera::updateFocusSimpleLimit(int &min, int &max, int &def) {
 }
 
 // フォーカス(シンプル)を設定
+/**
+ * \brief Implements setFocusSimple.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setFocusSimple(int focus) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1146,6 +1521,15 @@ int UVCCamera::setFocusSimple(int focus) {
 }
 
 // フォーカス(シンプル)の現在値を取得
+/**
+ * \brief Implements getFocusSimple.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getFocusSimple() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_SIMPLE) {
@@ -1163,6 +1547,15 @@ int UVCCamera::getFocusSimple() {
 
 //======================================================================
 // 絞り(絶対値)調整
+/**
+ * \brief Implements updateIrisLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateIrisLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1173,6 +1566,15 @@ int UVCCamera::updateIrisLimit(int &min, int &max, int &def) {
 }
 
 // 絞り(絶対値)を設定
+/**
+ * \brief Implements setIris.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setIris(int iris) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1183,6 +1585,15 @@ int UVCCamera::setIris(int iris) {
 }
 
 // 絞り(絶対値)の現在値を取得
+/**
+ * \brief Implements getIris.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getIris() {
 	ENTER();
 	if (mCtrlSupports & CTRL_IRIS_ABS) {
@@ -1199,6 +1610,15 @@ int UVCCamera::getIris() {
 
 //======================================================================
 // 絞り(相対値)調整
+/**
+ * \brief Implements updateIrisRelLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateIrisRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1209,6 +1629,15 @@ int UVCCamera::updateIrisRelLimit(int &min, int &max, int &def) {
 }
 
 // 絞り(相対値)を設定
+/**
+ * \brief Implements setIrisRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setIrisRel(int iris_rel) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1219,6 +1648,15 @@ int UVCCamera::setIrisRel(int iris_rel) {
 }
 
 // 絞り(相対値)の現在値を取得
+/**
+ * \brief Implements getIrisRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getIrisRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_IRIS_REL) {
@@ -1235,6 +1673,15 @@ int UVCCamera::getIrisRel() {
 
 //======================================================================
 // Pan(絶対値)調整
+/**
+ * \brief Implements updatePanLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updatePanLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1245,6 +1692,15 @@ int UVCCamera::updatePanLimit(int &min, int &max, int &def) {
 }
 
 // Pan(絶対値)を設定
+/**
+ * \brief Implements setPan.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setPan(int pan) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1266,6 +1722,15 @@ int UVCCamera::setPan(int pan) {
 }
 
 // Pan(絶対値)の現在値を取得
+/**
+ * \brief Implements getPan.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getPan() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PANTILT_ABS) {
@@ -1285,6 +1750,15 @@ int UVCCamera::getPan() {
 
 //======================================================================
 // Tilt(絶対値)調整
+/**
+ * \brief Implements updateTiltLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateTiltLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1295,6 +1769,15 @@ int UVCCamera::updateTiltLimit(int &min, int &max, int &def) {
 }
 
 // Tilt(絶対値)を設定
+/**
+ * \brief Implements setTilt.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setTilt(int tilt) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1316,6 +1799,15 @@ int UVCCamera::setTilt(int tilt) {
 }
 
 // Tilt(絶対値)の現在値を取得
+/**
+ * \brief Implements getTilt.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getTilt() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PANTILT_ABS) {
@@ -1335,6 +1827,15 @@ int UVCCamera::getTilt() {
 
 //======================================================================
 // Roll(絶対値)調整
+/**
+ * \brief Implements updateRollLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateRollLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1345,6 +1846,15 @@ int UVCCamera::updateRollLimit(int &min, int &max, int &def) {
 }
 
 // Roll(絶対値)を設定
+/**
+ * \brief Implements setRoll.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setRoll(int roll) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1355,6 +1865,15 @@ int UVCCamera::setRoll(int roll) {
 }
 
 // Roll(絶対値)の現在値を取得
+/**
+ * \brief Implements getRoll.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getRoll() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ROLL_ABS) {
@@ -1372,18 +1891,45 @@ int UVCCamera::getRoll() {
 }
 
 //======================================================================
+/**
+ * \brief Implements updatePanRelLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updatePanRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	// FIXME not implemented yet
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
+/**
+ * \brief Implements setPanRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setPanRel(int pan_rel) {
 	ENTER();
 	// FIXME not implemented yet
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
+/**
+ * \brief Implements getPanRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getPanRel() {
 	ENTER();
 	// FIXME not implemented yet
@@ -1391,18 +1937,45 @@ int UVCCamera::getPanRel() {
 }
 	
 //======================================================================
+/**
+ * \brief Implements updateTiltRelLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateTiltRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	// FIXME not implemented yet
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
+/**
+ * \brief Implements setTiltRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setTiltRel(int tilt_rel) {
 	ENTER();
 	// FIXME not implemented yet
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
+/**
+ * \brief Implements getTiltRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getTiltRel() {
 	ENTER();
 	// FIXME not implemented yet
@@ -1410,18 +1983,45 @@ int UVCCamera::getTiltRel() {
 }
 	
 //======================================================================
+/**
+ * \brief Implements updateRollRelLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateRollRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	// FIXME not implemented yet
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
+/**
+ * \brief Implements setRollRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setRollRel(int roll_rel) {
 	ENTER();
 	// FIXME not implemented yet
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
+/**
+ * \brief Implements getRollRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getRollRel() {
 	ENTER();
 	// FIXME not implemented yet
@@ -1430,6 +2030,15 @@ int UVCCamera::getRollRel() {
 
 //======================================================================
 // プライバシーモード
+/**
+ * \brief Implements updatePrivacyLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updatePrivacyLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1440,6 +2049,15 @@ int UVCCamera::updatePrivacyLimit(int &min, int &max, int &def) {
 }
 
 // プライバシーモードを設定
+/**
+ * \brief Implements setPrivacy.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setPrivacy(int privacy) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1450,6 +2068,15 @@ int UVCCamera::setPrivacy(int privacy) {
 }
 
 // プライバシーモードの現在値を取得
+/**
+ * \brief Implements getPrivacy.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getPrivacy() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PRIVACY) {
@@ -1467,6 +2094,15 @@ int UVCCamera::getPrivacy() {
 //======================================================================
 /*
 // DigitalWindow
+/**
+ * \brief Implements updateDigitalWindowLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateDigitalWindowLimit(...not defined...) {
 	ENTER();
 	// FIXME not implemented yet
@@ -1474,6 +2110,15 @@ int UVCCamera::updateDigitalWindowLimit(...not defined...) {
 }
 
 // DigitalWindowを設定
+/**
+ * \brief Implements setDigitalWindow.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setDigitalWindow(int top, int reft, int bottom, int right) {
 	ENTER();
 	// FIXME not implemented yet
@@ -1481,6 +2126,15 @@ int UVCCamera::setDigitalWindow(int top, int reft, int bottom, int right) {
 }
 
 // DigitalWindowの現在値を取得
+/**
+ * \brief Implements getDigitalWindow.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getDigitalWindow(int &top, int &reft, int &bottom, int &right) {
 	ENTER();
 	// FIXME not implemented yet
@@ -1491,6 +2145,15 @@ int UVCCamera::getDigitalWindow(int &top, int &reft, int &bottom, int &right) {
 //======================================================================
 /*
 // DigitalRoi
+/**
+ * \brief Implements updateDigitalRoiLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateDigitalRoiLimit(...not defined...) {
 	ENTER();
 	// FIXME not implemented yet
@@ -1498,6 +2161,15 @@ int UVCCamera::updateDigitalRoiLimit(...not defined...) {
 }
 
 // DigitalRoiを設定
+/**
+ * \brief Implements setDigitalRoi.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setDigitalRoi(int top, int reft, int bottom, int right) {
 	ENTER();
 	// FIXME not implemented yet
@@ -1505,6 +2177,15 @@ int UVCCamera::setDigitalRoi(int top, int reft, int bottom, int right) {
 }
 
 // DigitalRoiの現在値を取得
+/**
+ * \brief Implements getDigitalRoi.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getDigitalRoi(int &top, int &reft, int &bottom, int &right) {
 	ENTER();
 	// FIXME not implemented yet
@@ -1514,6 +2195,15 @@ int UVCCamera::getDigitalRoi(int &top, int &reft, int &bottom, int &right) {
 
 //======================================================================
 // backlight_compensation
+/**
+ * \brief Implements updateBacklightCompLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateBacklightCompLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1524,6 +2214,15 @@ int UVCCamera::updateBacklightCompLimit(int &min, int &max, int &def) {
 }
 
 // backlight_compensationを設定
+/**
+ * \brief Implements setBacklightComp.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setBacklightComp(int backlight) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1534,6 +2233,15 @@ int UVCCamera::setBacklightComp(int backlight) {
 }
 
 // backlight_compensationの現在値を取得
+/**
+ * \brief Implements getBacklightComp.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getBacklightComp() {
 	ENTER();
 	if (mPUSupports & PU_BACKLIGHT) {
@@ -1551,6 +2259,15 @@ int UVCCamera::getBacklightComp() {
 
 //======================================================================
 // 明るさ
+/**
+ * \brief Implements updateBrightnessLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateBrightnessLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1560,6 +2277,15 @@ int UVCCamera::updateBrightnessLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Implements setBrightness.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setBrightness(int brightness) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1570,6 +2296,15 @@ int UVCCamera::setBrightness(int brightness) {
 }
 
 // 明るさの現在値を取得
+/**
+ * \brief Implements getBrightness.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getBrightness() {
 	ENTER();
 	if (mPUSupports & PU_BRIGHTNESS) {
@@ -1586,6 +2321,15 @@ int UVCCamera::getBrightness() {
 
 //======================================================================
 // コントラスト調整
+/**
+ * \brief Implements updateContrastLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateContrastLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1596,6 +2340,15 @@ int UVCCamera::updateContrastLimit(int &min, int &max, int &def) {
 }
 
 // コントラストを設定
+/**
+ * \brief Implements setContrast.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setContrast(uint16_t contrast) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1606,6 +2359,15 @@ int UVCCamera::setContrast(uint16_t contrast) {
 }
 
 // コントラストの現在値を取得
+/**
+ * \brief Implements getContrast.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getContrast() {
 	ENTER();
 	if (mPUSupports & PU_CONTRAST) {
@@ -1622,6 +2384,15 @@ int UVCCamera::getContrast() {
 
 //======================================================================
 // オートコントラスト
+/**
+ * \brief Implements updateAutoContrastLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateAutoContrastLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1632,6 +2403,15 @@ int UVCCamera::updateAutoContrastLimit(int &min, int &max, int &def) {
 }
 
 // オートコントラストをon/off
+/**
+ * \brief Implements setAutoContrast.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setAutoContrast(bool autoContrast) {
 	ENTER();
 
@@ -1643,6 +2423,15 @@ int UVCCamera::setAutoContrast(bool autoContrast) {
 }
 
 // オートコントラストのon/off状態を取得
+/**
+ * \brief Implements getAutoContrast.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 bool UVCCamera::getAutoContrast() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1657,6 +2446,15 @@ bool UVCCamera::getAutoContrast() {
 
 //======================================================================
 // シャープネス調整
+/**
+ * \brief Implements updateSharpnessLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateSharpnessLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1667,6 +2465,15 @@ int UVCCamera::updateSharpnessLimit(int &min, int &max, int &def) {
 }
 
 // シャープネスを設定
+/**
+ * \brief Implements setSharpness.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setSharpness(int sharpness) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1677,6 +2484,15 @@ int UVCCamera::setSharpness(int sharpness) {
 }
 
 // シャープネスの現在値を取得
+/**
+ * \brief Implements getSharpness.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getSharpness() {
 	ENTER();
 	if (mPUSupports & PU_SHARPNESS) {
@@ -1693,6 +2509,15 @@ int UVCCamera::getSharpness() {
 
 //======================================================================
 // ゲイン調整
+/**
+ * \brief Implements updateGainLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateGainLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1703,6 +2528,15 @@ int UVCCamera::updateGainLimit(int &min, int &max, int &def) {
 }
 
 // ゲインを設定
+/**
+ * \brief Implements setGain.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setGain(int gain) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1714,6 +2548,15 @@ int UVCCamera::setGain(int gain) {
 }
 
 // ゲインの現在値を取得
+/**
+ * \brief Implements getGain.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getGain() {
 	ENTER();
 	if (mPUSupports & PU_GAIN) {
@@ -1731,6 +2574,15 @@ int UVCCamera::getGain() {
 
 //======================================================================
 // オートホワイトバランス(temp)
+/**
+ * \brief Implements updateAutoWhiteBlanceLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateAutoWhiteBlanceLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1741,6 +2593,15 @@ int UVCCamera::updateAutoWhiteBlanceLimit(int &min, int &max, int &def) {
 }
 
 // オートホワイトバランス(temp)をon/off
+/**
+ * \brief Implements setAutoWhiteBlance.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setAutoWhiteBlance(bool autoWhiteBlance) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1751,6 +2612,15 @@ int UVCCamera::setAutoWhiteBlance(bool autoWhiteBlance) {
 }
 
 // オートホワイトバランス(temp)のon/off状態を取得
+/**
+ * \brief Implements getAutoWhiteBlance.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 bool UVCCamera::getAutoWhiteBlance() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1765,6 +2635,15 @@ bool UVCCamera::getAutoWhiteBlance() {
 
 //======================================================================
 // オートホワイトバランス(compo)
+/**
+ * \brief Implements updateAutoWhiteBlanceCompoLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateAutoWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1775,6 +2654,15 @@ int UVCCamera::updateAutoWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 }
 
 // オートホワイトバランス(compo)をon/off
+/**
+ * \brief Implements setAutoWhiteBlanceCompo.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setAutoWhiteBlanceCompo(bool autoWhiteBlanceCompo) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1785,6 +2673,15 @@ int UVCCamera::setAutoWhiteBlanceCompo(bool autoWhiteBlanceCompo) {
 }
 
 // オートホワイトバランス(compo)のon/off状態を取得
+/**
+ * \brief Implements getAutoWhiteBlanceCompo.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 bool UVCCamera::getAutoWhiteBlanceCompo() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1799,6 +2696,15 @@ bool UVCCamera::getAutoWhiteBlanceCompo() {
 
 //======================================================================
 // ホワイトバランス色温度調整
+/**
+ * \brief Implements updateWhiteBlanceLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateWhiteBlanceLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1809,6 +2715,15 @@ int UVCCamera::updateWhiteBlanceLimit(int &min, int &max, int &def) {
 }
 
 // ホワイトバランス色温度を設定
+/**
+ * \brief Implements setWhiteBlance.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setWhiteBlance(int white_blance) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1820,6 +2735,15 @@ int UVCCamera::setWhiteBlance(int white_blance) {
 }
 
 // ホワイトバランス色温度の現在値を取得
+/**
+ * \brief Implements getWhiteBlance.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getWhiteBlance() {
 	ENTER();
 	if (mPUSupports & PU_WB_TEMP) {
@@ -1836,6 +2760,15 @@ int UVCCamera::getWhiteBlance() {
 
 //======================================================================
 // ホワイトバランスcompo調整
+/**
+ * \brief Implements updateWhiteBlanceCompoLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1846,6 +2779,15 @@ int UVCCamera::updateWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 }
 
 // ホワイトバランスcompoを設定
+/**
+ * \brief Implements setWhiteBlanceCompo.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setWhiteBlanceCompo(int white_blance_compo) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1857,6 +2799,15 @@ int UVCCamera::setWhiteBlanceCompo(int white_blance_compo) {
 }
 
 // ホワイトバランスcompoの現在値を取得
+/**
+ * \brief Implements getWhiteBlanceCompo.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getWhiteBlanceCompo() {
 	ENTER();
 	if (mPUSupports & PU_WB_COMPO) {
@@ -1873,6 +2824,15 @@ int UVCCamera::getWhiteBlanceCompo() {
 
 //======================================================================
 // ガンマ調整
+/**
+ * \brief Implements updateGammaLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateGammaLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1883,6 +2843,15 @@ int UVCCamera::updateGammaLimit(int &min, int &max, int &def) {
 }
 
 // ガンマを設定
+/**
+ * \brief Implements setGamma.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setGamma(int gamma) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1894,6 +2863,15 @@ int UVCCamera::setGamma(int gamma) {
 }
 
 // ガンマの現在値を取得
+/**
+ * \brief Implements getGamma.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getGamma() {
 	ENTER();
 	if (mPUSupports & PU_GAMMA) {
@@ -1911,6 +2889,15 @@ int UVCCamera::getGamma() {
 
 //======================================================================
 // 彩度調整
+/**
+ * \brief Implements updateSaturationLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateSaturationLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1921,6 +2908,15 @@ int UVCCamera::updateSaturationLimit(int &min, int &max, int &def) {
 }
 
 // 彩度を設定
+/**
+ * \brief Implements setSaturation.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setSaturation(int saturation) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1931,6 +2927,15 @@ int UVCCamera::setSaturation(int saturation) {
 }
 
 // 彩度の現在値を取得
+/**
+ * \brief Implements getSaturation.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getSaturation() {
 	ENTER();
 	if (mPUSupports & PU_SATURATION) {
@@ -1947,6 +2952,15 @@ int UVCCamera::getSaturation() {
 
 //======================================================================
 // 色相調整
+/**
+ * \brief Implements updateHueLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateHueLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1957,6 +2971,15 @@ int UVCCamera::updateHueLimit(int &min, int &max, int &def) {
 }
 
 // 色相を設定
+/**
+ * \brief Implements setHue.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setHue(int hue) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1967,6 +2990,15 @@ int UVCCamera::setHue(int hue) {
 }
 
 // 色相の現在値を取得
+/**
+ * \brief Implements getHue.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getHue() {
 	ENTER();
 	if (mPUSupports & PU_HUE) {
@@ -1983,6 +3015,15 @@ int UVCCamera::getHue() {
 
 //======================================================================
 // オート色相
+/**
+ * \brief Implements updateAutoHueLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateAutoHueLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1993,6 +3034,15 @@ int UVCCamera::updateAutoHueLimit(int &min, int &max, int &def) {
 }
 
 // オート色相をon/off
+/**
+ * \brief Implements setAutoHue.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setAutoHue(bool autoHue) {
 	ENTER();
 
@@ -2004,6 +3054,15 @@ int UVCCamera::setAutoHue(bool autoHue) {
 }
 
 // オート色相のon/off状態を取得
+/**
+ * \brief Implements getAutoHue.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 bool UVCCamera::getAutoHue() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -2018,6 +3077,15 @@ bool UVCCamera::getAutoHue() {
 
 //======================================================================
 // 電源周波数によるチラつき補正
+/**
+ * \brief Implements updatePowerlineFrequencyLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updatePowerlineFrequencyLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2028,6 +3096,15 @@ int UVCCamera::updatePowerlineFrequencyLimit(int &min, int &max, int &def) {
 }
 
 // 電源周波数によるチラつき補正を設定
+/**
+ * \brief Implements setPowerlineFrequency.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setPowerlineFrequency(int frequency) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2048,6 +3125,15 @@ int UVCCamera::setPowerlineFrequency(int frequency) {
 }
 
 // 電源周波数によるチラつき補正値を取得
+/**
+ * \brief Implements getPowerlineFrequency.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getPowerlineFrequency() {
 	ENTER();
 	if (mPUSupports & PU_POWER_LF) {
@@ -2062,6 +3148,15 @@ int UVCCamera::getPowerlineFrequency() {
 
 //======================================================================
 // ズーム(abs)調整
+/**
+ * \brief Implements updateZoomLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateZoomLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2072,6 +3167,15 @@ int UVCCamera::updateZoomLimit(int &min, int &max, int &def) {
 }
 
 // ズーム(abs)を設定
+/**
+ * \brief Implements setZoom.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setZoom(int zoom) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2082,6 +3186,15 @@ int UVCCamera::setZoom(int zoom) {
 }
 
 // ズーム(abs)の現在値を取得
+/**
+ * \brief Implements getZoom.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getZoom() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ZOOM_ABS) {
@@ -2098,6 +3211,15 @@ int UVCCamera::getZoom() {
 
 //======================================================================
 // ズーム(相対値)調整
+/**
+ * \brief Implements updateZoomRelLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateZoomRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2108,6 +3230,15 @@ int UVCCamera::updateZoomRelLimit(int &min, int &max, int &def) {
 }
 
 // ズーム(相対値)を設定
+/**
+ * \brief Implements setZoomRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setZoomRel(int zoom) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2120,6 +3251,15 @@ int UVCCamera::setZoomRel(int zoom) {
 }
 
 // ズーム(相対値)の現在値を取得
+/**
+ * \brief Implements getZoomRel.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getZoomRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ZOOM_REL) {
@@ -2138,6 +3278,15 @@ int UVCCamera::getZoomRel() {
 
 //======================================================================
 // digital multiplier調整
+/**
+ * \brief Implements updateDigitalMultiplierLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateDigitalMultiplierLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2148,6 +3297,15 @@ int UVCCamera::updateDigitalMultiplierLimit(int &min, int &max, int &def) {
 }
 
 // digital multiplierを設定
+/**
+ * \brief Implements setDigitalMultiplier.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setDigitalMultiplier(int multiplier) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2159,6 +3317,15 @@ int UVCCamera::setDigitalMultiplier(int multiplier) {
 }
 
 // digital multiplierの現在値を取得
+/**
+ * \brief Implements getDigitalMultiplier.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getDigitalMultiplier() {
 	ENTER();
 	if (mPUSupports & PU_DIGITAL_MULT) {
@@ -2176,6 +3343,15 @@ int UVCCamera::getDigitalMultiplier() {
 
 //======================================================================
 // digital multiplier limit調整
+/**
+ * \brief Implements updateDigitalMultiplierLimitLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateDigitalMultiplierLimitLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2186,6 +3362,15 @@ int UVCCamera::updateDigitalMultiplierLimitLimit(int &min, int &max, int &def) {
 }
 
 // digital multiplier limitを設定
+/**
+ * \brief Implements setDigitalMultiplierLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setDigitalMultiplierLimit(int multiplier_limit) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2197,6 +3382,15 @@ int UVCCamera::setDigitalMultiplierLimit(int multiplier_limit) {
 }
 
 // digital multiplier limitの現在値を取得
+/**
+ * \brief Implements getDigitalMultiplierLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getDigitalMultiplierLimit() {
 	ENTER();
 	if (mPUSupports & PU_DIGITAL_LIMIT) {
@@ -2214,6 +3408,15 @@ int UVCCamera::getDigitalMultiplierLimit() {
 
 //======================================================================
 // AnalogVideoStandard
+/**
+ * \brief Implements updateAnalogVideoStandardLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateAnalogVideoStandardLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2223,6 +3426,15 @@ int UVCCamera::updateAnalogVideoStandardLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Implements setAnalogVideoStandard.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setAnalogVideoStandard(int standard) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2233,6 +3445,15 @@ int UVCCamera::setAnalogVideoStandard(int standard) {
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Implements getAnalogVideoStandard.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getAnalogVideoStandard() {
 	ENTER();
 	if (mPUSupports & PU_AVIDEO_STD) {
@@ -2250,6 +3471,15 @@ int UVCCamera::getAnalogVideoStandard() {
 
 //======================================================================
 // AnalogVideoLoackStatus
+/**
+ * \brief Implements updateAnalogVideoLockStateLimit.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::updateAnalogVideoLockStateLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2259,6 +3489,15 @@ int UVCCamera::updateAnalogVideoLockStateLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Implements setAnalogVideoLockState.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::setAnalogVideoLockState(int state) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2269,6 +3508,15 @@ int UVCCamera::setAnalogVideoLockState(int state) {
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Implements getAnalogVideoLockState.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCCamera::getAnalogVideoLockState() {
 	ENTER();
 	if (mPUSupports & PU_AVIDEO_LOCK) {

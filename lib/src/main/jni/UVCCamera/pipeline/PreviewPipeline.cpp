@@ -144,6 +144,32 @@ int PreviewPipeline::setCaptureDisplay(ANativeWindow *capture_window) {
 /**
  * the actual function for capturing
  */
+
+/**
+ * \brief Implements PreviewPipeline component for UVCCamera native library.
+ *
+ * Provides implementation details for PreviewPipeline within the UVCCamera native library.
+ *
+ * Exports:
+ *     PreviewPipeline: Main component for PreviewPipeline
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
+/**
+ * \brief Implements do_capture.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void PreviewPipeline::do_capture(JNIEnv *env) {
 
 //	ENTER();

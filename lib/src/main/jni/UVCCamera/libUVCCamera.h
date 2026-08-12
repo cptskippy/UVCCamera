@@ -22,6 +22,28 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
+/**
+ * \brief Common includes for UVCCamera native layer.
+ *
+ * Provides the core JNI, libusb, libuvc and utility base headers required
+ * by all UVCCamera native components. This header centralizes the native
+ * dependencies so that UVCCamera, UVCPreview and pipeline modules share a
+ * consistent build surface.
+ *
+ * Exports:
+ *     None — inclusion-only header.
+ *
+ * Dependencies:
+ *     - jni.h: JNI bridge types for Android.
+ *     - libusb.h: USB device access.
+ *     - libuvc.h: UVC protocol implementation.
+ *     - utilbase.h: Internal utility base definitions.
+ *
+ * Architecture Note:
+ *     All native source files include this header to guarantee a uniform
+ *     native environment. Do not add platform-specific includes here.
+ */
+
 #ifndef LIBUVCCAMERA_H_
 #define LIBUVCCAMERA_H_
 

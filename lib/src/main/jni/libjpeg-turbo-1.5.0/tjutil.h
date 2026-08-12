@@ -26,6 +26,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \brief Utility functions for TurboJPEG.
+ *
+ * Provides helper macros and timing function used internally by TurboJPEG.
+ *
+ * Exports:
+ *     gettime: Return current time in seconds
+ *     min: Minimum macro
+ *     max: Maximum macro
+ *
+ * Dependencies:
+ *     - Standard C library
+ *
+ * Architecture Note:
+ *     This header contains small utilities shared between TurboJPEG and libjpeg-turbo.
+ *     The gettime function provides high-resolution timing for performance tests.
+ */
+
 #ifdef _WIN32
 	#ifndef __MINGW32__
 		#include <stdio.h>

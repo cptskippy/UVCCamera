@@ -42,6 +42,32 @@
  * @brief Tools for creating, managing and consuming video streams
  */
 
+/**
+ * \brief Manage UVC video streaming, frame acquisition, and stream handles.
+ *
+ * Provides public API for starting/stopping streaming, configuring stream controls,
+ * and retrieving frames via callbacks or polling.
+ *
+ * Exports:
+ *   uvc_get_stream_ctrl_format_size: Configure stream control by format/size/fps
+ *   uvc_probe_stream_ctrl: Probe supported stream configurations
+ *   uvc_start_streaming: Start streaming with callback
+ *   uvc_stop_streaming: Stop streaming
+ *   uvc_stream_open_ctrl: Open stream handle with control
+ *   uvc_stream_start/uvc_stream_stop/uvc_stream_close: Stream handle lifecycle
+ *   uvc_stream_get_frame: Poll frame from stream handle
+ *
+ * Dependencies:
+ *   - libusb: ISO/Bulk transfers for video data
+ *   - libuvc/libuvc_internal.h: Internal streaming structures
+ *   - libuvc/libuvc.h: Public API
+ *
+ * Architecture Note:
+ *   Streaming uses libusb asynchronous transfers with a background handler thread.
+ *   Frames are assembled from USB packets and delivered via callbacks. Stream handles
+ *   allow multiple consumers per device. Not thread-safe for concurrent start/stop.
+ */
+
 #define LOCAL_DEBUG 0
 
 #define LOG_TAG "libuvc/stream"

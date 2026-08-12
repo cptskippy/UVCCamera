@@ -28,6 +28,26 @@ import android.util.Log;
  * テクスチャへOpenGL|ESで描画するためのオフスクリーン描画クラス
  * テクスチャをカラーバッファとしてFBOに割り当てる
  */
+/**
+ * Manages TextureOffscreen functionality.
+ *
+ * Responsibility: Provides core TextureOffscreen operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of TextureOffscreen
+ */
+
 public class TextureOffscreen {
 	private static final boolean DEBUG = false;
 	private static final String TAG = "TextureOffscreen";
@@ -205,6 +225,26 @@ public class TextureOffscreen {
 	 * オフスクリーン描画用のレンダリングバッファに切り替える
 	 * Viewportも変更になるので必要であればunbind後にViewportの設定をすること
 	 */
+/**
+ * Bind.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void bind() {
 //		if (DEBUG) Log.v(TAG, "bind:");
 		GLES20.glActiveTexture(TEX_UNIT);
@@ -216,6 +256,26 @@ public class TextureOffscreen {
 	/**
 	 * デフォルトのレンダリングバッファに戻す
 	 */
+/**
+ * Unbind.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void unbind() {
 //		if (DEBUG) Log.v(TAG, "unbind:");
 		GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
@@ -228,6 +288,26 @@ public class TextureOffscreen {
 	 * get copy of texture matrix
 	 * @return
 	 */
+/**
+ * Gettexmatrix.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public float[] getTexMatrix() {
 		System.arraycopy(mTexMatrix, 0, mResultMatrix, 0, 16);
 		return mResultMatrix;
@@ -237,6 +317,26 @@ public class TextureOffscreen {
 	 * テクスチャ座標変換行列を取得(内部配列を直接返すので変更時は要注意)
 	 * @return
 	 */
+/**
+ * Getrawtexmatrix.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public float[] getRawTexMatrix() {
 		return mTexMatrix;
 	}
@@ -246,6 +346,26 @@ public class TextureOffscreen {
 	 * 領域チェックしていないのでoffset位置から16個以上確保しておくこと
 	 * @param matrix
 	 */
+/**
+ * Gettexmatrix.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void getTexMatrix(final float[] matrix, final int offset) {
 		System.arraycopy(mTexMatrix, 0, matrix, offset, mTexMatrix.length);
 	}
@@ -255,6 +375,26 @@ public class TextureOffscreen {
 	 * このオフスクリーンへ書き込んだ画像をテクスチャとして使って他の描画を行う場合に使用できる
 	 * @return
 	 */
+/**
+ * Gettexture.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int getTexture() {
 		return mFBOTextureName;
 	}
@@ -408,6 +548,26 @@ public class TextureOffscreen {
 	 * get dimension(width) of this offscreen
 	 * @return
 	 */
+/**
+ * Getwidth.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int getWidth() {
 		return mWidth;
 	}
@@ -416,6 +576,26 @@ public class TextureOffscreen {
 	 * get dimension(height) of this offscreen
 	 * @return
 	 */
+/**
+ * Getheight.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int getHeight() {
 		return mHeight;
 	}
@@ -424,6 +604,26 @@ public class TextureOffscreen {
 	 * get backing texture dimension(width) of this offscreen
 	 * @return
 	 */
+/**
+ * Gettexwidth.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int getTexWidth() {
 		return mTexWidth;
 	}
@@ -432,13 +632,73 @@ public class TextureOffscreen {
 	 * get backing texture dimension(height) of this offscreen
 	 * @return
 	 */
+/**
+ * Gettexheight.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int getTexHeight() {
 		return mTexHeight;
 	}
+/**
+ * Gettextarget.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	
 	public int getTexTarget() {
 		return TEX_TARGET;
 	}
+/**
+ * Gettexunit.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	
 	public int getTexUnit() {
 		return TEX_UNIT;

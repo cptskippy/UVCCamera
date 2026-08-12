@@ -28,35 +28,84 @@ import java.util.Locale;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * Represents a video size and frame interval configuration for UVC devices.
+ *
+ * Encapsulates width, height, format type, frame type, and frame rate intervals
+ * as reported by native UVC/libuvc. Used for selecting preview/capture resolutions
+ * and frame rates. Objects are created, configured with intervals, and may be
+ * parceled for IPC. Lifecycle: create → configure intervals → update frame rates →
+ * use → parcel/unparcel.
+ *
+ * Properties:
+ *     type: Native uvc_raw_format_t value; 9999 indicates still image.
+ *     frame_type: Native raw_frame_t value for androUSB; unused by libuvc.
+ *     index: Format index from device enumeration.
+ *     width: Frame width in pixels.
+ *     height: Frame height in pixels.
+ *     frameIntervalType: Interval description type; -1 = none, 0 = min/max/step, >0 = count.
+ *     frameIntervalIndex: Current selected frame rate index into fps array.
+ *     intervals: Raw interval values in 100ns units; null if not applicable.
+ *     fps: Computed frame rates in frames per second derived from intervals.
+ *
+ * Thread Safety:
+ *     Not thread-safe. Instances should be confined to a single thread or externally synchronized.
+ *     Parcelable methods assume single-threaded access.
+ */
 public class Size implements Parcelable {
 	//
 	/**
-	 * native側のuvc_raw_format_tの値, こっちは主にlibuvc用
-	 * 9999 is still image
+	 * Native uvc_raw_format_t value for the video format. 9999 indicates still image.
 	 */
 	public int type;
 	/**
-	 * native側のraw_frame_tの値, androusb用,
-	 * libuvcは対応していない
+	 * Native raw_frame_t value used by androUSB. Not used by libuvc.
 	 */
 	public int frame_type;
+	/**
+	 * Format index from device enumeration.
+	 */
 	public int index;
+	/**
+	 * Frame width in pixels.
+	 */
 	public int width;
+	/**
+	 * Frame height in pixels.
+	 */
 	public int height;
+	/**
+	 * Interval description type. -1 = none, 0 = min/max/step range, >0 = explicit count.
+	 */
 	public int frameIntervalType;
+	/**
+	 * Current selected frame rate index into the fps array.
+	 */
 	public int frameIntervalIndex;
+	/**
+	 * Raw interval values in 100ns units. Null if intervals are not applicable.
+	 */
 	public int[] intervals;
-	// ここ以下はframeIntervalTypeとintervalsから#updateFrameRateで計算する
+	/**
+	 * Computed frame rates in frames per second derived from intervals.
+	 */
 	public float[] fps;
 	private String frameRates;
 
 	/**
-	 * コンストラクタ
-	 * @param _type native側のraw_format_tの値, ただし9999は静止画
-	 * @param _frame_type native側のraw_frame_tの値
-	 * @param _index
-	 * @param _width
-	 * @param _height
+	 * Create a Size with basic dimensions and no frame intervals.
+	 *
+	 * Args:
+	 *     _type: Native raw_format_t value; 9999 indicates still image.
+	 *     _frame_type: Native raw_frame_t value for androUSB.
+	 *     _index: Format index.
+	 *     _width: Width in pixels.
+	 *     _height: Height in pixels.
+	 *
+	 * Side Effects:
+	 *     - Initializes fields to provided values.
+	 *     - Sets frameIntervalType to -1 and intervals to null.
+	 *     - Calls updateFrameRate() to compute fps and frameRates.
 	 */
 	public Size(final int _type, final int _frame_type, final int _index, final int _width, final int _height) {
 		type = _type;
@@ -71,14 +120,25 @@ public class Size implements Parcelable {
 	}
 
 	/**
-	 * コンストラクタ
-	 * @param _type native側のraw_format_tの値, ただし9999は静止画
-	 * @param _frame_type native側のraw_frame_tの値
-	 * @param _index
-	 * @param _width
-	 * @param _height
-	 * @param _min_intervals
-	 * @param _max_intervals
+	 * Create a Size with min/max/step frame interval range.
+	 *
+	 * Args:
+	 *     _type: Native raw_format_t value; 9999 indicates still image.
+	 *     _frame_type: Native raw_frame_t value.
+	 *     _index: Format index.
+	 *     _width: Width in pixels.
+	 *     _height: Height in pixels.
+	 *     _min_intervals: Minimum interval in 100ns units.
+	 *     _max_intervals: Maximum interval in 100ns units.
+	 *     _step: Step between intervals in 100ns units.
+	 *
+	 * Side Effects:
+	 *     - Initializes fields and builds intervals array with min/max/step.
+	 *     - Calls updateFrameRate() to populate fps.
+	 *
+	 * Code Paths:
+	 *     1. Always builds intervals[0]=min, intervals[1]=max, intervals[2]=step.
+	 *     2. frameIntervalType set to 0 to indicate range mode.
 	 */
 	public Size(final int _type, final int _frame_type, final int _index, final int _width, final int _height, final int _min_intervals, final int _max_intervals, final int _step) {
 		type = _type;
@@ -96,14 +156,24 @@ public class Size implements Parcelable {
 	}
 
 	/**
-	 * コンストラクタ
-	 * @param _type native側のraw_format_tの値, ただし9999は静止画
-	 * @param _frame_type native側のraw_frame_tの値
-	 * @param _index
-	 * @param _width
-	 * @param _height
-     * @param _intervals
-     */
+	 * Create a Size with explicit frame intervals.
+	 *
+	 * Args:
+	 *     _type: Native raw_format_t value; 9999 indicates still image.
+	 *     _frame_type: Native raw_frame_t value.
+	 *     _index: Format index.
+	 *     _width: Width in pixels.
+	 *     _height: Height in pixels.
+	 *     _intervals: Array of interval values in 100ns units; null or empty disables intervals.
+	 *
+	 * Side Effects:
+	 *     - Copies intervals if present; sets frameIntervalType to array length.
+	 *     - Calls updateFrameRate().
+	 *
+	 * Code Paths:
+	 *     1. If _intervals is non-null and length >0 → frameIntervalType = length, intervals copied.
+	 *     2. Otherwise → frameIntervalType = -1, intervals = null.
+	 */
 	public Size(final int _type, final int _frame_type, final int _index, final int _width, final int _height, final int[] _intervals) {
 		type = _type;
 		frame_type = _frame_type;
@@ -124,8 +194,14 @@ public class Size implements Parcelable {
 	}
 
 	/**
-	 * コピーコンストラクタ
-	 * @param other
+	 * Create a Size by copying another Size instance.
+	 *
+	 * Args:
+	 *     other: Source Size to copy.
+	 *
+	 * Side Effects:
+	 *     - Copies all fields including deep copy of intervals.
+	 *     - Calls updateFrameRate() to recompute fps and frameRates.
 	 */
 	public Size(final Size other) {
 		type = other.type;
@@ -167,6 +243,24 @@ public class Size implements Parcelable {
 		updateFrameRate();
 	}
 
+	/**
+	 * Replace this Size's contents with another Size.
+	 *
+	 * Args:
+	 *     other: Source Size to copy from; null is ignored.
+	 *
+	 * Returns:
+	 *     This Size instance for chaining.
+	 *
+	 * Side Effects:
+	 *     - Overwrites all fields with values from other.
+	 *     - Deep copies intervals array.
+	 *     - Calls updateFrameRate().
+	 *
+	 * Code Paths:
+	 *     1. If other is null → returns this unchanged.
+	 *     2. If other is non-null → copies fields, updates frame rates.
+	 */
 	public Size set(final Size other) {
 		if (other != null) {
 			type = other.type;
@@ -188,6 +282,19 @@ public class Size implements Parcelable {
 		return this;
 	}
 
+	/**
+	 * Get the current frame rate for the selected interval index.
+	 *
+	 * Returns:
+	 *     Frame rate in frames per second for frameIntervalIndex.
+	 *
+	 * Raises:
+	 *     IllegalStateException: If fps is not ready or frameIntervalIndex is out of bounds.
+	 *
+	 * Code Paths:
+	 *     1. If frameIntervalIndex is within fps bounds → returns fps[frameIntervalIndex].
+	 *     2. Otherwise → throws IllegalStateException.
+	 */
 	public float getCurrentFrameRate() throws IllegalStateException {
 		final int n = fps != null ? fps.length : 0;
 		if ((frameIntervalIndex >= 0) && (frameIntervalIndex < n)) {
@@ -196,6 +303,19 @@ public class Size implements Parcelable {
 		throw new IllegalStateException("unknown frame rate or not ready");
 	}
 
+	/**
+	 * Select the frame rate closest to the requested value.
+	 *
+	 * Args:
+	 *     frameRate: Desired frame rate in frames per second.
+	 *
+	 * Side Effects:
+	 *     - Updates frameIntervalIndex to first fps entry <= frameRate.
+	 *
+	 * Code Paths:
+	 *     1. Iterates fps array; sets index to first entry <= frameRate.
+	 *     2. If no entry satisfies condition → frameIntervalIndex becomes -1.
+	 */
 	public void setCurrentFrameRate(final float frameRate) {
 		// 一番近いのを選ぶ
 		int index = -1;
@@ -209,11 +329,27 @@ public class Size implements Parcelable {
 		frameIntervalIndex = index;
 	}
 
+	/**
+	 * Describe the contents for Parcelable.
+	 *
+	 * Returns:
+	 *     0 indicating no special objects.
+	 */
 	@Override
 	public int describeContents() {
 		return 0;
 	}
 
+	/**
+	 * Write this Size to a Parcel.
+	 *
+	 * Args:
+	 *     dest: Parcel to write into.
+	 *     flags: Parcel flags.
+	 *
+	 * Side Effects:
+	 *     - Writes fields to dest in defined order.
+	 */
 	@Override
 	public void writeToParcel(final Parcel dest, final int flags) {
 		dest.writeInt(type);
@@ -228,6 +364,20 @@ public class Size implements Parcelable {
 		}
 	}
 
+	/**
+	 * Recompute fps array and frameRates string from intervals.
+	 *
+	 * Side Effects:
+	 *     - Populates fps array based on frameIntervalType.
+	 *     - Updates frameRates string representation.
+	 *     - Resets frameIntervalIndex to 0 if out of bounds.
+	 *
+	 * Code Paths:
+	 *     1. If frameIntervalType >0 → fps[i] = 10,000,000 / intervals[i].
+	 *     2. If frameIntervalType ==0 → generate fps from min/max/step range.
+	 *     3. If step <=0 → generate fps by incrementing 1.0 fps.
+	 *     4. On exception → fps set to null.
+	 */
 	public void updateFrameRate() {
 		final int n = frameIntervalType;
 		if (n > 0) {
@@ -279,6 +429,15 @@ public class Size implements Parcelable {
 		}
 	}
 
+	/**
+	 * Return a human-readable representation of this Size.
+	 *
+	 * Returns:
+	 *     String containing width x height @ frame rate with type, frame, index, and frame rates.
+	 *
+	 * Side Effects:
+	 *     - Calls getCurrentFrameRate(); swallows exceptions and uses 0.0f on error.
+	 */
 	@Override
 	public String toString() {
 		float frame_rate = 0.0f;
@@ -289,6 +448,9 @@ public class Size implements Parcelable {
 		return String.format(Locale.US, "Size(%dx%d@%4.1f,type:%d,frame:%d,index:%d,%s)", width, height, frame_rate, type, frame_type, index, frameRates);
 	}
 
+	/**
+	 * Parcelable creator for Size instances.
+	 */
 	public static final Creator<Size> CREATOR = new Parcelable.Creator<Size>() {
 		@Override
 		public Size createFromParcel(final Parcel source) {

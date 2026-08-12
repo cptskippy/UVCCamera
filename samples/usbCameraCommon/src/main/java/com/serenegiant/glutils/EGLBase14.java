@@ -67,6 +67,43 @@ import com.serenegiant.utils.BuildCheck;
 		
 		@Override
 		@SuppressLint("NewApi")
+		/**
+		 * Getnativehandle.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Getnativehandle.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public long getNativeHandle() {
 			return eglContext != null ?
 				(BuildCheck.isLollipop()
@@ -74,6 +111,43 @@ import com.serenegiant.utils.BuildCheck;
 		}
 	
 		@Override
+		/**
+		 * Geteglcontext.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Geteglcontext.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public Object getEGLContext() {
 			return eglContext;
 		}
@@ -128,6 +202,43 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
+		/**
+		 * Makecurrent.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Makecurrent.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void makeCurrent() {
 			mEglBase.makeCurrent(mEglSurface);
 			if (mEglBase.getGlVersion() >= 2) {
@@ -142,14 +253,150 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
+		/**
+		 * Swap.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Swap.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void swap() {
 			mEglBase.swap(mEglSurface);
 		}
 
 		@Override
+		/**
+		 * Swap.
+		 *
+		 * 
+		Args:
+		    presentationTimeNs: Parameter presentationTimeNs controls behavior.
+		Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Swap.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void swap(final long presentationTimeNs) {
 			mEglBase.swap(mEglSurface, presentationTimeNs);
 		}
+
+		/**
+
+		 * Setpresentationtime.
+
+		 *
+
+		 * 
+
+		Args:
+
+		    presentationTimeNs: Parameter presentationTimeNs controls behavior.
+
+		Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Setpresentationtime.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 		public void setPresentationTime(final long presentationTimeNs) {
 			EGLExt.eglPresentationTimeANDROID(mEglBase.mEglDisplay,
@@ -157,11 +404,85 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
+		/**
+		 * Getcontext.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Getcontext.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public IContext getContext() {
 			return mEglBase.getContext();
 		}
 
 		@Override
+		/**
+		 * Isvalid.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Isvalid.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public boolean isValid() {
 			return (mEglSurface != null)
 				&& (mEglSurface != EGL14.EGL_NO_SURFACE)
@@ -170,6 +491,43 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
+		/**
+		 * Release.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void release() {
 //			if (DEBUG) Log.v(TAG, "EglSurface:release:");
 			mEglBase.makeDefault();
@@ -197,6 +555,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * 関連するリソースを破棄する
 	 */
 	@Override
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     public void release() {
 //		if (DEBUG) Log.v(TAG, "release:");
         if (mEglDisplay != EGL14.EGL_NO_DISPLAY) {
@@ -215,6 +593,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * @return
 	 */
 	@Override
+/**
+ * Createfromsurface.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public EglSurface createFromSurface(final Object nativeWindow) {
 //		if (DEBUG) Log.v(TAG, "createFromSurface:");
 		final EglSurface eglSurface = new EglSurface(this, nativeWindow);
@@ -230,6 +628,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * @return
 	 */
 	@Override
+/**
+ * Createoffscreen.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public EglSurface createOffscreen(final int width, final int height) {
 //		if (DEBUG) Log.v(TAG, "createOffscreen:");
 		final EglSurface eglSurface = new EglSurface(this, width, height);
@@ -242,6 +660,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * @param what
 	 * @return
 	 */
+/**
+ * Querystring.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
  	public String queryString(final int what) {
 		return EGL14.eglQueryString(mEglDisplay, what);
 	}
@@ -251,6 +689,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * @return 1, 2または3
 	 */
 	@Override
+/**
+ * Getglversion.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int getGlVersion() {
 		return mGlVersion;
 	}
@@ -262,6 +720,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * @return
 	 */
 	@Override
+/**
+ * Getcontext.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public Context getContext() {
 		return mContext;
 	}
@@ -271,6 +749,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * @return
 	 */
 	@Override
+/**
+ * Getconfig.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public Config getConfig() {
 		return mEglConfig;
 	}
@@ -279,6 +777,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * EGLレンダリングコンテキストとスレッドの紐付けを解除する
 	 */
 	@Override
+/**
+ * Makedefault.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void makeDefault() {
 //		if (DEBUG) Log.v(TAG, "makeDefault:");
         if (!EGL14.eglMakeCurrent(mEglDisplay,
@@ -295,6 +813,26 @@ import com.serenegiant.utils.BuildCheck;
 	 * eglWaitNative: GPU側の描画処理が終了するまで実行をブロックする
 	 */
 	@Override
+/**
+ * Sync.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void sync() {
 		EGL14.eglWaitGL();	// GLES20.glFinish()と同様の効果
 		EGL14.eglWaitNative(EGL14.EGL_CORE_NATIVE_ENGINE);

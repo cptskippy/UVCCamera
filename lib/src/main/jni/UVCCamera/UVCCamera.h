@@ -22,6 +22,28 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
+/**
+ * \brief UVCCamera native controller for UVC devices.
+ *
+ * Provides high-level control over UVC device connection, preview
+ * configuration, and camera parameter manipulation. Wraps libuvc and
+ * libusb operations with a C++ API suitable for JNI bridging.
+ *
+ * Exports:
+ *     UVCCamera: Main camera controller class.
+ *     control_value_t: Control value descriptor.
+ *
+ * Dependencies:
+ *     - libUVCCamera.h
+ *     - UVCStatusCallback.h
+ *     - UVCButtonCallback.h
+ *     - UVCPreview.h
+ *
+ * Architecture Note:
+ *     UVCCamera owns a UVCPreview instance and manages device handle
+ *     lifecycle. All camera operations go through this class.
+ */
+
 #pragma interface
 
 #ifndef UVCCAMERA_H_
@@ -77,6 +99,11 @@
 #define PU_AVIDEO_LOCK		0x020000	// D17: Analog Video Lock Status
 #define PU_CONTRAST_AUTO	0x040000	// D18: Contrast, Auto
 
+/**
+ * \brief Descriptor for a UVC control value range.
+ *
+ * Holds min, max, default and current values for camera controls.
+ */
 typedef struct control_value {
 	int res;	// unused
 	int min;
@@ -107,6 +134,21 @@ typedef uvc_error_t (*paramset_func_i8u8)(uvc_device_handle_t *devh, int8_t valu
 typedef uvc_error_t (*paramset_func_i8u8u8)(uvc_device_handle_t *devh, int8_t value1, uint8_t value2, uint8_t value3);
 typedef uvc_error_t (*paramset_func_i32i32)(uvc_device_handle_t *devh, int32_t value1, int32_t value2);
 
+/**
+ * \brief High-level controller for UVC cameras.
+ *
+ * Manages device connection, preview configuration, and camera control
+ * parameters. Owns a UVCPreview instance for streaming.
+ *
+ * Lifecycle:
+ *     Construct → connect → configure → startPreview → stopPreview → release → destroy.
+ *
+ * State Machine:
+ *     Disconnected → Connected → Previewing → Disconnected
+ *
+ * Thread Safety:
+ *     Not thread-safe. All methods must be called from the same thread.
+ */
 class UVCCamera {
 	char *mUsbFs;
 	uvc_context_t *mContext;
@@ -178,21 +220,133 @@ class UVCCamera {
 	int internalSetCtrlValue(control_value_t &values, uint32_t value,
 		paramget_func_u32 get_func, paramset_func_u32 set_func);
 public:
+	/**
+	 * \brief Construct UVCCamera controller.
+	 *
+	 * Initializes internal state. Device connection happens via connect().
+	 */
 	UVCCamera();
+	/**
+	 * \brief Destroy UVCCamera controller.
+	 *
+	 * Releases device and preview resources.
+	 */
 	~UVCCamera();
 
+	/**
+	 * \brief Connect to a UVC device.
+	 *
+	 * Opens USB device with given identifiers and initializes libuvc context.
+	 *
+	 * \param[in] vid Vendor ID.
+	 * \param[in] pid Product ID.
+	 * \param[in] fd File descriptor.
+	 * \param[in] busnum USB bus number.
+	 * \param[in] devaddr Device address.
+	 * \param[in] usbfs USB filesystem path.
+	 * \return 0 on success, negative error code on failure.
+	 *
+	 * \pre No device currently connected.
+	 * \post Device handle is open and ready for configuration.
+	 *
+	 * Side Effects:
+	 *     - Opens USB device.
+	 *     - Allocates preview instance.
+	 *
+	 * Code Paths:
+	 *     1. Valid parameters → opens device → returns 0.
+	 *     2. Open fails → returns error.
+	 */
 	int connect(int vid, int pid, int fd, int busnum, int devaddr, const char *usbfs);
+	/**
+	 * \brief Release device resources.
+	 *
+	 * Closes device handle and stops preview.
+	 *
+	 * \return 0 on success.
+	 *
+	 * Side Effects:
+	 *     - Closes USB device.
+	 *     - Releases preview.
+	 */
 	int release();
 
+	/**
+	 * \brief Set status callback for Java.
+	 *
+	 * \param[in] env JNI environment.
+	 * \param[in] status_callback_obj Java callback object.
+	 * \return 0 on success.
+	 */
 	int setStatusCallback(JNIEnv *env, jobject status_callback_obj);
+	/**
+	 * \brief Set button callback for Java.
+	 *
+	 * \param[in] env JNI environment.
+	 * \param[in] button_callback_obj Java callback object.
+	 * \return 0 on success.
+	 */
 	int setButtonCallback(JNIEnv *env, jobject button_callback_obj);
 
+	/**
+	 * \brief Get supported preview sizes as string.
+	 *
+	 * \return Pointer to sizes string, or NULL on error.
+	 * \warning Caller must free returned pointer.
+	 */
 	char *getSupportedSize();
+	/**
+	 * \brief Configure preview size and fps.
+	 *
+	 * \param[in] width Preview width.
+	 * \param[in] height Preview height.
+	 * \param[in] min_fps Minimum fps.
+	 * \param[in] max_fps Maximum fps.
+	 * \param[in] mode Stream mode.
+	 * \param[in] bandwidth Bandwidth multiplier.
+	 * \return 0 on success.
+	 */
 	int setPreviewSize(int width, int height, int min_fps, int max_fps, int mode, float bandwidth = DEFAULT_BANDWIDTH);
+	/**
+	 * \brief Set native window for preview.
+	 *
+	 * \param[in] preview_window Target window.
+	 * \return 0 on success.
+	 */
 	int setPreviewDisplay(ANativeWindow *preview_window);
+	/**
+	 * \brief Set frame callback for capture.
+	 *
+	 * \param[in] env JNI environment.
+	 * \param[in] frame_callback_obj Java callback.
+	 * \param[in] pixel_format Desired pixel format.
+	 * \return 0 on success.
+	 */
 	int setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format);
+	/**
+	 * \brief Start preview streaming.
+	 *
+	 * \return 0 on success, negative if already running.
+	 *
+	 * Side Effects:
+	 *     - Starts preview thread.
+	 */
 	int startPreview();
+	/**
+	 * \brief Stop preview streaming.
+	 *
+	 * \return 0 on success.
+	 *
+	 * Side Effects:
+	 *     - Stops preview thread.
+	 */
 	int stopPreview();
+	/**
+	 * \brief Set native window for capture.
+	 *
+	 * \param[in] capture_window Target window.
+	 * \return 0 on success.
+	 */
 	int setCaptureDisplay(ANativeWindow *capture_window);
 
 	int getCtrlSupports(uint64_t *supports);

@@ -42,6 +42,28 @@
  * @brief Interpretation of devices, error codes and negotiated stream parameters
  */
 
+/**
+ * \brief Provide diagnostic printing and error string utilities.
+ *
+ * Implements uvc_print_* functions for debugging device, configuration, and stream
+ * parameters, plus error code to string conversion.
+ *
+ * Exports:
+ *   uvc_perror, uvc_strerror: Error message utilities
+ *   uvc_print_diag, uvc_print_stream_ctrl: Diagnostic printers
+ *   uvc_print_device_desc, uvc_print_configuration_desc, uvc_print_interface_desc, uvc_print_endpoint_desc
+ *   uvc_print_format_desc, uvc_print_format_desc_one
+ *
+ * Dependencies:
+ *   - stdio: Output formatting
+ *   - libuvc/libuvc.h: Public types
+ *
+ * Architecture Note:
+ *   Diagnostic functions are intended for debugging and logging. They do not modify
+ *   device state. Output is formatted for human consumption; parsing programmatically
+ *   is not supported.
+ */
+
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"
 

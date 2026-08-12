@@ -32,6 +32,26 @@ import android.view.SurfaceHolder;
  * this will deprecate soon because I don't use this now
  */
 @Deprecated
+/**
+ * Manages RenderHandler functionality.
+ *
+ * Responsibility: Provides core RenderHandler operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of RenderHandler
+ */
+
 public final class RenderHandler extends Handler {
 //	private static final boolean DEBUG = false;	// FIXME set false on release
 	private static final String TAG = "RenderHandler";
@@ -43,11 +63,51 @@ public final class RenderHandler extends Handler {
 
 	private int mTexId = -1;
 	private final RenderThread mThread;
+/**
+ * Createhandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static RenderHandler createHandler() {
 //		if (DEBUG) Log.v(TAG, "createHandler:");
 		return createHandler("RenderThread");
 	}
+/**
+ * Createhandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static final RenderHandler createHandler(final String name) {
 //		if (DEBUG) Log.v(TAG, "createHandler:name=" + name);
@@ -55,6 +115,26 @@ public final class RenderHandler extends Handler {
 		thread.start();
 		return thread.getHandler();
 	}
+/**
+ * Seteglcontext.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public final void setEglContext(final EGLBase.IContext sharedContext,
 		final int tex_id, final Object surface, final boolean isRecordable) {
@@ -67,22 +147,155 @@ public final class RenderHandler extends Handler {
 		sendMessage(obtainMessage(MSG_RENDER_SET_GLCONTEXT,
 			isRecordable ? 1 : 0, 0, new ContextParams(sharedContext, surface)));
 	}
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public final void draw() {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, mTexId, 0, null));
 	}
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public final void draw(final int tex_id) {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, tex_id, 0, null));
 	}
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public final void draw(final float[] tex_matrix) {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, mTexId, 0, tex_matrix));
 	}
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public final void draw(final int tex_id, final float[] tex_matrix) {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, tex_id, 0, tex_matrix));
 	}
+
+	/**
+
+	 * Isvalid.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Isvalid.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public boolean isValid() {
 		synchronized (mThread.mSync) {
@@ -94,6 +307,26 @@ public final class RenderHandler extends Handler {
 			return mThread.mSurface != null && mThread.mSurface.isValid();
 		}
 	}
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public final void release() {
 //		if (DEBUG) Log.i(TAG, "release:");
@@ -103,6 +336,26 @@ public final class RenderHandler extends Handler {
 	}
 
 	@Override
+/**
+ * Handlemessage.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public final void handleMessage(final Message msg) {
 		switch (msg.what) {
 		case MSG_RENDER_SET_GLCONTEXT:
@@ -157,6 +410,26 @@ public final class RenderHandler extends Handler {
     	public RenderThread(final String name) {
     		super(name);
     	}
+/**
+ * Gethandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
     	public final RenderHandler getHandler() {
             synchronized (mSync) {
@@ -174,6 +447,26 @@ public final class RenderHandler extends Handler {
     	 * @param shardContext
     	 * @param surface
     	 */
+/**
+ * Handleseteglcontext.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     	public final void handleSetEglContext(final EGLBase.IContext shardContext,
     		final Object surface, final boolean isRecordable) {
 //    		if (DEBUG) Log.i(TAG_THREAD, "setEglContext:");
@@ -205,6 +498,26 @@ public final class RenderHandler extends Handler {
     	 * @param tex_id
     	 * @param tex_matrix
     	 */
+/**
+ * Handledraw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     	public void handleDraw(final int tex_id, final float[] tex_matrix) {
 //    		if (DEBUG) Log.i(TAG_THREAD, "draw");
     		if (tex_id >= 0 && mTargetSurface != null) {
@@ -215,6 +528,26 @@ public final class RenderHandler extends Handler {
     	}
 
     	@Override
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     	public final void run() {
 //			if (DEBUG) Log.v(TAG_THREAD, "started");
             Looper.prepare();

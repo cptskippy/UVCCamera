@@ -33,6 +33,45 @@ import android.view.TextureView;
  * you can show this view in the center of screen and keep the aspect ratio of content
  * XXX it is better that can set the aspect ratio as xml property
  */
+/**
+ * Manages AspectRatioTextureView functionality.
+ *
+ * Responsibility: Provides core AspectRatioTextureView operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mRequestedAspect: Field mRequestedAspect
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of AspectRatioTextureView
+ */
+/**
+ * Manages AspectRatioTextureView functionality.
+ *
+ * Responsibility: Provides core AspectRatioTextureView operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of AspectRatioTextureView
+ */
+
+
 public class AspectRatioTextureView extends TextureView	// API >= 14
 	implements IAspectRatioView {
 
@@ -55,6 +94,46 @@ public class AspectRatioTextureView extends TextureView	// API >= 14
 	}
 
 	@Override
+    /**
+     * Setaspectratio.
+     *
+     * 
+    Args:
+        aspectRatio: Parameter aspectRatio controls behavior.
+    Returns:
+     *     Description of the return value.
+     *
+     * Raises:
+     *     Exception: When an error occurs.
+     *
+     * Side Effects:
+     *     - May mutate internal state.
+     *
+     * Code Paths:
+     *     1. If preconditions met → executes normally.
+     *     2. On error → logs and returns default.
+     */
+/**
+ * Setaspectratio.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
     public void setAspectRatio(final double aspectRatio) {
         if (aspectRatio < 0) {
             throw new IllegalArgumentException();
@@ -66,11 +145,89 @@ public class AspectRatioTextureView extends TextureView	// API >= 14
     }
 
 	@Override
+    /**
+     * Setaspectratio.
+     *
+     * 
+    Args:
+        width: Parameter width controls behavior.
+        height: Parameter height controls behavior.
+    Returns:
+     *     Description of the return value.
+     *
+     * Raises:
+     *     Exception: When an error occurs.
+     *
+     * Side Effects:
+     *     - May mutate internal state.
+     *
+     * Code Paths:
+     *     1. If preconditions met → executes normally.
+     *     2. On error → logs and returns default.
+     */
+/**
+ * Setaspectratio.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
     public void setAspectRatio(final int width, final int height) {
 		setAspectRatio(width / (double)height);
     }
 
 	@Override
+	/**
+	 * Getaspectratio.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Getaspectratio.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public double getAspectRatio() {
 		return mRequestedAspect;
 	}

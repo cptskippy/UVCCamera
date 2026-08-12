@@ -18,6 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief Character encodings for RapidJSON.
+ *
+ * Provides encoding definitions and traits for UTF-8, UTF-16, UTF-32.
+ *
+ * Exports:
+ *     UTF8<>, UTF16<>, UTF32<>: Encoding traits
+ *     ASCII<>: ASCII encoding
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *
+ * Architecture Note:
+ *     Encodings are used throughout parsers and writers to abstract character handling. They are header-only and stateless.
+ */
+
 #ifndef RAPIDJSON_ENCODINGS_H_
 #define RAPIDJSON_ENCODINGS_H_
 

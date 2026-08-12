@@ -3,6 +3,23 @@
 //
 
 #include "utilbase.h"
+
+/**
+ * \brief Implements DistributePipeline component for UVCCamera native library.
+ *
+ * Provides implementation details for DistributePipeline within the UVCCamera native library.
+ *
+ * Exports:
+ *     DistributePipeline: Main component for DistributePipeline
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
 #include "common_utils.h"
 #include "libUVCCamera.h"
 
@@ -31,16 +48,43 @@ DistributePipeline::~DistributePipeline() {
 	EXIT();
 }
 
+/**
+ * \brief Implements on_start.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void DistributePipeline::on_start() {
 	ENTER();
 	EXIT();
 }
 
+/**
+ * \brief Implements on_stop.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void DistributePipeline::on_stop() {
 	ENTER();
 	EXIT();
 }
 
+/**
+ * \brief Implements handle_frame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int DistributePipeline::handle_frame(uvc_frame_t *frame) {
 	ENTER();
 
@@ -53,6 +97,15 @@ int DistributePipeline::handle_frame(uvc_frame_t *frame) {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Implements addPipeline.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int DistributePipeline::addPipeline(IPipeline *pipeline) {
 	ENTER();
 
@@ -64,6 +117,15 @@ int DistributePipeline::addPipeline(IPipeline *pipeline) {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Implements removePipeline.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int DistributePipeline::removePipeline(IPipeline *pipeline) {
 	ENTER();
 

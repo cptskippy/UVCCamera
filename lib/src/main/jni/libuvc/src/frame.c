@@ -48,6 +48,31 @@
  * @defgroup frame Frame processing
  * @brief Tools for managing frame buffers and converting between image formats
  */
+
+/**
+ * \brief Manage UVC frame buffers and perform pixel format conversions.
+ *
+ * Provides frame allocation, duplication, and conversion between YUYV, UYVY, RGB,
+ * BGR, RGB565, RGBX, and MJPEG formats.
+ *
+ * Exports:
+ *   uvc_allocate_frame, uvc_free_frame: Frame lifecycle
+ *   uvc_duplicate_frame: Deep copy frame
+ *   uvc_yuyv2rgb, uvc_uyvy2rgb, uvc_any2rgb: YUV to RGB conversions
+ *   uvc_yuyv2bgr, uvc_uyvy2bgr, uvc_any2bgr: YUV to BGR conversions
+ *   uvc_*2rgb565, uvc_*2rgbx: Format conversions for Android
+ *   uvc_ensure_frame_size: Resize frame buffer if owned by library
+ *
+ * Dependencies:
+ *   - libuvc/libuvc.h: Frame structures
+ *   - libuvc/libuvc_internal.h: Internal helpers
+ *
+ * Architecture Note:
+ *   Frame conversion is CPU-intensive and performed per-frame. Library-owned
+ *   buffers may be reallocated; caller-owned buffers are never modified. Conversions
+ *   assume valid frame dimensions and format.
+ */
+
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"
 

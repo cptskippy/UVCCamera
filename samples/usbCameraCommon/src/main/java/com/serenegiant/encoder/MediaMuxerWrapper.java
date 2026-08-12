@@ -36,6 +36,46 @@ import android.media.MediaMuxer;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
+/**
+ * Manages MediaMuxerWrapper functionality.
+ *
+ * Responsibility: Provides core MediaMuxerWrapper operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mOutputPath: Field mOutputPath
+    mIsStarted: Field mIsStarted
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaMuxerWrapper
+ */
+/**
+ * Manages MediaMuxerWrapper functionality.
+ *
+ * Responsibility: Provides core MediaMuxerWrapper operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaMuxerWrapper
+ */
+
+
 
 public class MediaMuxerWrapper {
 	private static final boolean DEBUG = true;	// TODO set false on release
@@ -67,9 +107,115 @@ public class MediaMuxerWrapper {
 		mIsStarted = false;
 	}
 
+	/**
+
+	 * Getoutputpath.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Getoutputpath.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public String getOutputPath() {
 		return mOutputPath;
 	}
+
+	/**
+
+	 * Prepare.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Prepare.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void prepare() throws IOException {
 		if (mVideoEncoder != null)
@@ -78,12 +224,118 @@ public class MediaMuxerWrapper {
 			mAudioEncoder.prepare();
 	}
 
+	/**
+
+	 * Startrecording.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Startrecording.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public void startRecording() {
 		if (mVideoEncoder != null)
 			mVideoEncoder.startRecording();
 		if (mAudioEncoder != null)
 			mAudioEncoder.startRecording();
 	}
+
+	/**
+
+	 * Stoprecording.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Stoprecording.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void stopRecording() {
 		if (mVideoEncoder != null)
@@ -93,6 +345,26 @@ public class MediaMuxerWrapper {
 			mAudioEncoder.stopRecording();
 		mAudioEncoder = null;
 	}
+/**
+ * Isstarted.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public synchronized boolean isStarted() {
 		return mIsStarted;
@@ -191,6 +463,26 @@ public class MediaMuxerWrapper {
      * @param ext .mp4(.m4a for audio) or .png
      * @return return null when this app has no writing permission to external storage.
      */
+/**
+ * Getcapturefile.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     public static final File getCaptureFile(final String type, final String ext) {
 		final File dir = new File(Environment.getExternalStoragePublicDirectory(type), DIR_NAME);
 		Log.d(TAG, "path=" + dir.toString());

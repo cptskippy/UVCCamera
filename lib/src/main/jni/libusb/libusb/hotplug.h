@@ -19,6 +19,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/**
+ * \brief Provide hotplug event registration and notification for libusb.
+ *
+ * Internal header defining hotplug callback structures and helper prototypes
+ * used by the libusb hotplug subsystem. Exposes types for registering callbacks
+ * that receive device arrival and removal notifications.
+ *
+ * Exports:
+ *   libusb_hotplug_callback: Callback structure
+ *   libusb_hotplug_message: Hotplug message structure
+ *   usbi_hotplug_deregister_all, usbi_hotplug_match: Internal helpers
+ *
+ * Dependencies:
+ *   - libusbi.h: Core libusb internal definitions
+ *   - OS-specific hotplug backends
+ *
+ * Architecture Note:
+ *   Hotplug support is optional and platform-dependent. Callbacks are dispatched
+ *   via the event handling loop. This header is internal; public API exposed via
+ *   libusb.h.
+ */
+
 #if !defined(USBI_HOTPLUG_H)
 #define USBI_HOTPLUG_H
 

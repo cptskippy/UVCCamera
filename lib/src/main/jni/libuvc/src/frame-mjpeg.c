@@ -39,6 +39,26 @@
 /**
  * @defgroup frame Frame processing
  */
+
+/**
+ * \brief Decode MJPEG frames to RGB/BGR using libjpeg.
+ *
+ * Provides MJPEG to RGB/BGR/RGB565/RGBX conversion utilities. Requires LIBUVC_HAS_JPEG.
+ *
+ * Exports:
+ *   uvc_mjpeg2rgb, uvc_mjpeg2bgr, uvc_mjpeg2rgb565, uvc_mjpeg2rgbx, uvc_mjpeg2yuyv
+ *
+ * Dependencies:
+ *   - libjpeg: JPEG decompression
+ *   - libuvc/libuvc.h: Frame structures
+ *   - libuvc/libuvc_internal.h: Internal helpers
+ *
+ * Architecture Note:
+ *   MJPEG decoding is performed on demand per frame. libjpeg error handling uses
+ *   setjmp/longjmp. Output frames must be pre-allocated or library-owned. Decoding
+ *   is CPU-intensive; avoid per-frame allocations in hot paths.
+ */
+
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"
 #include <jpeglib.h>

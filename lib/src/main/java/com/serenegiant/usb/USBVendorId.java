@@ -25,9 +25,48 @@ package com.serenegiant.usb;
 
 import android.util.SparseArray;
 
+/**
+ * Map USB vendor IDs to human-readable vendor names.
+ *
+ * Provides a static lookup table for USB vendor identifiers commonly encountered
+ * with UVC cameras and other USB devices. The table is populated once during
+ * class initialization and remains immutable for the lifetime of the process.
+ *
+ * Thread safety:
+ *     The class is initialized via a static initializer on the class-loading thread.
+ *     After initialization, IDS is read-only; concurrent reads via vendorName are safe
+ *     because no writes occur after class initialization. SparseArray itself is not
+ *     synchronized, so do not modify IDS after initialization.
+ *
+ * Properties:
+ *     IDS: SparseArray<int, String> mapping USB vendor IDs to vendor names.
+ *          Populated statically and never mutated after class load.
+ *
+ * Usage:
+ *     Call vendorName(id) to obtain a human-readable name for a USB vendor ID.
+ *     Return value is null if the ID is not in the table.
+ */
 public class USBVendorId {
 	private static final SparseArray<String> IDS = new SparseArray<String>();
 
+	/**
+	 * Retrieve vendor name for given USB vendor ID.
+	 *
+	 * Looks up the vendor name in the static IDS table populated at class load time.
+	 *
+	 * Args:
+	 *     vendor_id: int USB vendor identifier to look up. Must be a valid 16-bit USB vendor ID.
+	 *
+	 * Returns:
+	 *     String vendor name if the ID is known, null if the ID is not present in the table.
+	 *
+	 * Side Effects:
+	 *     None. The method performs a read-only lookup.
+	 *
+	 * Code Paths:
+	 *     1. If vendor_id exists in IDS → returns the associated vendor name string.
+	 *     2. If vendor_id is not found in IDS → returns null.
+	 */
 	public static String vendorName(final int vendor_id) {
 		return IDS.get(vendor_id);
 	}

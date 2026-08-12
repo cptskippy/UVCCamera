@@ -27,6 +27,42 @@ import android.util.Log;
 import android.view.View;
 
 import com.serenegiant.usbcameracommon.R;
+/**
+ * Manages ViewAnimationHelper functionality.
+ *
+ * Responsibility: Provides core ViewAnimationHelper operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of ViewAnimationHelper
+ */
+/**
+ * Manages ViewAnimationHelper functionality.
+ *
+ * Responsibility: Provides core ViewAnimationHelper operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of ViewAnimationHelper
+ */
+
+
 
 public class ViewAnimationHelper {
 	private static final String TAG = ViewAnimationHelper.class.getSimpleName();
@@ -53,11 +89,68 @@ public class ViewAnimationHelper {
 	 * @param listener
 	 */
 	@SuppressLint("NewApi")
+/**
+ * Fadein.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void fadeIn(final View target, final long duration, final long startDelay, final ViewAnimationListener listener) {
 //		if (DEBUG) Log.v(TAG, "fadeIn:target=" + target);
 		if (target == null) return;
 		target.postDelayed(new Runnable() {
 			@Override
+			/**
+			 * Run.
+			 *
+			 * Returns:
+			 *     Description of the return value.
+			 *
+			 * Raises:
+			 *     Exception: When an error occurs.
+			 *
+			 * Side Effects:
+			 *     - May mutate internal state.
+			 *
+			 * Code Paths:
+			 *     1. If preconditions met → executes normally.
+			 *     2. On error → logs and returns default.
+			 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 			public void run() {
 				target.setVisibility(View.VISIBLE);
 				target.setTag(R.id.anim_type, ANIMATION_FADE_IN);	// フェードインの時の印
@@ -84,11 +177,68 @@ public class ViewAnimationHelper {
 	 * @param listener
 	 */
 	@SuppressLint("NewApi")
+/**
+ * Fadeout.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void fadeOut(final View target, final long duration, final long startDelay, final ViewAnimationListener listener) {
 //		if (DEBUG) Log.v(TAG, "fadeOut,target=" + target);
 		if ((target != null) && (target.getVisibility() == View.VISIBLE)) {
 			target.postDelayed(new Runnable() {
 				@Override
+				/**
+				 * Run.
+				 *
+				 * Returns:
+				 *     Description of the return value.
+				 *
+				 * Raises:
+				 *     Exception: When an error occurs.
+				 *
+				 * Side Effects:
+				 *     - May mutate internal state.
+				 *
+				 * Code Paths:
+				 *     1. If preconditions met → executes normally.
+				 *     2. On error → logs and returns default.
+				 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 				public void run() {
 					target.setTag(R.id.anim_type, ANIMATION_FADE_OUT);	// フェードアウトの印
 					target.setTag(R.id.anim_listener, listener);
@@ -115,11 +265,68 @@ public class ViewAnimationHelper {
 	 * @param listener
 	 */
 	@SuppressLint("NewApi")
+/**
+ * Zoomin.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void zoomIn(final View target, final long duration, final long startDelay, final ViewAnimationListener listener) {
 //		if (DEBUG) Log.v(TAG, "zoomIn:target=" + target);
 		if (target == null) return;
 		target.postDelayed(new Runnable() {
 			@Override
+			/**
+			 * Run.
+			 *
+			 * Returns:
+			 *     Description of the return value.
+			 *
+			 * Raises:
+			 *     Exception: When an error occurs.
+			 *
+			 * Side Effects:
+			 *     - May mutate internal state.
+			 *
+			 * Code Paths:
+			 *     1. If preconditions met → executes normally.
+			 *     2. On error → logs and returns default.
+			 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 			public void run() {
 				target.setVisibility(View.VISIBLE);
 				target.setTag(R.id.anim_type, ANIMATION_ZOOM_IN);	// ズームインの時の印
@@ -148,11 +355,68 @@ public class ViewAnimationHelper {
 	 * @param listener
 	 */
 	@SuppressLint("NewApi")
+/**
+ * Zoomout.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void zoomOut(final View target, final long duration, final long startDelay, final ViewAnimationListener listener) {
 //		if (DEBUG) Log.v(TAG, "zoomIn:target=" + target);
 		if (target == null) return;
 		target.postDelayed(new Runnable() {
 			@Override
+			/**
+			 * Run.
+			 *
+			 * Returns:
+			 *     Description of the return value.
+			 *
+			 * Raises:
+			 *     Exception: When an error occurs.
+			 *
+			 * Side Effects:
+			 *     - May mutate internal state.
+			 *
+			 * Code Paths:
+			 *     1. If preconditions met → executes normally.
+			 *     2. On error → logs and returns default.
+			 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 			public void run() {
 				target.setVisibility(View.VISIBLE);
 				target.setTag(R.id.anim_type, ANIMATION_ZOOM_OUT);	// ズームアウトの時の印
@@ -178,18 +442,158 @@ public class ViewAnimationHelper {
 	 */
 	private static final Animator.AnimatorListener mAnimatorListener = new Animator.AnimatorListener() {
 		@Override
+/**
+ * Onanimationstart.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 		public void onAnimationStart(final Animator animator) {
 			onAnimation(animator, 0);
 		}
 		@Override
+		/**
+		 * Onanimationend.
+		 *
+		 * 
+		Args:
+		    animator: Parameter animator controls behavior.
+		Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Onanimationend.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void onAnimationEnd(final Animator animator) {
 			onAnimation(animator, 1);
 		}
 		@Override
+		/**
+		 * Onanimationcancel.
+		 *
+		 * 
+		Args:
+		    animator: Parameter animator controls behavior.
+		Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Onanimationcancel.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void onAnimationCancel(final Animator animator) {
 			onAnimation(animator, 2);
 		}
 		@Override
+		/**
+		 * Onanimationrepeat.
+		 *
+		 * 
+		Args:
+		    animation: Parameter animation controls behavior.
+		Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Onanimationrepeat.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void onAnimationRepeat(final Animator animation) {
 		}
 	};
@@ -210,6 +614,43 @@ public class ViewAnimationHelper {
 			if (listener != null) {
 				target.postDelayed(new Runnable() {
 					@Override
+					/**
+					 * Run.
+					 *
+					 * Returns:
+					 *     Description of the return value.
+					 *
+					 * Raises:
+					 *     Exception: When an error occurs.
+					 *
+					 * Side Effects:
+					 *     - May mutate internal state.
+					 *
+					 * Code Paths:
+					 *     1. If preconditions met → executes normally.
+					 *     2. On error → logs and returns default.
+					 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 					public void run() {
 						try {
 							switch (event) {

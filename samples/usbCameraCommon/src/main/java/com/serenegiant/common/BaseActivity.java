@@ -48,6 +48,26 @@ import com.serenegiant.utils.PermissionCheck;
  * Created by saki on 2016/11/18.
  *
  */
+/**
+ * Manages BaseActivity functionality.
+ *
+ * Responsibility: Provides core BaseActivity operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of BaseActivity
+ */
+
 public class BaseActivity extends Activity
 	implements MessageDialogFragmentV4.MessageDialogListener {
 
@@ -97,6 +117,26 @@ public class BaseActivity extends Activity
 	 * @param task
 	 * @param duration
 	 */
+/**
+ * Runonuithread.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public final void runOnUiThread(final Runnable task, final long duration) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -115,6 +155,26 @@ public class BaseActivity extends Activity
 	 * UIスレッド上で指定したRunnableが実行待ちしていれば実行待ちを解除する
 	 * @param task
 	 */
+/**
+ * Removefromuithread.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public final void removeFromUiThread(final Runnable task) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -193,6 +253,43 @@ public class BaseActivity extends Activity
 		}
 
 		@Override
+		/**
+		 * Run.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void run() {
 			try {
 				if (mToast != null) {
@@ -218,6 +315,26 @@ public class BaseActivity extends Activity
 	 */
 	@SuppressLint("NewApi")
 	@Override
+/**
+ * Onmessagedialogresult.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void onMessageDialogResult(final MessageDialogFragmentV4 dialog, final int requestCode, final String[] permissions, final boolean result) {
 		if (result) {
 			// メッセージダイアログでOKを押された時はパーミッション要求する
@@ -239,6 +356,26 @@ public class BaseActivity extends Activity
 	 * @param grantResults
 	 */
 	@Override
+/**
+ * Onrequestpermissionsresult.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions, @NonNull final int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);	// 何もしてないけど一応呼んどく
 		final int n = Math.min(permissions.length, grantResults.length);

@@ -32,8 +32,64 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+/**
+ * Manages PermissionCheck functionality.
+ *
+ * Responsibility: Provides core PermissionCheck operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of PermissionCheck
+ */
+/**
+ * Manages PermissionCheck functionality.
+ *
+ * Responsibility: Provides core PermissionCheck operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of PermissionCheck
+ */
+
+
 
 public final class PermissionCheck {
+/**
+ * Dumppermissions.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static final void dumpPermissions(final Context context) {
     	if (context == null) return;
@@ -55,6 +111,26 @@ public final class PermissionCheck {
 	 * @return 指定したパーミッションがあればtrue
 	 */
 	@SuppressLint("NewApi")
+/**
+ * Haspermission.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static boolean hasPermission(final Context context, final String permissionName) {
     	if (context == null) return false;
 		boolean result = false;
@@ -84,6 +160,26 @@ public final class PermissionCheck {
      * @param context
      * @return 録音のパーミッションがあればtrue
      */
+/**
+ * Hasaudio.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     public static boolean hasAudio(final Context context) {
     	return hasPermission(context, permission.RECORD_AUDIO);
     }
@@ -93,6 +189,26 @@ public final class PermissionCheck {
      * @param context
      * @return ネットワークへのアクセスパーミッションがあればtrue
      */
+/**
+ * Hasnetwork.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     public static boolean hasNetwork(final Context context) {
     	return hasPermission(context, permission.INTERNET);
     }
@@ -102,6 +218,26 @@ public final class PermissionCheck {
      * @param context
      * @return 外部ストレージへの書き込みパーミッションがあればtrue
      */
+/**
+ * Haswriteexternalstorage.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     public static boolean hasWriteExternalStorage(final Context context) {
     	return hasPermission(context, permission.WRITE_EXTERNAL_STORAGE);
     }
@@ -112,6 +248,26 @@ public final class PermissionCheck {
      * @return 外部ストレージへの読み込みパーミッションがあればtrue
      */
     @SuppressLint("InlinedApi")
+/**
+ * Hasreadexternalstorage.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static boolean hasReadExternalStorage(final Context context) {
     	if (BuildCheck.isAndroid4())
     		return hasPermission(context, permission.READ_EXTERNAL_STORAGE);
@@ -124,6 +280,26 @@ public final class PermissionCheck {
 	 * @param context
 	 * @return
 	 */
+/**
+ * Hasaccesslocation.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static boolean hasAccessLocation(final Context context) {
 		return hasPermission(context, permission.ACCESS_COARSE_LOCATION)
 			&& hasPermission(context, permission.ACCESS_FINE_LOCATION);
@@ -134,6 +310,26 @@ public final class PermissionCheck {
 	 * @param context
 	 * @return
 	 */
+/**
+ * Hasaccesscoarselocation.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static boolean hasAccessCoarseLocation(final Context context) {
 		return hasPermission(context, permission.ACCESS_COARSE_LOCATION);
 	}
@@ -143,6 +339,26 @@ public final class PermissionCheck {
 	 * @param context
 	 * @return
 	 */
+/**
+ * Hasaccessfinelocation.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static boolean hasAccessFineLocation(final Context context) {
 		return hasPermission(context, permission.ACCESS_FINE_LOCATION);
 	}
@@ -152,6 +368,26 @@ public final class PermissionCheck {
 	 * @param context
 	 * @return
 	 */
+/**
+ * Hascamera.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static boolean hasCamera(final Context context) {
 		return hasPermission(context, permission.CAMERA);
 	}
@@ -160,6 +396,26 @@ public final class PermissionCheck {
 	 * アプリの詳細設定へ遷移させる(パーミッションを取得できなかった時など)
 	 * @param context
 	 */
+/**
+ * Opensettings.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void openSettings(final Context context) {
 	    final Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
 	    final Uri uri = Uri.fromParts("package", context.getPackageName(), null);

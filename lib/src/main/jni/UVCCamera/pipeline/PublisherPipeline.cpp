@@ -96,6 +96,23 @@ int PublisherPipeline::queueFrame(uvc_frame_t *frame) {
  * build transfer header.
  * all multi bytes fields are little endian.
  */
+
+/**
+ * \brief Implements PublisherPipeline component for UVCCamera native library.
+ *
+ * Provides implementation details for PublisherPipeline within the UVCCamera native library.
+ *
+ * Exports:
+ *     PublisherPipeline: Main component for PublisherPipeline
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
 static void build_header(publish_header_t &header, uvc_frame_t *frame) {
 	// build header
 	switch (frame->frame_format) {

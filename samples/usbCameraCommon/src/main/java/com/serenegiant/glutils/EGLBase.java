@@ -23,6 +23,26 @@ import android.os.Build;
 /**
  * EGLレンダリングコンテキストを生成＆使用するためのヘルパークラス
  */
+/**
+ * Manages EGLBase functionality.
+ *
+ * Responsibility: Provides core EGLBase operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of EGLBase
+ */
+
 public abstract class EGLBase {
 	public static final Object EGL_LOCK = new Object();
 
@@ -40,6 +60,26 @@ public abstract class EGLBase {
 	 * @param isRecordable
 	 * @return
 	 */
+/**
+ * Createfrom.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static EGLBase createFrom(final IContext sharedContext,
 		final boolean withDepthBuffer, final boolean isRecordable) {
 
@@ -55,6 +95,26 @@ public abstract class EGLBase {
 	 * @param isRecordable
 	 * @return
 	 */
+/**
+ * Createfrom.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static EGLBase createFrom(final IContext sharedContext,
 		final boolean withDepthBuffer, final int stencilBits, final boolean isRecordable) {
 
@@ -71,6 +131,26 @@ public abstract class EGLBase {
 	 * @param isRecordable
 	 * @return
 	 */
+/**
+ * Createfrom.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static EGLBase createFrom(final int maxClientVersion,
 		final IContext sharedContext, final boolean withDepthBuffer,
 		final int stencilBits, final boolean isRecordable) {
@@ -119,6 +199,26 @@ public abstract class EGLBase {
 		public void release();
 		public boolean isValid();
 	}
+/**
+ * Isegl14supported.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static boolean isEGL14Supported() {
 		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2);

@@ -34,6 +34,26 @@ import java.nio.FloatBuffer;
 /**
  * 描画領域全面にテクスチャを2D描画するためのヘルパークラス
  */
+/**
+ * Manages GLDrawer2D functionality.
+ *
+ * Responsibility: Provides core GLDrawer2D operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of GLDrawer2D
+ */
+
 public class GLDrawer2D implements IDrawer2dES2 {
 //	private static final boolean DEBUG = false; // FIXME set false on release
 //	private static final String TAG = "GLDrawer2D";
@@ -104,6 +124,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * 破棄処理。GLコンテキスト/EGLレンダリングコンテキスト内で呼び出さないとダメ
 	 */
 	@Override
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void release() {
 		if (hProgram >= 0) {
 			GLES20.glDeleteProgram(hProgram);
@@ -115,6 +155,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * 外部テクスチャを使うかどうか
 	 * @return
 	 */
+/**
+ * Isoes.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean isOES() {
 		return mTexTarget == GL_TEXTURE_EXTERNAL_OES;
 	}
@@ -124,6 +184,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * @return
 	 */
 	@Override
+/**
+ * Getmvpmatrix.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public float[] getMvpMatrix() {
 		return mMvpMatrix;
 	}
@@ -135,6 +215,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * @return
 	 */
 	@Override
+/**
+ * Setmvpmatrix.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public IDrawer2D setMvpMatrix(final float[] matrix, final int offset) {
 		System.arraycopy(matrix, offset, mMvpMatrix, 0, 16);
 		return this;
@@ -146,6 +246,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * @param offset
 	 */
 	@Override
+/**
+ * Getmvpmatrix.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void getMvpMatrix(final float[] matrix, final int offset) {
 		System.arraycopy(mMvpMatrix, 0, matrix, offset, 16);
 	}
@@ -158,6 +278,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * 					領域チェックしていないのでoffsetから16個以上確保しておくこと
 	 */
 	@Override
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public synchronized void draw(final int texId,
 		final float[] tex_matrix, final int offset) {
 
@@ -183,6 +323,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * @param texture
 	 */
 	@Override
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void draw(final ITexture texture) {
 		draw(texture.getTexture(), texture.getTexMatrix(), 0);
 	}
@@ -192,6 +352,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * @param offscreen
 	 */
 	@Override
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void draw(final TextureOffscreen offscreen) {
 		draw(offscreen.getTexture(), offscreen.getTexMatrix(), 0);
 	}
@@ -201,6 +381,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * GLHelper#initTexを呼び出すだけ
 	 * @return texture ID
 	 */
+/**
+ * Inittex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int initTex() {
 		return GLHelper.initTex(mTexTarget, GLES20.GL_NEAREST);
 	}
@@ -210,6 +410,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * GLHelper.deleteTexを呼び出すだけ
 	 * @param hTex
 	 */
+/**
+ * Deletetex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void deleteTex(final int hTex) {
 		GLHelper.deleteTex(hTex);
 	}
@@ -221,6 +441,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * @param vs 頂点シェーダー文字列
 	 * @param fs フラグメントシェーダー文字列
 	 */
+/**
+ * Updateshader.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public synchronized void updateShader(final String vs, final String fs) {
 		release();
 		hProgram = GLHelper.loadShader(vs, fs);
@@ -233,6 +473,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * glUseProgramが呼ばれた状態で返る
 	 * @param fs フラグメントシェーダー文字列
 	 */
+/**
+ * Updateshader.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void updateShader(final String fs) {
 		updateShader(VERTEX_SHADER, fs);
 	}
@@ -240,6 +500,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * 頂点シェーダー・フラグメントシェーダーをデフォルトに戻す
 	 */
+/**
+ * Resetshader.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void resetShader() {
 		release();
 		if (isOES()) {
@@ -257,6 +537,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * @return
 	 */
 	@Override
+/**
+ * Glgetattriblocation.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int glGetAttribLocation(final String name) {
 		GLES20.glUseProgram(hProgram);
 		return GLES20.glGetAttribLocation(hProgram, name);
@@ -269,6 +569,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * @return
 	 */
 	@Override
+/**
+ * Glgetuniformlocation.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public int glGetUniformLocation(final String name) {
 		GLES20.glUseProgram(hProgram);
 		return GLES20.glGetUniformLocation(hProgram, name);
@@ -278,6 +598,26 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * glUseProgramが呼ばれた状態で返る
 	 */
 	@Override
+/**
+ * Gluseprogram.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void glUseProgram() {
 		GLES20.glUseProgram(hProgram);
 	}

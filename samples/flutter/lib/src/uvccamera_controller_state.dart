@@ -4,7 +4,22 @@ import 'package:cross_file/cross_file.dart';
 import 'uvccamera_device.dart';
 import 'uvccamera_mode.dart';
 
-/// The state of a [UvcCameraController].
+/// Represents the immutable state of a [UvcCameraController].
+///
+/// Holds initialization status, device reference, preview mode, and recording/picture flags.
+/// The controller updates this state via [ValueNotifier] notifications.
+///
+/// Properties:
+///   isInitialized: True after [UvcCameraController.initialize] completes.
+///   device: The UVC device controlled by the controller.
+///   previewMode: Current preview mode, null until initialized.
+///   isRecordingVideo: True while video recording is active.
+///   videoRecordingMode: Mode used for current recording, null if not recording.
+///   videoRecordingFile: File reference for current recording, null if not recording.
+///   isTakingPicture: True while a picture capture is in progress.
+///
+/// Thread Safety:
+///   Immutable. Safe to read from any isolate.
 @immutable
 class UvcCameraControllerState {
   /// True after [UvcCameraController.initialize] has completed successfully.
@@ -30,7 +45,16 @@ class UvcCameraControllerState {
   /// True if the camera is currently taking a picture.
   final bool isTakingPicture;
 
-  /// Creates a new [UvcCameraControllerState] object.
+  /// Create a new [UvcCameraControllerState] instance.
+  ///
+  /// Args:
+  ///   isInitialized: True if controller has been initialized.
+  ///   device: The UVC device associated with this state.
+  ///   previewMode: Current preview mode, optional.
+  ///   isRecordingVideo: True if recording video.
+  ///   videoRecordingMode: Mode for video recording, optional.
+  ///   videoRecordingFile: File for current recording, optional.
+  ///   isTakingPicture: True if taking picture.
   const UvcCameraControllerState({
     required this.isInitialized,
     required this.device,
@@ -41,7 +65,13 @@ class UvcCameraControllerState {
     required this.isTakingPicture,
   });
 
-  /// Creates a [UvcCameraControllerState] object for an uninitialized controller.
+  /// Create an uninitialized [UvcCameraControllerState] for a new controller.
+  ///
+  /// Args:
+  ///   device: The UVC device to associate with the initial state.
+  ///
+  /// Returns:
+  ///   State with isInitialized false and all recording flags cleared.
   const UvcCameraControllerState.uninitialized(UvcCameraDevice device)
     : this(
         isInitialized: false,
@@ -53,9 +83,19 @@ class UvcCameraControllerState {
         isTakingPicture: false,
       );
 
-  /// Creates a modified copy of this object.
+  /// Create a modified copy of this state with updated fields.
   ///
-  /// Explicitly specified fields get the specified value, all other fields get the same value of the current object.
+  /// Args:
+  ///   isInitialized: Override initialization flag, optional.
+  ///   device: Override device, optional.
+  ///   previewMode: Override preview mode, optional.
+  ///   isRecordingVideo: Override recording flag, optional.
+  ///   videoRecordingMode: Override recording mode, optional.
+  ///   videoRecordingFile: Override recording file, optional.
+  ///   isTakingPicture: Override picture flag, optional.
+  ///
+  /// Returns:
+  ///   A new [UvcCameraControllerState] with specified fields updated.
   UvcCameraControllerState copyWith({
     bool? isInitialized,
     UvcCameraDevice? device,

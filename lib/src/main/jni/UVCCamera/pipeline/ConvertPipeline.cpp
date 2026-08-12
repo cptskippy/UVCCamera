@@ -3,6 +3,23 @@
 //
 
 #if 1	// set 1 if you don't need debug message
+
+/**
+ * \brief Implements ConvertPipeline component for UVCCamera native library.
+ *
+ * Provides implementation details for ConvertPipeline within the UVCCamera native library.
+ *
+ * Exports:
+ *     ConvertPipeline: Main component for ConvertPipeline
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
 	#ifndef LOG_NDEBUG
 		#define	LOG_NDEBUG		// ignore LOGV/LOGD/MARK
 	#endif
@@ -45,6 +62,15 @@ ConvertPipeline::~ConvertPipeline() {
 	EXIT();
 }
 
+/**
+ * \brief Implements updateConvFunc.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void ConvertPipeline::updateConvFunc() {
 	ENTER();
 
@@ -79,6 +105,15 @@ void ConvertPipeline::updateConvFunc() {
 	EXIT();
 };
 
+/**
+ * \brief Implements on_start.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void ConvertPipeline::on_start() {
 	ENTER();
 
@@ -87,12 +122,30 @@ void ConvertPipeline::on_start() {
 	EXIT();
 }
 
+/**
+ * \brief Implements on_stop.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void ConvertPipeline::on_stop() {
 	ENTER();
 
 	EXIT();
 }
 
+/**
+ * \brief Implements handle_frame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int ConvertPipeline::handle_frame(uvc_frame_t *frame) {
 	ENTER();
 

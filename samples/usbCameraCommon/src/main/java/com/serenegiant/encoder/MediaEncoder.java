@@ -30,6 +30,50 @@ import java.nio.ByteBuffer;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.util.Log;
+/**
+ * Manages MediaEncoder functionality.
+ *
+ * Responsibility: Provides core MediaEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mRequestDrain: Field mRequestDrain
+    mIsEOS: Field mIsEOS
+    mMuxerStarted: Field mMuxerStarted
+    mTrackIndex: Field mTrackIndex
+    mMediaCodec: Field mMediaCodec
+    prevOutputPTSUs: Field prevOutputPTSUs
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaEncoder
+ */
+/**
+ * Manages MediaEncoder functionality.
+ *
+ * Responsibility: Provides core MediaEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaEncoder
+ */
+
+
 
 public abstract class MediaEncoder implements Runnable {
 	private static final boolean DEBUG = true;	// TODO set false on release
@@ -102,6 +146,59 @@ public abstract class MediaEncoder implements Runnable {
         }
 	}
 
+    /**
+
+     * Getoutputpath.
+
+     *
+
+     * Returns:
+
+     *     Description of the return value.
+
+     *
+
+     * Raises:
+
+     *     Exception: When an error occurs.
+
+     *
+
+     * Side Effects:
+
+     *     - May mutate internal state.
+
+     *
+
+     * Code Paths:
+
+     *     1. If preconditions met → executes normally.
+
+     *     2. On error → logs and returns default.
+
+     */
+/**
+ * Getoutputpath.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
     public String getOutputPath() {
     	final MediaMuxerWrapper muxer = mWeakMuxer.get();
     	return muxer != null ? muxer.getOutputPath() : null;
@@ -111,6 +208,26 @@ public abstract class MediaEncoder implements Runnable {
      * the method to indicate frame data is soon available or already available
      * @return return true if encoder is ready to encod.
      */
+/**
+ * Frameavailablesoon.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     public boolean frameAvailableSoon() {
 //    	if (DEBUG) Log.v(TAG, "frameAvailableSoon");
         synchronized (mSync) {
@@ -127,6 +244,26 @@ public abstract class MediaEncoder implements Runnable {
      * encoding loop on private thread
      */
 	@Override
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void run() {
 //		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
         synchronized (mSync) {

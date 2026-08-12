@@ -43,6 +43,36 @@
  * @brief Support for finding, inspecting and opening UVC devices
  */
 
+/**
+ * \brief Manage UVC device enumeration, opening, and descriptor parsing.
+ *
+ * Provides public API for finding, inspecting, and opening UVC devices via libusb.
+ * Handles device list management, reference counting, and VideoControl descriptor parsing.
+ *
+ * Exports:
+ *   uvc_find_device: Find device by VID/PID/serial
+ *   uvc_find_device2: Find device via libusb_find_device for non-rooted Android
+ *   uvc_get_device_with_fd: Create device from file descriptor for Android >=7
+ *   uvc_open: Open a UVC device handle
+ *   uvc_close: Close device handle
+ *   uvc_get_device_list: Enumerate UVC devices
+ *   uvc_get_device_descriptor: Get device descriptor info
+ *   uvc_ref_device/uvc_unref_device: Reference counting
+ *   uvc_get_input_terminals, uvc_get_output_terminals, uvc_get_processing_units, uvc_get_extension_units: Descriptor accessors
+ *   uvc_set_status_callback, uvc_set_button_callback: Status callbacks
+ *
+ * Dependencies:
+ *   - libusb: USB device enumeration and I/O
+ *   - libuvc/libuvc_internal.h: Internal types and helpers
+ *   - libuvc/libuvc.h: Public API definitions
+ *
+ * Architecture Note:
+ *   Device handling is central to libuvc. Devices are enumerated via libusb, parsed for UVC
+ *   descriptors, and reference counted. Opening a device claims the control interface and
+ *   optionally starts a status monitoring transfer. The module is not thread-safe for
+ *   concurrent open/close operations on the same context.
+ */
+
 #define LOCAL_DEBUG 0
 
 #define LOG_TAG "libuvc/device"
@@ -125,15 +155,33 @@ int uvc_already_open(uvc_context_t *ctx, struct libusb_device *usb_dev) {
 	return 0;
 }
 
-/** @brief Finds a camera identified by vendor, product and/or serial number
- * @ingroup device
+/**
+ * \brief Find a UVC camera by vendor, product and serial identifiers.
  *
- * @param[in] ctx UVC context in which to search for the camera
- * @param[out] dev Reference to the camera, or NULL if not found
- * @param[in] vid Vendor ID number, optional
- * @param[in] pid Product ID number, optional
- * @param[in] sn Serial number or NULL
- * @return Error finding device or UVC_SUCCESS
+ * Enumerates UVC devices and matches against vendor ID, product ID, and serial number.
+ * Zero or more of vid/pid/sn can be omitted to broaden the search.
+ *
+ * \param[in] ctx UVC context in which to search for the camera. Must be initialized.
+ * \param[out] dev Pointer to receive the matched uvc_device_t. Set to NULL if not found.
+ * \param[in] vid Vendor ID number, or 0 to ignore.
+ * \param[in] pid Product ID number, or 0 to ignore.
+ * \param[in] sn Serial number string, or NULL to ignore.
+ *
+ * \return UVC_SUCCESS on match, UVC_ERROR_NO_DEVICE if no device matches, or other libusb error.
+ *
+ * \pre ctx must be a valid initialized context.
+ * \pre dev must not be NULL.
+ *
+ * \warning The returned device reference is incremented; caller must call uvc_unref_device when done.
+ *
+ * Side Effects:
+ *   - Calls uvc_get_device_list, which allocates temporary list.
+ *   - Increments device reference count on match.
+ *
+ * Code Paths:
+ *   1. uvc_get_device_list fails → return error immediately.
+ *   2. Iterate device list → compare VID/PID/SN → first match found → ref device, free list, return success.
+ *   3. No match → free list, set *dev to NULL, return UVC_ERROR_NO_DEVICE.
  */
 uvc_error_t uvc_find_device(uvc_context_t *ctx, uvc_device_t **dev, int vid,
 		int pid, const char *sn) {
@@ -259,12 +307,34 @@ uint8_t uvc_get_device_address(uvc_device_t *dev) {
 	return libusb_get_device_address(dev->usb_dev);
 }
 
-/** @brief Open a UVC device
- * @ingroup device
+/**
+ * \brief Open a UVC device and create a device handle.
  *
- * @param dev Device to open
- * @param[out] devh Handle on opened device
- * @return Error opening device or SUCCESS
+ * Opens the underlying libusb device, parses UVC descriptors, claims the control
+ * interface, and optionally starts a status monitoring transfer.
+ *
+ * \param[in] dev Device to open. Must be a valid uvc_device_t with reference held.
+ * \param[out] devh Pointer to receive the opened uvc_device_handle_t. Must not be NULL.
+ *
+ * \return UVC_SUCCESS on success, or libusb error code on failure.
+ *
+ * \pre dev must be a valid device obtained from enumeration.
+ * \pre devh must not be NULL.
+ *
+ * \warning The handle owns a reference to dev; call uvc_close to release.
+ *
+ * Side Effects:
+ *   - Calls libusb_open and claims control interface.
+ *   - Increments device reference count.
+ *   - Starts event handler thread if first device.
+ *   - Submits status interrupt transfer if endpoint present.
+ *
+ * Code Paths:
+ *   1. libusb_open fails → return error.
+ *   2. uvc_get_device_info fails → cleanup and return error.
+ *   3. uvc_claim_if fails → cleanup and return error.
+ *   4. Status endpoint present → allocate and submit transfer.
+ *   5. Success → append to open_devices list and return handle.
  */
 uvc_error_t uvc_open(uvc_device_t *dev, uvc_device_handle_t **devh) {
 	uvc_error_t ret;

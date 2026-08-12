@@ -18,6 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief File output stream for RapidJSON writers.
+ *
+ * Provides a buffered file writing stream implementing the Stream concept for writing JSON to files.
+ *
+ * Exports:
+ *     FileWriteStream: Buffered file output stream
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - filestream.h: FileWriteBuffer
+ *
+ * Architecture Note:
+ *     FileWriteStream wraps a C FILE* for output. It is not thread-safe.
+ */
+
 #ifndef RAPIDJSON_FILEWRITESTREAM_H_
 #define RAPIDJSON_FILEWRITESTREAM_H_
 

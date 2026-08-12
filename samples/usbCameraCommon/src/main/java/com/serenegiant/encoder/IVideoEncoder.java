@@ -22,6 +22,42 @@
  */
 
 package com.serenegiant.encoder;
+/**
+ * Manages IVideoEncoder functionality.
+ *
+ * Responsibility: Provides core IVideoEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of IVideoEncoder
+ */
+/**
+ * Manages IVideoEncoder functionality.
+ *
+ * Responsibility: Provides core IVideoEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of IVideoEncoder
+ */
+
+
 
 public interface IVideoEncoder {
 	public boolean frameAvailableSoon();

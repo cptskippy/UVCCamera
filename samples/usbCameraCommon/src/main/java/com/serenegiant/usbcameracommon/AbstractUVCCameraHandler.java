@@ -69,6 +69,53 @@ import java.util.concurrent.CopyOnWriteArraySet;
 abstract class AbstractUVCCameraHandler extends Handler {
 	private static final boolean DEBUG = true;  // TODO set false on release
 	private static final String TAG = "AbsUVCCameraHandler";
+/**
+ * Manages CameraCallback functionality.
+ *
+ * Responsibility: Provides core CameraCallback operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mBandwidthFactor: Field mBandwidthFactor
+    mIsPreviewing: Field mIsPreviewing
+    mIsRecording: Field mIsRecording
+    mSoundPool: Field mSoundPool
+    mSoundId: Field mSoundId
+    mHandler: Field mHandler
+    mUVCCamera: Field mUVCCamera
+    mMuxer: Field mMuxer
+    mVideoEncoder: Field mVideoEncoder
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of CameraCallback
+ */
+/**
+ * Manages CameraCallback functionality.
+ *
+ * Responsibility: Provides core CameraCallback operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of CameraCallback
+ */
+
+
 
 	public interface CameraCallback {
 		public void onOpen();
@@ -97,30 +144,354 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		mWeakThread = new WeakReference<CameraThread>(thread);
 	}
 
+	/**
+
+	 * Getwidth.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Getwidth.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public int getWidth() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null ? thread.getWidth() : 0;
 	}
+
+	/**
+
+	 * Getheight.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Getheight.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public int getHeight() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null ? thread.getHeight() : 0;
 	}
 
+	/**
+
+	 * Isopened.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Isopened.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public boolean isOpened() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null && thread.isCameraOpened();
 	}
+
+	/**
+
+	 * Ispreviewing.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Ispreviewing.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public boolean isPreviewing() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null && thread.isPreviewing();
 	}
 
+	/**
+
+	 * Isrecording.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Isrecording.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public boolean isRecording() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null && thread.isRecording();
 	}
+
+	/**
+
+	 * Isequal.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    device: Parameter device controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Isequal.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public boolean isEqual(final UsbDevice device) {
 		final CameraThread thread = mWeakThread.get();
@@ -143,10 +514,122 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 	}
 
+	/**
+
+	 * Open.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    ctrlBlock: Parameter ctrlBlock controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Open.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public void open(final USBMonitor.UsbControlBlock ctrlBlock) {
 		checkReleased();
 		sendMessage(obtainMessage(MSG_OPEN, ctrlBlock));
 	}
+
+	/**
+
+	 * Close.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Close.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void close() {
 		if (DEBUG) Log.v(TAG, "close:");
@@ -156,6 +639,67 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 		if (DEBUG) Log.v(TAG, "close:finished");
 	}
+
+	/**
+
+	 * Resize.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    width: Parameter width controls behavior.
+
+	    height: Parameter height controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Resize.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void resize(final int width, final int height) {
 		checkReleased();
@@ -169,6 +713,59 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 		sendMessage(obtainMessage(MSG_PREVIEW_START, surface));
 	}
+
+	/**
+
+	 * Stoppreview.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Stoppreview.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void stopPreview() {
 		if (DEBUG) Log.v(TAG, "stopPreview:");
@@ -203,20 +800,238 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		sendMessage(obtainMessage(MSG_CAPTURE_STILL, path));
 	}
 
+	/**
+
+	 * Startrecording.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Startrecording.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public void startRecording() {
 		checkReleased();
 		sendEmptyMessage(MSG_CAPTURE_START);
 	}
 
+	/**
+
+	 * Stoprecording.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Stoprecording.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public void stopRecording() {
 		sendEmptyMessage(MSG_CAPTURE_STOP);
 	}
+
+	/**
+
+	 * Release.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void release() {
 		mReleased = true;
 		close();
 		sendEmptyMessage(MSG_RELEASE);
 	}
+
+	/**
+
+	 * Addcallback.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    callback: Parameter callback controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Addcallback.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void addCallback(final CameraCallback callback) {
 		checkReleased();
@@ -227,6 +1042,65 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 	}
+
+	/**
+
+	 * Removecallback.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    callback: Parameter callback controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Removecallback.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void removeCallback(final CameraCallback callback) {
 		if (callback != null) {
@@ -241,11 +1115,129 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		sendMessage(obtainMessage(MSG_MEDIA_UPDATE, path));
 	}
 
+	/**
+
+	 * Checksupportflag.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    flag: Parameter flag controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Checksupportflag.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public boolean checkSupportFlag(final long flag) {
 		checkReleased();
 		final CameraThread thread = mWeakThread.get();
 		return thread != null && thread.mUVCCamera != null && thread.mUVCCamera.checkSupportFlag(flag);
 	}
+
+	/**
+
+	 * Getvalue.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    flag: Parameter flag controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Getvalue.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public int getValue(final int flag) {
 		checkReleased();
@@ -260,6 +1252,67 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 		throw new IllegalStateException();
 	}
+
+	/**
+
+	 * Setvalue.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    flag: Parameter flag controls behavior.
+
+	    value: Parameter value controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Setvalue.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public int setValue(final int flag, final int value) {
 		checkReleased();
@@ -276,6 +1329,65 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 		throw new IllegalStateException();
 	}
+
+	/**
+
+	 * Resetvalue.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    flag: Parameter flag controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Resetvalue.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public int resetValue(final int flag) {
 		checkReleased();
@@ -294,6 +1406,46 @@ abstract class AbstractUVCCameraHandler extends Handler {
 	}
 
 	@Override
+	/**
+	 * Handlemessage.
+	 *
+	 * 
+	Args:
+	    msg: Parameter msg controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Handlemessage.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void handleMessage(final Message msg) {
 		final CameraThread thread = mWeakThread.get();
 		if (thread == null) return;
@@ -392,6 +1544,59 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			super.finalize();
 		}
 
+		/**
+
+		 * Gethandler.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Gethandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public AbstractUVCCameraHandler getHandler() {
 			if (DEBUG) Log.v(TAG_THREAD, "getHandler:");
 			synchronized (mSync) {
@@ -404,11 +1609,117 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			return mHandler;
 		}
 
+		/**
+
+		 * Getwidth.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Getwidth.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public int getWidth() {
 			synchronized (mSync) {
 				return mWidth;
 			}
 		}
+
+		/**
+
+		 * Getheight.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Getheight.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 		public int getHeight() {
 			synchronized (mSync) {
@@ -416,11 +1727,117 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+
+		 * Iscameraopened.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Iscameraopened.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public boolean isCameraOpened() {
 			synchronized (mSync) {
 				return mUVCCamera != null;
 			}
 		}
+
+		/**
+
+		 * Ispreviewing.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Ispreviewing.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 		public boolean isPreviewing() {
 			synchronized (mSync) {
@@ -428,15 +1845,186 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+
+		 * Isrecording.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Isrecording.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public boolean isRecording() {
 			synchronized (mSync) {
 				return (mUVCCamera != null) && (mMuxer != null);
 			}
 		}
 
+		/**
+
+		 * Isequal.
+
+		 *
+
+		 * 
+
+		Args:
+
+		    device: Parameter device controls behavior.
+
+		Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Isequal.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public boolean isEqual(final UsbDevice device) {
 			return (mUVCCamera != null) && (mUVCCamera.getDevice() != null) && mUVCCamera.getDevice().equals(device);
 		}
+
+		/**
+
+		 * Handleopen.
+
+		 *
+
+		 * 
+
+		Args:
+
+		    ctrlBlock: Parameter ctrlBlock controls behavior.
+
+		Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handleopen.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 		public void handleOpen(final USBMonitor.UsbControlBlock ctrlBlock) {
 			if (DEBUG) Log.v(TAG_THREAD, "handleOpen:");
@@ -454,6 +2042,59 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			if (DEBUG) Log.i(TAG, "supportedSize:" + (mUVCCamera != null ? mUVCCamera.getSupportedSize() : null));
 		}
 
+		/**
+
+		 * Handleclose.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handleclose.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public void handleClose() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleClose:");
 			handleStopRecording();
@@ -468,6 +2109,65 @@ abstract class AbstractUVCCameraHandler extends Handler {
 				callOnClose();
 			}
 		}
+
+		/**
+
+		 * Handlestartpreview.
+
+		 *
+
+		 * 
+
+		Args:
+
+		    surface: Parameter surface controls behavior.
+
+		Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handlestartpreview.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 		public void handleStartPreview(final Object surface) {
 			if (DEBUG) Log.v(TAG_THREAD, "handleStartPreview:");
@@ -498,6 +2198,59 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			callOnStartPreview();
 		}
 
+		/**
+
+		 * Handlestoppreview.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handlestoppreview.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public void handleStopPreview() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleStopPreview:");
 			if (mIsPreviewing) {
@@ -512,6 +2265,65 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 			if (DEBUG) Log.v(TAG_THREAD, "handleStopPreview:finished");
 		}
+
+		/**
+
+		 * Handlecapturestill.
+
+		 *
+
+		 * 
+
+		Args:
+
+		    path: Parameter path controls behavior.
+
+		Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handlecapturestill.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 		public void handleCaptureStill(final String path) {
 			if (DEBUG) Log.v(TAG_THREAD, "handleCaptureStill:");
@@ -541,6 +2353,59 @@ abstract class AbstractUVCCameraHandler extends Handler {
 				callOnError(e);
 			}
 		}
+
+		/**
+
+		 * Handlestartrecording.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handlestartrecording.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 		public void handleStartRecording() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleStartRecording:");
@@ -580,6 +2445,59 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+
+		 * Handlestoprecording.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handlestoprecording.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public void handleStopRecording() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleStopRecording:mMuxer=" + mMuxer);
 			final MediaMuxerWrapper muxer;
@@ -606,6 +2524,46 @@ abstract class AbstractUVCCameraHandler extends Handler {
 
 		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
 			@Override
+			/**
+			 * Onframe.
+			 *
+			 * 
+			Args:
+			    frame: Parameter frame controls behavior.
+			Returns:
+			 *     Description of the return value.
+			 *
+			 * Raises:
+			 *     Exception: When an error occurs.
+			 *
+			 * Side Effects:
+			 *     - May mutate internal state.
+			 *
+			 * Code Paths:
+			 *     1. If preconditions met → executes normally.
+			 *     2. On error → logs and returns default.
+			 */
+/**
+ * Onframe.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 			public void onFrame(final ByteBuffer frame) {
 				final MediaVideoBufferEncoder videoEncoder;
 				synchronized (mSync) {
@@ -617,6 +2575,65 @@ abstract class AbstractUVCCameraHandler extends Handler {
 				}
 			}
 		};
+
+		/**
+
+		 * Handleupdatemedia.
+
+		 *
+
+		 * 
+
+		Args:
+
+		    path: Parameter path controls behavior.
+
+		Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handleupdatemedia.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 		public void handleUpdateMedia(final String path) {
 			if (DEBUG) Log.v(TAG_THREAD, "handleUpdateMedia:path=" + path);
@@ -639,6 +2656,59 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+
+		 * Handlerelease.
+
+		 *
+
+		 * Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Handlerelease.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public void handleRelease() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleRelease:mIsRecording=" + mIsRecording);
 			handleClose();
@@ -652,6 +2722,46 @@ abstract class AbstractUVCCameraHandler extends Handler {
 
 		private final MediaEncoder.MediaEncoderListener mMediaEncoderListener = new MediaEncoder.MediaEncoderListener() {
 			@Override
+			/**
+			 * Onprepared.
+			 *
+			 * 
+			Args:
+			    encoder: Parameter encoder controls behavior.
+			Returns:
+			 *     Description of the return value.
+			 *
+			 * Raises:
+			 *     Exception: When an error occurs.
+			 *
+			 * Side Effects:
+			 *     - May mutate internal state.
+			 *
+			 * Code Paths:
+			 *     1. If preconditions met → executes normally.
+			 *     2. On error → logs and returns default.
+			 */
+/**
+ * Onprepared.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 			public void onPrepared(final MediaEncoder encoder) {
 				if (DEBUG) Log.v(TAG, "onPrepared:encoder=" + encoder);
 				mIsRecording = true;
@@ -671,6 +2781,46 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 
 			@Override
+			/**
+			 * Onstopped.
+			 *
+			 * 
+			Args:
+			    encoder: Parameter encoder controls behavior.
+			Returns:
+			 *     Description of the return value.
+			 *
+			 * Raises:
+			 *     Exception: When an error occurs.
+			 *
+			 * Side Effects:
+			 *     - May mutate internal state.
+			 *
+			 * Code Paths:
+			 *     1. If preconditions met → executes normally.
+			 *     2. On error → logs and returns default.
+			 */
+/**
+ * Onstopped.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 			public void onStopped(final MediaEncoder encoder) {
 				if (DEBUG) Log.v(TAG_THREAD, "onStopped:encoder=" + encoder);
 				if ((encoder instanceof MediaVideoEncoder)
@@ -736,6 +2886,43 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 
 		@Override
+		/**
+		 * Run.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void run() {
 			Looper.prepare();
 			AbstractUVCCameraHandler handler = null;

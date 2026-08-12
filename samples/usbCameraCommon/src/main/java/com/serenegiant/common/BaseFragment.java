@@ -47,6 +47,26 @@ import com.serenegiant.utils.PermissionCheck;
  * Created by saki on 2016/11/19.
  *
  */
+/**
+ * Manages BaseFragment functionality.
+ *
+ * Responsibility: Provides core BaseFragment operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of BaseFragment
+ */
+
 public class BaseFragment extends Fragment
 	implements MessageDialogFragment.MessageDialogListener {
 
@@ -65,6 +85,26 @@ public class BaseFragment extends Fragment
 	}
 
 	@Override
+/**
+ * Oncreate.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// ワーカースレッドを生成
@@ -75,12 +115,69 @@ public class BaseFragment extends Fragment
 	}
 
 	@Override
+	/**
+	 * Onpause.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Onpause.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void onPause() {
 		clearToast();
 		super.onPause();
 	}
 
 	@Override
+/**
+ * Ondestroy.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public synchronized void onDestroy() {
 		// ワーカースレッドを破棄
 		if (mWorkerHandler != null) {
@@ -100,6 +197,26 @@ public class BaseFragment extends Fragment
 	 * @param task
 	 * @param duration
 	 */
+/**
+ * Runonuithread.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public final void runOnUiThread(final Runnable task, final long duration) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -118,6 +235,26 @@ public class BaseFragment extends Fragment
 	 * UIスレッド上で指定したRunnableが実行待ちしていれば実行待ちを解除する
 	 * @param task
 	 */
+/**
+ * Removefromuithread.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public final void removeFromUiThread(final Runnable task) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -196,6 +333,43 @@ public class BaseFragment extends Fragment
 		}
 
 		@Override
+		/**
+		 * Run.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void run() {
 			try {
 				if (mToast != null) {
@@ -225,6 +399,26 @@ public class BaseFragment extends Fragment
 	 */
 	@SuppressLint("NewApi")
 	@Override
+/**
+ * Onmessagedialogresult.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void onMessageDialogResult(final MessageDialogFragment dialog, final int requestCode, final String[] permissions, final boolean result) {
 		if (result) {
 			// メッセージダイアログでOKを押された時はパーミッション要求する
@@ -246,6 +440,26 @@ public class BaseFragment extends Fragment
 	 * @param grantResults
 	 */
 	@Override
+/**
+ * Onrequestpermissionsresult.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions, @NonNull final int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);	// 何もしてないけど一応呼んどく
 		final int n = Math.min(permissions.length, grantResults.length);

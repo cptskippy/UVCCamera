@@ -3,6 +3,23 @@
 //
 
 #include "utilbase.h"
+
+/**
+ * \brief Implements pipeline_helper component for UVCCamera native library.
+ *
+ * Provides implementation details for pipeline_helper within the UVCCamera native library.
+ *
+ * Exports:
+ *     pipeline_helper: Main component for pipeline_helper
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
 #include "Timers.h"
 #include "SimpleBufferedPipeline.h"
 #include "SQLiteBufferedPipeline.h"

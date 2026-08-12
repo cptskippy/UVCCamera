@@ -22,6 +22,45 @@ import android.util.Log;
 
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
+/**
+ * Manages MessageTask functionality.
+ *
+ * Responsibility: Provides core MessageTask operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mWorkerThread: Field mWorkerThread
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MessageTask
+ */
+/**
+ * Manages MessageTask functionality.
+ *
+ * Responsibility: Provides core MessageTask operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MessageTask
+ */
+
+
 
 public abstract class MessageTask implements Runnable {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
@@ -56,6 +95,65 @@ public abstract class MessageTask implements Runnable {
 			request_for_result = REQUEST_TASK_NON;
 		}
 
+		/**
+
+		 * Setresult.
+
+		 *
+
+		 * 
+
+		Args:
+
+		    result: Parameter result controls behavior.
+
+		Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Setresult.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public void setResult(final Object result) {
 			synchronized (this) {
 				this.result = result;
@@ -65,6 +163,46 @@ public abstract class MessageTask implements Runnable {
 		}
 
 		@Override
+		/**
+		 * Equals.
+		 *
+		 * 
+		Args:
+		    o: Parameter o controls behavior.
+		Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Equals.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public boolean equals(final Object o) {
 			return (o instanceof Request)
 				? (request == ((Request) o).request)
@@ -177,6 +315,26 @@ public abstract class MessageTask implements Runnable {
 	protected Request takeRequest() throws InterruptedException {
 		return mRequestQueue.take();
 	}
+/**
+ * Waitready.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public boolean waitReady() {
 		synchronized (mSync) {
@@ -191,15 +349,158 @@ public abstract class MessageTask implements Runnable {
 		}
 	}
 
+	/**
+
+	 * Isrunning.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Isrunning.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public boolean isRunning() {
 		return mIsRunning;
 	}
+
+	/**
+
+	 * Isfinished.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Isfinished.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public boolean isFinished() {
 		return mFinished;
 	}
 
 	@Override
+	/**
+	 * Run.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void run() {
 		Request request = null;
 		mIsRunning = true;
@@ -348,6 +649,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param obj
 	 * @return true if success offer
 	 */
+/**
+ * Offer.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean offer(final int request, final int arg1, final int arg2, final Object obj) {
 		return !mFinished && mRequestQueue.offer(obtain(request, arg1, arg2, obj));
 	}
@@ -359,6 +680,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param obj
 	 * @return true if success offer
 	 */
+/**
+ * Offer.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean offer(final int request, final int arg1, final Object obj) {
 		return !mFinished && mRequestQueue.offer(obtain(request, arg1, 0, obj));
 	}
@@ -370,6 +711,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param arg2
 	 * @return true if success offer
 	 */
+/**
+ * Offer.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean offer(final int request, final int arg1, final int arg2) {
 		return !mFinished && mIsRunning && mRequestQueue.offer(obtain(request, arg1, arg2, null));
 	}
@@ -380,6 +741,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param arg1
 	 * @return true if success offer
 	 */
+/**
+ * Offer.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean offer(final int request, final int arg1) {
 		return !mFinished && mIsRunning && mRequestQueue.offer(obtain(request, arg1, 0, null));
 	}
@@ -389,6 +770,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param request minus values and zero are reserved
 	 * @return true if success offer
 	 */
+/**
+ * Offer.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean offer(final int request) {
 		return !mFinished && mIsRunning && mRequestQueue.offer(obtain(request, 0, 0, null));
 	}
@@ -399,6 +800,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param obj
 	 * @return true if success offer
 	 */
+/**
+ * Offer.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean offer(final int request, final Object obj) {
 		return !mFinished && mIsRunning && mRequestQueue.offer(obtain(request, 0, 0, obj));
 	}
@@ -409,6 +830,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param arg1
 	 * @param arg2
 	 */
+/**
+ * Offerfirst.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean offerFirst(final int request, final int arg1, final int arg2, final Object obj) {
 		return !mFinished && mIsRunning && mRequestQueue.offerFirst(obtain(request, arg1, arg2, obj));
 	}
@@ -423,6 +864,49 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param obj
 	 * @return
 	 */
+	/**
+	 * Offerandwait.
+	 *
+	 * 
+	Args:
+	    request: Parameter request controls behavior.
+	    arg1: Parameter arg1 controls behavior.
+	    arg2: Parameter arg2 controls behavior.
+	    obj: Parameter obj controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Offerandwait.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public Object offerAndWait(final int request, final int arg1, final int arg2, final Object obj) {
 		if (!mFinished && (request > REQUEST_TASK_NON)) {
 			final Request req = obtain(REQUEST_TASK_RUN_AND_WAIT, arg1, arg2, obj);
@@ -449,9 +933,88 @@ LOOP:	for (; mIsRunning; ) {
 	 * @param task
 	 * @return true if success queue
 	 */
+/**
+ * Queueevent.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean queueEvent(final Runnable task) {
 		return !mFinished && (task != null) && offer(REQUEST_TASK_RUN, task);
 	}
+
+	/**
+
+	 * Removerequest.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    request: Parameter request controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Removerequest.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void removeRequest(final Request request) {
 		for (final Request req: mRequestQueue) {
@@ -462,6 +1025,65 @@ LOOP:	for (; mIsRunning; ) {
 			}
 		}
 	}
+
+	/**
+
+	 * Removerequest.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    request: Parameter request controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Removerequest.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void removeRequest(final int request) {
 		for (final Request req: mRequestQueue) {
@@ -476,6 +1098,26 @@ LOOP:	for (; mIsRunning; ) {
 	/**
 	 * request terminate worker thread and release all related resources
 	 */
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void release() {
 		release(false);
 	}
@@ -484,6 +1126,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * request terminate worker thread and release all related resources
 	 * @param interrupt trueなら実行中のタスクをinterruptする
 	 */
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void release(final boolean interrupt) {
 		final boolean b = mIsRunning;
 		mIsRunning = false;
@@ -514,6 +1176,26 @@ LOOP:	for (; mIsRunning; ) {
 	/**
 	 * 実行中のタスクが終了後開放する
 	 */
+/**
+ * Releaseself.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void releaseSelf() {
 		mIsRunning = false;
 		if (!mFinished) {
@@ -527,6 +1209,26 @@ LOOP:	for (; mIsRunning; ) {
 	 * 単にTaskBreakをthrowするだけ
 	 * @throws TaskBreak
 	 */
+/**
+ * Userbreak.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void userBreak() throws TaskBreak {
 		throw new TaskBreak();
 	}

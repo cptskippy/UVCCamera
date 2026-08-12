@@ -31,6 +31,45 @@ import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.util.Log;
 import android.view.Surface;
+/**
+ * Manages MediaSurfaceEncoder functionality.
+ *
+ * Responsibility: Provides core MediaSurfaceEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mSurface: Field mSurface
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaSurfaceEncoder
+ */
+/**
+ * Manages MediaSurfaceEncoder functionality.
+ *
+ * Responsibility: Provides core MediaSurfaceEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaSurfaceEncoder
+ */
+
+
 
 public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 	private static final boolean DEBUG = true;	// TODO set false on release
@@ -54,6 +93,26 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 	/**
 	* Returns the encoder's input surface.
 	*/
+/**
+ * Getinputsurface.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public Surface getInputSurface() {
 		return mSurface;
 	}

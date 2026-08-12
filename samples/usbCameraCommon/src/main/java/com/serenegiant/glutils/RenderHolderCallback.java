@@ -23,6 +23,26 @@ import android.view.Surface;
 /**
  * RenderHolderのコールバックリスナー
  */
+/**
+ * Manages RenderHolderCallback functionality.
+ *
+ * Responsibility: Provides core RenderHolderCallback operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of RenderHolderCallback
+ */
+
 public interface RenderHolderCallback {
 	public void onCreate(Surface surface);
 	public void onFrameAvailable();

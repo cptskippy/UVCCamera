@@ -21,6 +21,23 @@
  * All files in the folder are under this Apache License, Version 2.0.
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
+
+/**
+ * \brief Implements Parameters component for UVCCamera native library.
+ *
+ * Provides implementation details for Parameters within the UVCCamera native library.
+ *
+ * Exports:
+ *     Parameters: Main component for Parameters
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
 #define LOG_TAG "Parameters"
 
 #include "Parameters.h"
@@ -248,9 +265,27 @@ static void writerFormatDescriptions(Writer<StringBuffer> &writer, uvc_streaming
 	writer.EndArray();	// end of FORMATS
 }
 
+/**
+ * \brief Implements UVCDiags.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 UVCDiags::UVCDiags() {}
 UVCDiags::~UVCDiags() {};
 
+/**
+ * \brief Implements getDescriptions.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 char *UVCDiags::getDescriptions(const uvc_device_handle_t *deviceHandle) {
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);
@@ -315,6 +350,15 @@ char *UVCDiags::getDescriptions(const uvc_device_handle_t *deviceHandle) {
 	RETURN(strdup(buffer.GetString()), char *);
 }
 
+/**
+ * \brief Implements getCurrentStream.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 char *UVCDiags::getCurrentStream(const uvc_stream_ctrl_t *ctrl) {
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);
@@ -339,6 +383,15 @@ char *UVCDiags::getCurrentStream(const uvc_stream_ctrl_t *ctrl) {
 	RETURN(strdup(buffer.GetString()), char *);
 }
 
+/**
+ * \brief Implements getSupportedSize.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 char *UVCDiags::getSupportedSize(const uvc_device_handle_t *deviceHandle) {
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);

@@ -41,6 +41,26 @@ import com.serenegiant.glutils.RenderHandler;
  * This class render texture images into recording surface
  * camera from MediaCodec encoder using Open GL|ES
  */
+/**
+ * Manages MediaVideoEncoder functionality.
+ *
+ * Responsibility: Provides core MediaVideoEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaVideoEncoder
+ */
+
 public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MediaVideoEncoder";
@@ -62,6 +82,65 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 		mHeight = height;
 	}
 
+	/**
+
+	 * Frameavailablesoon.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    tex_matrix: Parameter tex_matrix controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Frameavailablesoon.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 	public boolean frameAvailableSoon(final float[] tex_matrix) {
 		boolean result;
 		if (result = super.frameAvailableSoon())
@@ -75,6 +154,26 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 	 * @return
 	 */
 	@Override
+/**
+ * Frameavailablesoon.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean frameAvailableSoon() {
 		boolean result;
 		if (result = super.frameAvailableSoon())
@@ -117,6 +216,67 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
         	}
         }
 	}
+
+	/**
+
+	 * Seteglcontext.
+
+	 *
+
+	 * 
+
+	Args:
+
+	    sharedContext: Parameter sharedContext controls behavior.
+
+	    tex_id: Parameter tex_id controls behavior.
+
+	Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Seteglcontext.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void setEglContext(final EGLBase.IContext sharedContext, final int tex_id) {
 		mRenderHandler.setEglContext(sharedContext, tex_id, mSurface, true);

@@ -28,6 +28,42 @@ import android.graphics.SurfaceTexture;
 import android.view.Surface;
 
 import com.serenegiant.encoder.IVideoEncoder;
+/**
+ * Manages CameraViewInterface functionality.
+ *
+ * Responsibility: Provides core CameraViewInterface operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of CameraViewInterface
+ */
+/**
+ * Manages CameraViewInterface functionality.
+ *
+ * Responsibility: Provides core CameraViewInterface operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of CameraViewInterface
+ */
+
+
 
 public interface CameraViewInterface extends IAspectRatioView {
 	public interface Callback {

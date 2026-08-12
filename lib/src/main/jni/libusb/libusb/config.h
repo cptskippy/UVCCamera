@@ -17,6 +17,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/**
+ * \brief Provide Android build configuration for libusb.
+ *
+ * Header defining compile-time feature toggles and platform detection macros
+ * for Android builds. Generated/configured during build to enable/disable
+ * logging, threading, and OS-specific facilities.
+ *
+ * Exports:
+ *   ENABLE_LOGGING, ENABLE_DEBUG_LOGGING: Logging control
+ *   HAVE_*_H: Feature detection macros
+ *   OS_ANDROID, THREADS_POSIX: Platform selection
+ *   DEFAULT_VISIBILITY: Symbol visibility
+ *
+ * Dependencies:
+ *   - utilbase.h: Base utilities
+ *   - Autoconf/configure output
+ *
+ * Architecture Note:
+ *   Config header is build-specific and should not be edited manually.
+ *   Changes require re-running configure or editing build scripts.
+ */
+
 /* Start with debug message logging enabled */
 /* #undef ENABLE_DEBUG_LOGGING */
 

@@ -21,6 +21,26 @@ package com.serenegiant.widget;
 /**
  * アスペクト比を一定に保つView用のインターフェースを定義
  */
+/**
+ * Manages IAspectRatioView functionality.
+ *
+ * Responsibility: Provides core IAspectRatioView operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of IAspectRatioView
+ */
+
 public interface IAspectRatioView {
 	public void setAspectRatio(double aspectRatio);
 	public void setAspectRatio(final int width, final int height);

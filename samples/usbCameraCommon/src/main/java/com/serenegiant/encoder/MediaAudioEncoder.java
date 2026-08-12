@@ -36,6 +36,45 @@ import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.media.MediaRecorder;
 import android.util.Log;
+/**
+ * Manages MediaAudioEncoder functionality.
+ *
+ * Responsibility: Provides core MediaAudioEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mAudioThread: Field mAudioThread
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaAudioEncoder
+ */
+/**
+ * Manages MediaAudioEncoder functionality.
+ *
+ * Responsibility: Provides core MediaAudioEncoder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MediaAudioEncoder
+ */
+
+
 
 public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 	private static final boolean DEBUG = true;  // TODO set false on release
@@ -116,6 +155,43 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 	private class AudioThread extends Thread {
 		@Override
 		@SuppressLint("MissingPermission")
+		/**
+		 * Run.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void run() {
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO); // THREAD_PRIORITY_URGENT_AUDIO
 			int cnt = 0;

@@ -18,6 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief Core definitions and configuration for RapidJSON.
+ *
+ * Provides fundamental types, configuration macros, stream concepts, and basic utilities used across the library.
+ *
+ * Exports:
+ *     SizeType: Size type alias
+ *     Type: JSON value type enum
+ *     Stream: Stream concept documentation
+ *     GenericStringStream: Read-only string stream
+ *     GenericInsituStringStream: Read-write string stream for in-situ parsing
+ *     StringStream, InsituStringStream: UTF8 specializations
+ *
+ * Dependencies:
+ *     - allocators.h: Allocator definitions
+ *     - encodings.h: Encoding definitions
+ *     - C++ standard library: <cstdlib>, <cstring>, <stdint.h>
+ *
+ * Architecture Note:
+ *     rapidjson.h is the central header included by all public headers. It defines configuration and core concepts. It is header-only and thread-safe for read-only use.
+ */
+
 #ifndef RAPIDJSON_RAPIDJSON_H_
 #define RAPIDJSON_RAPIDJSON_H_
 

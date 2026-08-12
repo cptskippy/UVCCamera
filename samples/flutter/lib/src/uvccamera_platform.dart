@@ -10,6 +10,12 @@ import 'uvccamera_platform_interface.dart';
 import 'uvccamera_resolution_preset.dart';
 import 'uvccamera_status_event.dart';
 
+/// Default platform implementation for UVC camera using MethodChannel and EventChannel.
+///
+/// Handles communication with native Android implementation.
+///
+/// Thread Safety:
+///   Methods may be called from main isolate. Channels handle threading internally.
 class UvcCameraPlatform extends UvcCameraPlatformInterface {
   final _nativeMethodChannel = const MethodChannel('uvccamera/native');
 

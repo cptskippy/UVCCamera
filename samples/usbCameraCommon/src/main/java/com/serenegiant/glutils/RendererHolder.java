@@ -24,6 +24,26 @@ import android.support.annotation.Nullable;
 /**
  * Hold shared texture that has camera frame and draw them to registered surface if needs<br>
  */
+/**
+ * Manages RendererHolder functionality.
+ *
+ * Responsibility: Provides core RendererHolder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of RendererHolder
+ */
+
 public class RendererHolder extends AbstractRendererHolder {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = RendererHolder.class.getSimpleName();

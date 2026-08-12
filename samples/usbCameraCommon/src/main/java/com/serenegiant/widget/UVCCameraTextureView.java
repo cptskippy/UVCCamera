@@ -48,6 +48,59 @@ import com.serenegiant.utils.FpsCounter;
  * you can show this view in the center of screen and keep the aspect ratio of content
  * XXX it is better that can set the aspect ratio as xml property
  */
+/**
+ * Manages UVCCameraTextureView functionality.
+ *
+ * Responsibility: Provides core UVCCameraTextureView operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mHasSurface: Field mHasSurface
+    mRenderHandler: Field mRenderHandler
+    mTempBitmap: Field mTempBitmap
+    mReqesutCaptureStillImage: Field mReqesutCaptureStillImage
+    mCallback: Field mCallback
+    mPreviewSurface: Field mPreviewSurface
+    mThread: Field mThread
+    mIsActive: Field mIsActive
+    mHandler: Field mHandler
+    mEgl: Field mEgl
+    mDrawer: Field mDrawer
+    mTexId: Field mTexId
+    mPreviewSurface: Field mPreviewSurface
+    mEncoder: Field mEncoder
+    buf: Field buf
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of UVCCameraTextureView
+ */
+/**
+ * Manages UVCCameraTextureView functionality.
+ *
+ * Responsibility: Provides core UVCCameraTextureView operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of UVCCameraTextureView
+ */
+
+
 public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	implements TextureView.SurfaceTextureListener, CameraViewInterface {
 
@@ -77,6 +130,43 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Onresume.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Onresume.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void onResume() {
 		if (DEBUG) Log.v(TAG, "onResume:");
 		if (mHasSurface) {
@@ -85,6 +175,43 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Onpause.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Onpause.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void onPause() {
 		if (DEBUG) Log.v(TAG, "onPause:");
 		if (mRenderHandler != null) {
@@ -98,6 +225,48 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Onsurfacetextureavailable.
+	 *
+	 * 
+	Args:
+	    surface: Parameter surface controls behavior.
+	    width: Parameter width controls behavior.
+	    height: Parameter height controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Onsurfacetextureavailable.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void onSurfaceTextureAvailable(final SurfaceTexture surface, final int width, final int height) {
 		if (DEBUG) Log.v(TAG, "onSurfaceTextureAvailable:" + surface);
 		if (mRenderHandler == null) {
@@ -112,6 +281,48 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Onsurfacetexturesizechanged.
+	 *
+	 * 
+	Args:
+	    surface: Parameter surface controls behavior.
+	    width: Parameter width controls behavior.
+	    height: Parameter height controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Onsurfacetexturesizechanged.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void onSurfaceTextureSizeChanged(final SurfaceTexture surface, final int width, final int height) {
 		if (DEBUG) Log.v(TAG, "onSurfaceTextureSizeChanged:" + surface);
 		if (mRenderHandler != null) {
@@ -123,6 +334,46 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Onsurfacetexturedestroyed.
+	 *
+	 * 
+	Args:
+	    surface: Parameter surface controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Onsurfacetexturedestroyed.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public boolean onSurfaceTextureDestroyed(final SurfaceTexture surface) {
 		if (DEBUG) Log.v(TAG, "onSurfaceTextureDestroyed:" + surface);
 		if (mRenderHandler != null) {
@@ -141,6 +392,46 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Onsurfacetextureupdated.
+	 *
+	 * 
+	Args:
+	    surface: Parameter surface controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Onsurfacetextureupdated.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void onSurfaceTextureUpdated(final SurfaceTexture surface) {
 		synchronized (mCaptureSync) {
 			if (mReqesutCaptureStillImage) {
@@ -155,6 +446,43 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Hassurface.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Hassurface.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public boolean hasSurface() {
 		return mHasSurface;
 	}
@@ -169,6 +497,43 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	 * you should change this method(copy and return)
 	 */
 	@Override
+	/**
+	 * Capturestillimage.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Capturestillimage.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public Bitmap captureStillImage() {
 		synchronized (mCaptureSync) {
 			mReqesutCaptureStillImage = true;
@@ -181,12 +546,86 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Getsurfacetexture.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Getsurfacetexture.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public SurfaceTexture getSurfaceTexture() {
 		return mRenderHandler != null ? mRenderHandler.getPreviewTexture() : null;
 	}
 
 	private Surface mPreviewSurface;
 	@Override
+	/**
+	 * Getsurface.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Getsurface.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public Surface getSurface() {
 		if (DEBUG) Log.v(TAG, "getSurface:hasSurface=" + mHasSurface);
 		if (mPreviewSurface == null) {
@@ -199,15 +638,148 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * Setvideoencoder.
+	 *
+	 * 
+	Args:
+	    encoder: Parameter encoder controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Setvideoencoder.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void setVideoEncoder(final IVideoEncoder encoder) {
 		if (mRenderHandler != null)
 			mRenderHandler.setVideoEncoder(encoder);
 	}
 
 	@Override
+	/**
+	 * Setcallback.
+	 *
+	 * 
+	Args:
+	    callback: Parameter callback controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Setcallback.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void setCallback(final Callback callback) {
 		mCallback = callback;
 	}
+
+	/**
+
+	 * Resetfps.
+
+	 *
+
+	 * Returns:
+
+	 *     Description of the return value.
+
+	 *
+
+	 * Raises:
+
+	 *     Exception: When an error occurs.
+
+	 *
+
+	 * Side Effects:
+
+	 *     - May mutate internal state.
+
+	 *
+
+	 * Code Paths:
+
+	 *     1. If preconditions met → executes normally.
+
+	 *     2. On error → logs and returns default.
+
+	 */
+/**
+ * Resetfps.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 
 	public void resetFps() {
 		mFpsCounter.reset();
@@ -222,6 +794,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	 * get current frame rate of image processing
 	 * @return
 	 */
+/**
+ * Getfps.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public float getFps() {
 		return mFpsCounter.getFps();
 	}
@@ -230,6 +822,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	 * get total frame rate from start
 	 * @return
 	 */
+/**
+ * Gettotalfps.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public float getTotalFps() {
 		return mFpsCounter.getTotalFps();
 	}
@@ -251,6 +863,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 		private RenderThread mThread;
 		private boolean mIsActive = true;
 		private final FpsCounter mFpsCounter;
+/**
+ * Createhandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 		public static final RenderHandler createHandler(final FpsCounter counter,
 			final SurfaceTexture surface, final int width, final int height) {
@@ -264,12 +896,52 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 			mThread = thread;
 			mFpsCounter = counter;
 		}
+/**
+ * Setvideoencoder.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 		public final void setVideoEncoder(final IVideoEncoder encoder) {
 			if (DEBUG) Log.v(TAG, "setVideoEncoder:");
 			if (mIsActive)
 				sendMessage(obtainMessage(MSG_SET_ENCODER, encoder));
 		}
+/**
+ * Getpreviewtexture.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 		public final SurfaceTexture getPreviewTexture() {
 			if (DEBUG) Log.v(TAG, "getPreviewTexture:");
@@ -287,6 +959,67 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 			}
 		}
 
+		/**
+
+		 * Resize.
+
+		 *
+
+		 * 
+
+		Args:
+
+		    width: Parameter width controls behavior.
+
+		    height: Parameter height controls behavior.
+
+		Returns:
+
+		 *     Description of the return value.
+
+		 *
+
+		 * Raises:
+
+		 *     Exception: When an error occurs.
+
+		 *
+
+		 * Side Effects:
+
+		 *     - May mutate internal state.
+
+		 *
+
+		 * Code Paths:
+
+		 *     1. If preconditions met → executes normally.
+
+		 *     2. On error → logs and returns default.
+
+		 */
+/**
+ * Resize.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 		public void resize(final int width, final int height) {
 			if (DEBUG) Log.v(TAG, "resize:");
 			if (mIsActive) {
@@ -299,6 +1032,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 				}
 			}
 		}
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 		public final void release() {
 			if (DEBUG) Log.v(TAG, "release:");
@@ -311,6 +1064,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 		}
 
 		@Override
+/**
+ * Onframeavailable.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 		public final void onFrameAvailable(final SurfaceTexture surfaceTexture) {
 			if (mIsActive) {
 				mFpsCounter.count();
@@ -319,6 +1092,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 		}
 
 		@Override
+/**
+ * Handlemessage.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 		public final void handleMessage(final Message msg) {
 			if (mThread == null) return;
 			switch (msg.what) {
@@ -370,6 +1163,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 				mViewHeight = height;
 	    		setName("RenderThread");
 			}
+/**
+ * Gethandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 			public final RenderHandler getHandler() {
 				if (DEBUG) Log.v(TAG, "RenderThread#getHandler:");
@@ -384,6 +1197,67 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	            return mHandler;
 			}
 
+			/**
+
+			 * Resize.
+
+			 *
+
+			 * 
+
+			Args:
+
+			    width: Parameter width controls behavior.
+
+			    height: Parameter height controls behavior.
+
+			Returns:
+
+			 *     Description of the return value.
+
+			 *
+
+			 * Raises:
+
+			 *     Exception: When an error occurs.
+
+			 *
+
+			 * Side Effects:
+
+			 *     - May mutate internal state.
+
+			 *
+
+			 * Code Paths:
+
+			 *     1. If preconditions met → executes normally.
+
+			 *     2. On error → logs and returns default.
+
+			 */
+/**
+ * Resize.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
+
 			public void resize(final int width, final int height) {
 				if (((width > 0) && (width != mViewWidth)) || ((height > 0) && (height != mViewHeight))) {
 					mViewWidth = width;
@@ -395,6 +1269,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 					}
 				}
 			}
+/**
+ * Updatepreviewsurface.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 			public final void updatePreviewSurface() {
 	            if (DEBUG) Log.i(TAG, "RenderThread#updatePreviewSurface:");
@@ -419,6 +1313,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 					mSync.notifyAll();
 	            }
 			}
+/**
+ * Setencoder.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 			public final void setEncoder(final MediaEncoder encoder) {
 				if (DEBUG) Log.v(TAG, "RenderThread#setEncoder:encoder=" + encoder);
@@ -446,6 +1360,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 			/**
 			 * draw a frame (and request to draw for video capturing if it is necessary)
 			 */
+/**
+ * Ondrawframe.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 			public final void onDrawFrame() {
 				mEglSurface.makeCurrent();
 				// update texture(came from camera)
@@ -538,6 +1472,26 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 			} */
 
 			@Override
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 			public final void run() {
 				Log.d(TAG, getName() + " started");
 	            init();

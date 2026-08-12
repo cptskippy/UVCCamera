@@ -21,6 +21,45 @@ package com.serenegiant.glutils;
 import android.support.annotation.Nullable;
 
 import com.serenegiant.utils.MessageTask;
+/**
+ * Manages EglTask functionality.
+ *
+ * Responsibility: Provides core EglTask operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mEgl: Field mEgl
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of EglTask
+ */
+/**
+ * Manages EglTask functionality.
+ *
+ * Responsibility: Provides core EglTask operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of EglTask
+ */
+
+
 
 public abstract class EglTask extends MessageTask {
 //	private static final boolean DEBUG = false;

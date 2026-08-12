@@ -30,6 +30,45 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.serenegiant.utils.BuildCheck;
+/**
+ * Manages MessageDialogFragmentV4 functionality.
+ *
+ * Responsibility: Provides core MessageDialogFragmentV4 operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mDialogListener: Field mDialogListener
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MessageDialogFragmentV4
+ */
+/**
+ * Manages MessageDialogFragmentV4 functionality.
+ *
+ * Responsibility: Provides core MessageDialogFragmentV4 operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of MessageDialogFragmentV4
+ */
+
+
 
 public class MessageDialogFragmentV4 extends DialogFragment {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
@@ -38,12 +77,52 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 	public static interface MessageDialogListener {
 		public void onMessageDialogResult(final MessageDialogFragmentV4 dialog, final int requestCode, final String[] permissions, final boolean result);
 	}
+/**
+ * Showdialog.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static MessageDialogFragmentV4 showDialog(final FragmentActivity parent, final int requestCode, final int id_title, final int id_message, final String[] permissions) {
 		final MessageDialogFragmentV4 dialog = newInstance(requestCode, id_title, id_message, permissions);
 		dialog.show(parent.getSupportFragmentManager(), TAG);
 		return dialog;
 	}
+/**
+ * Showdialog.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static MessageDialogFragmentV4 showDialog(final Fragment parent, final int requestCode, final int id_title, final int id_message, final String[] permissions) {
 		final MessageDialogFragmentV4 dialog = newInstance(requestCode, id_title, id_message, permissions);
@@ -51,6 +130,26 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 		dialog.show(parent.getFragmentManager(), TAG);
 		return dialog;
 	}
+/**
+ * Newinstance.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static MessageDialogFragmentV4 newInstance(final int requestCode, final int id_title, final int id_message, final String[] permissions) {
 		final MessageDialogFragmentV4 fragment = new MessageDialogFragmentV4();
@@ -73,6 +172,46 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 
 	@SuppressLint("NewApi")
 	@Override
+	/**
+	 * Onattach.
+	 *
+	 * 
+	Args:
+	    context: Parameter context controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Onattach.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void onAttach(final Context context) {
 		super.onAttach(context);
 		// コールバックインターフェースを取得
@@ -106,6 +245,46 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 //	}
 
 	@Override
+    /**
+     * Oncreatedialog.
+     *
+     * 
+    Args:
+        savedInstanceState: Parameter savedInstanceState controls behavior.
+    Returns:
+     *     Description of the return value.
+     *
+     * Raises:
+     *     Exception: When an error occurs.
+     *
+     * Side Effects:
+     *     - May mutate internal state.
+     *
+     * Code Paths:
+     *     1. If preconditions met → executes normally.
+     *     2. On error → logs and returns default.
+     */
+/**
+ * Oncreatedialog.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
 		final Bundle args = savedInstanceState != null ? savedInstanceState : getArguments();
 		final int requestCode = getArguments().getInt("requestCode");
@@ -121,6 +300,47 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 			.setPositiveButton(android.R.string.ok,
 				new DialogInterface.OnClickListener() {
 					@Override
+					/**
+					 * Onclick.
+					 *
+					 * 
+					Args:
+					    dialog: Parameter dialog controls behavior.
+					    whichButton: Parameter whichButton controls behavior.
+					Returns:
+					 *     Description of the return value.
+					 *
+					 * Raises:
+					 *     Exception: When an error occurs.
+					 *
+					 * Side Effects:
+					 *     - May mutate internal state.
+					 *
+					 * Code Paths:
+					 *     1. If preconditions met → executes normally.
+					 *     2. On error → logs and returns default.
+					 */
+/**
+ * Onclick.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 					public void onClick(final DialogInterface dialog, final int whichButton) {
 						// 本当はここでパーミッション要求をしたいだけどこのダイアログがdismissしてしまって結果を受け取れないので
 						// 呼び出し側へ返してそこでパーミッション要求する。なのでこのダイアログは単にメッセージを表示するだけ
@@ -135,6 +355,47 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 			.setNegativeButton(android.R.string.cancel,
 				new DialogInterface.OnClickListener() {
 					@Override
+					/**
+					 * Onclick.
+					 *
+					 * 
+					Args:
+					    dialog: Parameter dialog controls behavior.
+					    whichButton: Parameter whichButton controls behavior.
+					Returns:
+					 *     Description of the return value.
+					 *
+					 * Raises:
+					 *     Exception: When an error occurs.
+					 *
+					 * Side Effects:
+					 *     - May mutate internal state.
+					 *
+					 * Code Paths:
+					 *     1. If preconditions met → executes normally.
+					 *     2. On error → logs and returns default.
+					 */
+/**
+ * Onclick.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 					public void onClick(final DialogInterface dialog, int whichButton) {
 						try {
 							mDialogListener.onMessageDialogResult(MessageDialogFragmentV4.this, requestCode, permissions, false);

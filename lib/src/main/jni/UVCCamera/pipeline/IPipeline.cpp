@@ -66,6 +66,32 @@ int IPipeline::setPipeline(IPipeline *pipeline) {
  * set frame to next_pipeline
  * if you don't need this, override this function
  */
+
+/**
+ * \brief Implements IPipeline component for UVCCamera native library.
+ *
+ * Provides implementation details for IPipeline within the UVCCamera native library.
+ *
+ * Exports:
+ *     IPipeline: Main component for IPipeline
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
+/**
+ * \brief Implements chain_frame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int IPipeline::chain_frame(uvc_frame_t *frame) {
 	ENTER();
 

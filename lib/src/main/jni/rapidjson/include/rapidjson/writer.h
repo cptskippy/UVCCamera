@@ -18,6 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief JSON writer for RapidJSON.
+ *
+ * Provides a SAX-style writer for generating JSON output.
+ *
+ * Exports:
+ *     GenericWriter: Templated JSON writer
+ *     Writer: UTF8 specialization
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - internal/stack.h: Stack management
+ *
+ * Architecture Note:
+ *     Writer is used to serialize JSON values. It is not thread-safe per instance.
+ */
+
 #ifndef RAPIDJSON_WRITER_H_
 #define RAPIDJSON_WRITER_H_
 

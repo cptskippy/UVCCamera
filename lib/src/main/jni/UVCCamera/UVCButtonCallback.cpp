@@ -3,6 +3,23 @@
 #include <unistd.h>
 #include "utilbase.h"
 #include "UVCButtonCallback.h"
+
+/**
+ * \brief Implements UVCButtonCallback component for UVCCamera native library.
+ *
+ * Provides implementation details for UVCButtonCallback within the UVCCamera native library.
+ *
+ * Exports:
+ *     UVCButtonCallback: Main component for UVCButtonCallback
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
 #include "libuvc_internal.h"
 
 #define	LOCAL_DEBUG 0
@@ -25,6 +42,15 @@ UVCButtonCallback::~UVCButtonCallback() {
 	EXIT();
 }
 
+/**
+ * \brief Implements setCallback.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCButtonCallback::setCallback(JNIEnv *env, jobject button_callback_obj) {
 	
 	ENTER();
@@ -58,6 +84,15 @@ int UVCButtonCallback::setCallback(JNIEnv *env, jobject button_callback_obj) {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Implements notifyButtonCallback.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCButtonCallback::notifyButtonCallback(JNIEnv* env, int button, int state) {
 
 	pthread_mutex_lock(&button_mutex);
@@ -70,6 +105,15 @@ void UVCButtonCallback::notifyButtonCallback(JNIEnv* env, int button, int state)
 	pthread_mutex_unlock(&button_mutex);
 }
 
+/**
+ * \brief Implements uvc_button_callback.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCButtonCallback::uvc_button_callback(int button, int state, void *user_ptr) {
 
 	UVCButtonCallback *buttonCallback = reinterpret_cast<UVCButtonCallback *>(user_ptr);

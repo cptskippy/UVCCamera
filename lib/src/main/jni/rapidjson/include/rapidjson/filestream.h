@@ -18,6 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief File stream utilities for RapidJSON.
+ *
+ * Provides low-level file reading and writing buffers used by FileReadStream and FileWriteStream.
+ *
+ * Exports:
+ *     FileReadBuffer: Buffered file reader
+ *     FileWriteBuffer: Buffered file writer
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - internal/stack.h: Buffer management
+ *
+ * Architecture Note:
+ *     File streams are used for file I/O in parsers and writers. They are not thread-safe.
+ */
+
 #ifndef RAPIDJSON_FILESTREAM_H_
 #define RAPIDJSON_FILESTREAM_H_
 

@@ -29,6 +29,45 @@ import android.view.Surface;
 import com.serenegiant.glutils.RendererHolder;
 import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.widget.CameraViewInterface;
+/**
+ * Manages UVCCameraHandlerMultiSurface functionality.
+ *
+ * Responsibility: Provides core UVCCameraHandlerMultiSurface operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mRendererHolder: Field mRendererHolder
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of UVCCameraHandlerMultiSurface
+ */
+/**
+ * Manages UVCCameraHandlerMultiSurface functionality.
+ *
+ * Responsibility: Provides core UVCCameraHandlerMultiSurface operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of UVCCameraHandlerMultiSurface
+ */
+
+
 
 public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	/**
@@ -39,6 +78,26 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	 * @param height
 	 * @return
 	 */
+/**
+ * Createhandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int width, final int height) {
@@ -55,6 +114,26 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	 * @param bandwidthFactor
 	 * @return
 	 */
+/**
+ * Createhandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int width, final int height, final float bandwidthFactor) {
@@ -71,6 +150,26 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	 * @param height
 	 * @return
 	 */
+/**
+ * Createhandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int encoderType, final int width, final int height) {
@@ -88,6 +187,26 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	 * @param format
 	 * @return
 	 */
+/**
+ * Createhandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int encoderType, final int width, final int height, final int format) {
@@ -106,6 +225,26 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	 * @param bandwidthFactor
 	 * @return
 	 */
+/**
+ * Createhandler.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int encoderType, final int width, final int height, final int format, final float bandwidthFactor) {
@@ -120,6 +259,26 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 		super(thread);
 		mRendererHolder = new RendererHolder(thread.getWidth(), thread.getHeight(), null);
 	}
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public synchronized void release() {
 		if (mRendererHolder != null) {
@@ -128,6 +287,26 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 		}
 		super.release();
 	}
+/**
+ * Resize.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public synchronized void resize(final int width, final int height) {
 		super.resize(width, height);
@@ -135,6 +314,26 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 			mRendererHolder.resize(width, height);
 		}
 	}
+/**
+ * Startpreview.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public synchronized void startPreview() {
 		checkReleased();
@@ -144,11 +343,51 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 			throw new IllegalStateException();
 		}
 	}
+/**
+ * Addsurface.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public synchronized void addSurface(final int surfaceId, final Surface surface, final boolean isRecordable) {
 		checkReleased();
 		mRendererHolder.addSurface(surfaceId, surface, isRecordable);
 	}
+/**
+ * Removesurface.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public synchronized void removeSurface(final int surfaceId) {
 		if (mRendererHolder != null) {
@@ -157,16 +396,130 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	@Override
+	/**
+	 * Capturestill.
+	 *
+	 * Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Capturestill.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void captureStill() {
 		checkReleased();
 		super.captureStill();
 	}
 
 	@Override
+	/**
+	 * Capturestill.
+	 *
+	 * 
+	Args:
+	    path: Parameter path controls behavior.
+	Returns:
+	 *     Description of the return value.
+	 *
+	 * Raises:
+	 *     Exception: When an error occurs.
+	 *
+	 * Side Effects:
+	 *     - May mutate internal state.
+	 *
+	 * Code Paths:
+	 *     1. If preconditions met → executes normally.
+	 *     2. On error → logs and returns default.
+	 */
+/**
+ * Capturestill.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 	public void captureStill(final String path) {
 		checkReleased();
 		post(new Runnable() {
 			@Override
+			/**
+			 * Run.
+			 *
+			 * Returns:
+			 *     Description of the return value.
+			 *
+			 * Raises:
+			 *     Exception: When an error occurs.
+			 *
+			 * Side Effects:
+			 *     - May mutate internal state.
+			 *
+			 * Code Paths:
+			 *     1. If preconditions met → executes normally.
+			 *     2. On error → logs and returns default.
+			 */
+/**
+ * Run.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 			public void run() {
 				synchronized (UVCCameraHandlerMultiSurface.this) {
 					if (mRendererHolder != null) {

@@ -24,6 +24,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef UTLIST_H
 #define UTLIST_H
 
+/**
+ * \brief Generic singly and doubly linked list macros.
+ *
+ * Provides LL_, DL_, CDL_ macros for list manipulation. Used internally by libuvc
+ * for device and stream lists.
+ *
+ * Exports:
+ *   LL_*, DL_*, CDL_* macros: list manipulation
+ *   UTLIST_VERSION: version identifier
+ *
+ * Dependencies:
+ *   None
+ *
+ * Architecture Note:
+ *   Header-only utility library. Macros expand inline; no runtime overhead.
+ */
 #define UTLIST_VERSION 1.9.1
 
 /* 

@@ -62,6 +62,32 @@ const bool CaptureBasePipeline::isCapturing() const { return mIsCapturing; }
 /**
  * clear frame data for capturing
  */
+
+/**
+ * \brief Implements CaptureBasePipeline component for UVCCamera native library.
+ *
+ * Provides implementation details for CaptureBasePipeline within the UVCCamera native library.
+ *
+ * Exports:
+ *     CaptureBasePipeline: Main component for CaptureBasePipeline
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
+/**
+ * \brief Implements clearCaptureFrame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void CaptureBasePipeline::clearCaptureFrame() {
 	Mutex::Autolock lock(capture_mutex);
 
@@ -70,6 +96,15 @@ void CaptureBasePipeline::clearCaptureFrame() {
 	captureQueue = NULL;
 }
 
+/**
+ * \brief Implements addCaptureFrame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void CaptureBasePipeline::addCaptureFrame(uvc_frame_t *frame) {
 //	ENTER();
 
@@ -160,6 +195,15 @@ int CaptureBasePipeline::handle_frame(uvc_frame_t *frame) {
  * @param vptr_args pointer to UVCCameraControl instance
  */
 // static
+/**
+ * \brief Implements capture_thread_func.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void *CaptureBasePipeline::capture_thread_func(void *vptr_args) {
 
 	ENTER();

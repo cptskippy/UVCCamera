@@ -24,6 +24,26 @@ import android.opengl.GLES20;
  * Created by saki on 16/08/26.
  * フラグメントシェーダーとかの文字列定数達を集める
  */
+/**
+ * Manages ShaderConst functionality.
+ *
+ * Responsibility: Provides core ShaderConst operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of ShaderConst
+ */
+
 public class ShaderConst {
 	public static final int GL_TEXTURE_EXTERNAL_OES	= 0x8D65;
 	public static final int GL_TEXTURE_2D           = 0x0DE1;

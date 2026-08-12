@@ -37,6 +37,26 @@ import javax.microedition.khronos.opengles.GL10;
 /**
  * OpenGL|ES用のヘルパークラス
  */
+/**
+ * Manages GLHelper functionality.
+ *
+ * Responsibility: Provides core GLHelper operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of GLHelper
+ */
+
 public final class GLHelper {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = "GLHelper";
@@ -45,6 +65,26 @@ public final class GLHelper {
 	 * OpenGL|ESのエラーをチェックしてlogCatに出力する
 	 * @param op
 	 */
+/**
+ * Checkglerror.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     public static void checkGlError(final String op) {
         final int error = GLES10.glGetError();
         if (error != GLES10.GL_NO_ERROR) {
@@ -62,6 +102,26 @@ public final class GLHelper {
 	 * @param gl
 	 * @param op
 	 */
+/**
+ * Checkglerror.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void checkGlError(final GL10 gl, final String op) {
 		final int error = gl.glGetError();
 		if (error != GL10.GL_NO_ERROR) {
@@ -80,6 +140,26 @@ public final class GLHelper {
 	 * @param filter_param テクスチャの補完方法を指定, min/mag共に同じ値になる, GL_LINEARとかGL_NEAREST
 	 * @return
 	 */
+/**
+ * Inittex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int initTex(final int texTarget, final int filter_param) {
 		return initTex(texTarget, GLES10.GL_TEXTURE0, filter_param, filter_param, GLES10.GL_CLAMP_TO_EDGE);
 	}
@@ -93,6 +173,26 @@ public final class GLHelper {
 	 * @param wrap テクスチャのクランプ方法, GL_CLAMP_TO_EDGE
 	 * @return
 	 */
+/**
+ * Inittex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int initTex(final int texTarget, final int texUnit, final int min_filter, final int mag_filter, final int wrap) {
 //		if (DEBUG) Log.v(TAG, "initTex:target=" + texTarget);
 		final int[] tex = new int[1];
@@ -113,6 +213,26 @@ public final class GLHelper {
 	 * @param filter_param テクスチャの補間方法を指定 GL_LINEARとかGL_NEAREST
 	 * @return
 	 */
+/**
+ * Inittex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int initTex(final GL10 gl, final int texTarget, final int filter_param) {
 //		if (DEBUG) Log.v(TAG, "initTex:target=" + texTarget);
 		final int[] tex = new int[1];
@@ -129,6 +249,26 @@ public final class GLHelper {
 	/**
 	 * delete specific texture
 	 */
+/**
+ * Deletetex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void deleteTex(final int hTex) {
 //		if (DEBUG) Log.v(TAG, "deleteTex:");
 		final int[] tex = new int[] {hTex};
@@ -138,11 +278,51 @@ public final class GLHelper {
 	/**
 	 * delete specific texture
 	 */
+/**
+ * Deletetex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void deleteTex(final GL10 gl, final int hTex) {
 //		if (DEBUG) Log.v(TAG, "deleteTex:");
 		final int[] tex = new int[] {hTex};
 		gl.glDeleteTextures(1, tex, 0);
 	}
+/**
+ * Loadtexturefromresource.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static int loadTextureFromResource(final Context context, final int resId) {
 		// Create an empty, mutable bitmap
@@ -179,6 +359,26 @@ public final class GLHelper {
 
 		return textures[0];
 	}
+/**
+ * Createtexturewithtextcontent.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static int createTextureWithTextContent (final String text) {
 		// Create an empty, mutable bitmap
@@ -215,6 +415,26 @@ public final class GLHelper {
 	 * <p>
 	 * Throws a RuntimeException if the location is invalid.
 	 */
+/**
+ * Checklocation.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void checkLocation(final int location, final String label) {
 		if (location < 0) {
 			throw new RuntimeException("Unable to locate '" + label + "' in program");
@@ -225,6 +445,26 @@ public final class GLHelper {
 	 * Writes GL version info to the log.
 	 */
 	@SuppressLint("InlinedApi")
+/**
+ * Logversioninfo.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void logVersionInfo() {
 		Log.i(TAG, "vendor  : " + GLES10.glGetString(GLES10.GL_VENDOR));
 		Log.i(TAG, "renderer: " + GLES10.glGetString(GLES10.GL_RENDERER));
@@ -250,6 +490,26 @@ public final class GLHelper {
 	 * @return the error string for the input error code, or NULL if the input
 	 *         was not a valid GL or GLU error code.
 	 */
+/**
+ * Gluerrorstring.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static String gluErrorString(final int error) {
 		switch (error) {
 		case GLES10.GL_NO_ERROR:
@@ -285,6 +545,26 @@ public final class GLHelper {
 	 * @param upY up vector Y
 	 * @param upZ up vector Z
 	 */
+/**
+ * Glulookat.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void gluLookAt(final float eyeX, final float eyeY, final float eyeZ,
 		final float centerX, final float centerY, final float centerZ,
 		final float upX, final float upY, final float upZ) {
@@ -305,6 +585,26 @@ public final class GLHelper {
 	 * @param bottom
 	 * @param top
 	 */
+/**
+ * Gluortho2d.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void gluOrtho2D(final float left, final float right,
 		final float bottom, final float top) {
 		GLES10.glOrthof(left, right, bottom, top, -1.0f, 1.0f);
@@ -323,6 +623,26 @@ public final class GLHelper {
 	 * @param zFar specifies the distance from the viewer to the far clipping
 	 *        plane (always positive).
 	 */
+/**
+ * Gluperspective.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void gluPerspective(final float fovy, final float aspect,
 		final float zNear, final float zFar) {
 
@@ -360,6 +680,26 @@ public final class GLHelper {
 	 * @return A return value of GL_TRUE indicates success, a return value of
 	 *         GL_FALSE indicates failure.
 	 */
+/**
+ * Gluproject.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int gluProject(final float objX, final float objY, final float objZ,
 		final float[] model, final int modelOffset, final float[] project, final int projectOffset,
 		final int[] view, final int viewOffset, final float[] win, final int winOffset) {
@@ -425,6 +765,26 @@ public final class GLHelper {
 	 * @return A return value of GL10.GL_TRUE indicates success, a return value
 	 *         of GL10.GL_FALSE indicates failure.
 	 */
+/**
+ * Gluunproject.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int gluUnProject(final float winX, final float winY, final float winZ,
 		final float[] model, final int modelOffset, final float[] project, final int projectOffset,
 		final int[] view, final int viewOffset, final float[] obj, final int objOffset) {

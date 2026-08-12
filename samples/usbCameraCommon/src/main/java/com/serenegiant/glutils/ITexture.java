@@ -21,6 +21,42 @@ package com.serenegiant.glutils;
 import android.graphics.Bitmap;
 
 import java.io.IOException;
+/**
+ * Manages ITexture functionality.
+ *
+ * Responsibility: Provides core ITexture operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of ITexture
+ */
+/**
+ * Manages ITexture functionality.
+ *
+ * Responsibility: Provides core ITexture operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of ITexture
+ */
+
+
 
 public interface ITexture {
 	void release();

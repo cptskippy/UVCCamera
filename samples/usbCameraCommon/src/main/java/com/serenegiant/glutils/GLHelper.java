@@ -39,6 +39,26 @@ import java.io.IOException;
 /**
  * OpenGL|ES2/3用のヘルパークラス
  */
+/**
+ * Manages GLHelper functionality.
+ *
+ * Responsibility: Provides core GLHelper operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of GLHelper
+ */
+
 public final class GLHelper {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = "GLHelper";
@@ -47,6 +67,26 @@ public final class GLHelper {
 	 * OpenGL|ESのエラーをチェックしてlogCatに出力する
 	 * @param op
 	 */
+/**
+ * Checkglerror.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
     public static void checkGlError(final String op) {
         final int error = GLES20.glGetError();
         if (error != GLES20.GL_NO_ERROR) {
@@ -65,6 +105,26 @@ public final class GLHelper {
 	 * @param filter_param テクスチャの補完方法を指定, min/mag共に同じ値になる, GL_LINEARとかGL_NEAREST
 	 * @return
 	 */
+/**
+ * Inittex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int initTex(final int texTarget, final int filter_param) {
 		return initTex(texTarget, GLES20.GL_TEXTURE0,
 			filter_param, filter_param, GLES20.GL_CLAMP_TO_EDGE);
@@ -79,6 +139,26 @@ public final class GLHelper {
 	 * @param wrap テクスチャのクランプ方法, GL_CLAMP_TO_EDGE
 	 * @return
 	 */
+/**
+ * Inittex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int initTex(final int texTarget, final int texUnit,
 		final int min_filter, final int mag_filter, final int wrap) {
 
@@ -101,6 +181,26 @@ public final class GLHelper {
 	 * @param filter_param
 	 * @return
 	 */
+/**
+ * Inittexes.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int[] initTexes(final int n,
 		final int texTarget, final int filter_param) {
 		
@@ -115,6 +215,26 @@ public final class GLHelper {
 	 * @param filter_param
 	 * @return
 	 */
+/**
+ * Inittexes.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int[] initTexes(@NonNull final int[] texIds,
 		final int texTarget, final int filter_param) {
 		
@@ -131,6 +251,26 @@ public final class GLHelper {
 	 * @param wrap
 	 * @return
 	 */
+/**
+ * Inittexes.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int[] initTexes(final int n,
 		final int texTarget, final int min_filter, final int mag_filter, final int wrap) {
 		
@@ -146,6 +286,26 @@ public final class GLHelper {
 	 * @param wrap
 	 * @return
 	 */
+/**
+ * Inittexes.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int[] initTexes(@NonNull final int[] texIds,
 		final int texTarget, final int min_filter, final int mag_filter, final int wrap) {
 
@@ -171,6 +331,26 @@ public final class GLHelper {
 	 * @param wrap
 	 * @return
 	 */
+/**
+ * Inittexes.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int[] initTexes(final int n,
 		final int texTarget, final int texUnit,
 			final int min_filter, final int mag_filter, final int wrap) {
@@ -187,6 +367,26 @@ public final class GLHelper {
 	 * @param filter_param
 	 * @return
 	 */
+/**
+ * Inittexes.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int[] initTexes(@NonNull final int[] texIds,
 		final int texTarget, final int texUnit, final int filter_param) {
 		
@@ -204,6 +404,26 @@ public final class GLHelper {
 	 * @param wrap
 	 * @return
 	 */
+/**
+ * Inittexes.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int[] initTexes(@NonNull final int[] texIds,
 		final int texTarget, final int texUnit,
 		final int min_filter, final int mag_filter, final int wrap) {
@@ -222,6 +442,26 @@ public final class GLHelper {
 	/**
 	 * delete specific texture
 	 */
+/**
+ * Deletetex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void deleteTex(final int hTex) {
 //		if (DEBUG) Log.v(TAG, "deleteTex:");
 		final int[] tex = new int[] {hTex};
@@ -231,10 +471,50 @@ public final class GLHelper {
 	/**
 	 * delete specific texture
 	 */
+/**
+ * Deletetex.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void deleteTex(@NonNull final int[] tex) {
 //		if (DEBUG) Log.v(TAG, "deleteTex:");
 		GLES20.glDeleteTextures(tex.length, tex, 0);
 	}
+/**
+ * Loadtexturefromresource.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static int loadTextureFromResource(final Context context, final int resId) {
 		return loadTextureFromResource(context, resId, null);
@@ -242,6 +522,26 @@ public final class GLHelper {
 	
 	@SuppressLint("NewApi")
 	@SuppressWarnings("deprecation")
+/**
+ * Loadtexturefromresource.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int loadTextureFromResource(final Context context, final int resId, final Resources.Theme theme) {
 		// Create an empty, mutable bitmap
 		final Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
@@ -286,6 +586,26 @@ public final class GLHelper {
 
 		return textures[0];
 	}
+/**
+ * Createtexturewithtextcontent.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public static int createTextureWithTextContent (final String text) {
 		// Create an empty, mutable bitmap
@@ -324,6 +644,26 @@ public final class GLHelper {
 	 * @param fss_asset source file name in Assets of fragment shader
 	 * @return
 	 */
+/**
+ * Loadshader.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int loadShader(@NonNull final Context context,
 		final String vss_asset, final String fss_asset) {
 
@@ -343,6 +683,26 @@ public final class GLHelper {
 	 * @param fss source of fragment shader
 	 * @return
 	 */
+/**
+ * Loadshader.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int loadShader(final String vss, final String fss) {
 //		if (DEBUG) Log.v(TAG, "loadShader:");
 		final int[] compiled = new int[1];
@@ -383,6 +743,26 @@ public final class GLHelper {
 	  *
 	  * @return A handle to the shader, or 0 on failure.
 	  */
+/**
+ * Loadshader.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static int loadShader(final int shaderType, final String source) {
 		int shader = GLES20.glCreateShader(shaderType);
 		checkGlError("glCreateShader type=" + shaderType);
@@ -405,6 +785,26 @@ public final class GLHelper {
 	 * <p>
 	 * Throws a RuntimeException if the location is invalid.
 	 */
+/**
+ * Checklocation.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void checkLocation(final int location, final String label) {
 		if (location < 0) {
 			throw new RuntimeException("Unable to locate '" + label + "' in program");
@@ -415,6 +815,26 @@ public final class GLHelper {
 	 * Writes GL version info to the log.
 	 */
 	@SuppressLint("InlinedApi")
+/**
+ * Logversioninfo.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public static void logVersionInfo() {
 		Log.i(TAG, "vendor  : " + GLES20.glGetString(GLES20.GL_VENDOR));
 		Log.i(TAG, "renderer: " + GLES20.glGetString(GLES20.GL_RENDERER));

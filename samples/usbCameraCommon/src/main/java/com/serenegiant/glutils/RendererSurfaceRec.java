@@ -64,6 +64,26 @@ class RendererSurfaceRec {
 	/**
 	 * 生成したEglSurfaceを破棄する
 	 */
+/**
+ * Release.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void release() {
 		if (mTargetSurface != null) {
 			mTargetSurface.release();
@@ -76,6 +96,26 @@ class RendererSurfaceRec {
 	 * Surfaceが有効かどうかを取得する
 	 * @return
 	 */
+/**
+ * Isvalid.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean isValid() {
 		return (mTargetSurface != null) && mTargetSurface.isValid();
 	}
@@ -90,6 +130,26 @@ class RendererSurfaceRec {
 	 * Surfaceへの描画が有効かどうかを取得する
 	 * @return
 	 */
+/**
+ * Isenabled.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public boolean isEnabled() {
 		return mEnable;
 	}
@@ -98,13 +158,73 @@ class RendererSurfaceRec {
 	 * Surfaceへの描画を一時的に有効/無効にする
 	 * @param enable
 	 */
+/**
+ * Setenabled.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void setEnabled(final boolean enable) {
 		mEnable = enable;
 	}
+/**
+ * Candraw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	
 	public boolean canDraw() {
 		return mEnable;
 	}
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 
 	public void draw(final GLDrawer2D drawer, final int textId, final float[] texMatrix) {
 		if (mTargetSurface != null) {
@@ -122,6 +242,26 @@ class RendererSurfaceRec {
 	 * 指定した色で全面を塗りつぶす
 	 * @param color
 	 */
+/**
+ * Clear.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void clear(final int color) {
 		if (mTargetSurface != null) {
 			mTargetSurface.makeCurrent();
@@ -141,6 +281,26 @@ class RendererSurfaceRec {
 	 * #makeCurrentでレンダリングコンテキストを切り替えてから
 	 * 描画後#swapを呼ぶ
 	 */
+/**
+ * Makecurrent.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void makeCurrent() throws IllegalStateException {
 		check();
 		mTargetSurface.makeCurrent();
@@ -151,6 +311,26 @@ class RendererSurfaceRec {
 	 * #makeCurrentでレンダリングコンテキストを切り替えてから
 	 * 描画後#swapを呼ぶ
 	 */
+/**
+ * Swap.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void swap() throws IllegalStateException {
 		check();
 		mTargetSurface.swap();
@@ -175,11 +355,90 @@ class RendererSurfaceRec {
 		}
 
 		@Override
+		/**
+		 * Candraw.
+		 *
+		 * Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Candraw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public boolean canDraw() {
 			return mEnable && (Time.nanoTime() - mNextDraw > 0);
 		}
 
 		@Override
+		/**
+		 * Draw.
+		 *
+		 * 
+		Args:
+		    drawer: Parameter drawer controls behavior.
+		    textId: Parameter textId controls behavior.
+		    texMatrix: Parameter texMatrix controls behavior.
+		Returns:
+		 *     Description of the return value.
+		 *
+		 * Raises:
+		 *     Exception: When an error occurs.
+		 *
+		 * Side Effects:
+		 *     - May mutate internal state.
+		 *
+		 * Code Paths:
+		 *     1. If preconditions met → executes normally.
+		 *     2. On error → logs and returns default.
+		 */
+/**
+ * Draw.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
+
 		public void draw(final GLDrawer2D drawer,
 			final int textId, final float[] texMatrix) {
 

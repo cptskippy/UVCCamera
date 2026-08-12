@@ -18,6 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief JSON reader and parser for RapidJSON.
+ *
+ * Provides a SAX-style reader for parsing JSON documents.
+ *
+ * Exports:
+ *     GenericReader: Templated JSON reader
+ *     Reader: UTF8 specialization
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - internal/meta.h: Metaprogramming utilities
+ *     - internal/stack.h: Stack management
+ *
+ * Architecture Note:
+ *     Reader implements SAX parsing and is not thread-safe per instance. It can be reused for multiple parses after reset.
+ */
+
 #ifndef RAPIDJSON_READER_H_
 #define RAPIDJSON_READER_H_
 

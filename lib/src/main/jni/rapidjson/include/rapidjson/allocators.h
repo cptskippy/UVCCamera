@@ -18,6 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief Memory allocators for RapidJSON.
+ *
+ * Provides allocator classes used for dynamic memory management of JSON DOM.
+ *
+ * Exports:
+ *     CrtAllocator: C runtime allocator
+ *     MemoryPoolAllocator: Pool allocator for DOM
+ *     Allocator: Base allocator interface
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *
+ * Architecture Note:
+ *     Allocators are used throughout RapidJSON for managing memory. They are not thread-safe by default.
+ */
+
 #ifndef RAPIDJSON_ALLOCATORS_H_
 #define RAPIDJSON_ALLOCATORS_H_
 

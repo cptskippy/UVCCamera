@@ -29,6 +29,46 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.serenegiant.utils.HandlerThreadHandler;
+/**
+ * Manages BaseService functionality.
+ *
+ * Responsibility: Provides core BaseService operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ * 
+Properties:
+    mWorkerHandler: Field mWorkerHandler
+    mWorkerThreadID: Field mWorkerThreadID
+State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of BaseService
+ */
+/**
+ * Manages BaseService functionality.
+ *
+ * Responsibility: Provides core BaseService operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of BaseService
+ */
+
+
 
 public abstract class BaseService extends Service {
 	private static boolean DEBUG = false;	// FIXME 実働時はfalseにセットすること
@@ -42,6 +82,26 @@ public abstract class BaseService extends Service {
 	private long mWorkerThreadID = -1;
 
 	@Override
+/**
+ * Oncreate.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public void onCreate() {
 		super.onCreate();
 		// ワーカースレッドを生成
@@ -52,6 +112,26 @@ public abstract class BaseService extends Service {
 	}
 
 	@Override
+/**
+ * Ondestroy.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public synchronized void onDestroy() {
 		// ワーカースレッドを破棄
 		if (mWorkerHandler != null) {
@@ -71,6 +151,26 @@ public abstract class BaseService extends Service {
 	 * @param task
 	 * @param duration
 	 */
+/**
+ * Runonuithread.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public final void runOnUiThread(final Runnable task, final long duration) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -89,6 +189,26 @@ public abstract class BaseService extends Service {
 	 * UIスレッド上で指定したRunnableが実行待ちしていれば実行待ちを解除する
 	 * @param task
 	 */
+/**
+ * Removefromuithread.
+ *
+ * Args:
+ *     param: Parameter controls behavior.
+ *
+ * Returns:
+ *     Description of the return value.
+ *
+ * Raises:
+ *     Exception: When an error occurs.
+ *
+ * Side Effects:
+ *     - May mutate internal state.
+ *
+ * Code Paths:
+ *     1. If preconditions met → executes normally.
+ *     2. On error → logs and returns default.
+ */
+
 	public final void removeFromUiThread(final Runnable task) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);

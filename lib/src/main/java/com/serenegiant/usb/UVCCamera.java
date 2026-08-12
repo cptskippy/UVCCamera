@@ -39,6 +39,28 @@ import android.view.SurfaceHolder;
 
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 
+/**
+ * Manage UVC camera lifecycle and preview on Android.
+ *
+ * Provides Java API over native libuvc pipeline for opening USB video devices,
+ * configuring preview size/format, and delivering frames via Surface or callbacks.
+ *
+ * Lifecycle:
+ *     Construction → open() → setPreviewDisplay/setPreviewTexture → startPreview → stopPreview → close() → destroy()
+ *
+ * State Machine:
+ *     Uninitialized → Opened → Previewing → Stopped → Closed
+ *     Error can be emitted from any active state
+ *
+ * Thread Safety:
+ *     Public methods are synchronized where state mutation occurs. Preview callbacks
+ *     are delivered on native pipeline threads.
+ *
+ * Properties:
+ *     mNativePtr: Native camera handle, null when closed
+ *     mCtrlBlock: USB control block for device communication
+ *     mCurrentWidth/mCurrentHeight: Active preview resolution
+ */
 public class UVCCamera {
 	private static final boolean DEBUG = false;	// TODO set false when releasing
 	private static final String TAG = UVCCamera.class.getSimpleName();
@@ -182,9 +204,25 @@ public class UVCCamera {
 	}
 
     /**
-     * connect to a UVC camera
-     * USB permission is necessary before this method is called
-     * @param ctrlBlock
+     * Open a UVC camera with the given control block.
+     *
+     * USB permission must be granted before calling. The method clones the control block,
+     * connects the native camera, fetches supported sizes and sets default preview parameters.
+     *
+     * Args:
+     *     ctrlBlock: UsbControlBlock containing device handle and file descriptor. Must be valid and permission granted.
+     *
+     * Raises:
+     *     UnsupportedOperationException: If nativeConnect returns non-zero.
+     *
+     * Side Effects:
+     *     - Stores cloned UsbControlBlock in mCtrlBlock
+     *     - Updates mSupportedSize from native
+     *     - Sets default preview size via nativeSetPreviewSize
+     *
+     * Code Paths:
+     *     1. If nativeConnect succeeds → stores control block, loads supported sizes, sets defaults.
+     *     2. If nativeConnect fails or exception → throws UnsupportedOperationException.
      */
     public synchronized void open(final UsbControlBlock ctrlBlock) {
     	int result;
@@ -231,7 +269,21 @@ public class UVCCamera {
 	}
 
     /**
-     * close and release UVC camera
+     * Close and release the UVC camera.
+     *
+     * Stops preview, releases native resources and closes the USB control block.
+     * Call before releasing the camera object to avoid resource leaks.
+     *
+     * Side Effects:
+     *     - Stops preview via stopPreview()
+     *     - Calls nativeRelease on native pointer
+     *     - Closes and nulls mCtrlBlock
+     *     - Resets support flags and size caches
+     *
+     * Code Paths:
+     *     1. If mNativePtr != 0 → nativeRelease is called.
+     *     2. If mCtrlBlock != null → control block is closed and nulled.
+     *     3. Always resets internal state to idle.
      */
     public synchronized void close() {
     	stopPreview();
@@ -393,17 +445,40 @@ public class UVCCamera {
     }
 
     /**
-     * set preview surface with Surface
-     * @param surface
+     * Set preview surface with Surface.
+     *
+     * Assigns the ANativeWindow backing this Surface to the native preview pipeline.
+     * Must be called before startPreview.
+     *
+     * Args:
+     *     surface: Android Surface to render preview frames into.
+     *
+     * Side Effects:
+     *     - Calls nativeSetPreviewDisplay on native handle
+     *
+     * Code Paths:
+     *     1. Always forwards surface to nativeSetPreviewDisplay.
      */
     public synchronized void setPreviewDisplay(final Surface surface) {
     	nativeSetPreviewDisplay(mNativePtr, surface);
     }
 
     /**
-     * set frame callback
-     * @param callback
-     * @param pixelFormat
+     * Set frame callback for raw frame delivery.
+     *
+     * Registers a callback to receive frames as ByteBuffer. Use this instead of preview surface
+     * when you need direct access to frame data for processing.
+     *
+     * Args:
+     *     callback: IFrameCallback to receive frames. Null to unregister.
+     *     pixelFormat: Pixel format constant, e.g., PIXEL_FORMAT_RGBX, PIXEL_FORMAT_RGB565.
+     *
+     * Side Effects:
+     *     - Calls nativeSetFrameCallback on native handle if mNativePtr != 0
+     *
+     * Code Paths:
+     *     1. If mNativePtr != 0 → native callback is registered.
+     *     2. If mNativePtr == 0 → no-op.
      */
     public void setFrameCallback(final IFrameCallback callback, final int pixelFormat) {
     	if (mNativePtr != 0) {
@@ -412,7 +487,22 @@ public class UVCCamera {
     }
 
     /**
-     * start preview
+     * Start preview streaming.
+     *
+     * Begins frame delivery to the previously set preview surface or frame callback.
+     * Must be called after open and setPreviewDisplay/setPreviewTexture.
+     *
+     * Prerequisites:
+     *     - Camera must be opened via open()
+     *     - Preview surface must be set
+     *
+     * Side Effects:
+     *     - Calls nativeStartPreview on the native camera handle
+     *     - Starts frame generation on the native pipeline thread
+     *
+     * Code Paths:
+     *     1. If mCtrlBlock != null → nativeStartPreview is invoked.
+     *     2. If mCtrlBlock is null → no-op, preview does not start.
      */
     public synchronized void startPreview() {
     	if (mCtrlBlock != null) {
@@ -421,7 +511,17 @@ public class UVCCamera {
     }
 
     /**
-     * stop preview
+     * Stop preview streaming.
+     *
+     * Halts frame delivery and clears any frame callback to free resources.
+     *
+     * Side Effects:
+     *     - Clears frame callback via setFrameCallback(null, 0)
+     *     - Calls nativeStopPreview on the native camera handle
+     *
+     * Code Paths:
+     *     1. Always clears frame callback.
+     *     2. If mCtrlBlock != null → nativeStopPreview is invoked.
      */
     public synchronized void stopPreview() {
     	setFrameCallback(null, 0);
@@ -431,7 +531,19 @@ public class UVCCamera {
     }
 
     /**
-     * destroy UVCCamera object
+     * Destroy the UVCCamera object and release all resources.
+     *
+     * Closes the camera and destroys the native handle. Call this when the camera
+     * is no longer needed to prevent native leaks.
+     *
+     * Side Effects:
+     *     - Calls close() to stop preview and release USB
+     *     - Calls nativeDestroy on native pointer
+     *     - Sets mNativePtr to 0
+     *
+     * Code Paths:
+     *     1. Always calls close().
+     *     2. If mNativePtr != 0 → nativeDestroy is called and pointer nulled.
      */
     public synchronized void destroy() {
     	close();

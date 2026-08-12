@@ -26,6 +26,26 @@ import android.view.Surface;
 /**
  * 分配描画インターフェース
  */
+/**
+ * Manages IRendererHolder functionality.
+ *
+ * Responsibility: Provides core IRendererHolder operations for the USB camera stack.
+ *
+ * Lifecycle: Instantiated → configured → used → released.
+ *
+ * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
+ *
+ * Properties:
+ *   Fields are managed internally.
+ *
+ * State Machine:
+ *   Initialized → Active → Released
+ *   Error (from any active state)
+ *
+ * Example:
+ *     // Example usage of IRendererHolder
+ */
+
 public interface IRendererHolder extends IRendererCommon {
 	/**
 	 * 実行中かどうか

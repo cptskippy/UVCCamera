@@ -22,6 +22,23 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
+/**
+ * \brief Implements UVCPreview component for UVCCamera native library.
+ *
+ * Provides implementation details for UVCPreview within the UVCCamera native library.
+ *
+ * Exports:
+ *     UVCPreview: Main component for UVCPreview
+ *
+ * Dependencies:
+ *     - libuvc/libusb: USB camera access
+ *     - Android NDK: Native build
+ *
+ * Architecture Note:
+ *     Component participates in UVCCamera pipeline architecture.
+ */
+
+
 #include <stdlib.h>
 #include <linux/time.h>
 #include <unistd.h>
@@ -122,6 +139,15 @@ uvc_frame_t *UVCPreview::get_frame(size_t data_bytes) {
 	return frame;
 }
 
+/**
+ * \brief Implements recycle_frame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::recycle_frame(uvc_frame_t *frame) {
 	pthread_mutex_lock(&pool_mutex);
 	if (LIKELY(mFramePool.size() < FRAME_POOL_SZ)) {
@@ -135,6 +161,15 @@ void UVCPreview::recycle_frame(uvc_frame_t *frame) {
 }
 
 
+/**
+ * \brief Implements init_pool.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::init_pool(size_t data_bytes) {
 	ENTER();
 
@@ -150,6 +185,15 @@ void UVCPreview::init_pool(size_t data_bytes) {
 	EXIT();
 }
 
+/**
+ * \brief Implements clear_pool.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::clear_pool() {
 	ENTER();
 
@@ -165,8 +209,26 @@ void UVCPreview::clear_pool() {
 	EXIT();
 }
 
+/**
+ * \brief Implements isRunning.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 inline const bool UVCPreview::isRunning() const {return mIsRunning; }
 
+/**
+ * \brief Implements setPreviewSize.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCPreview::setPreviewSize(int width, int height, int min_fps, int max_fps, int mode, float bandwidth) {
 	ENTER();
 	
@@ -188,6 +250,15 @@ int UVCPreview::setPreviewSize(int width, int height, int min_fps, int max_fps, 
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements setPreviewDisplay.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCPreview::setPreviewDisplay(ANativeWindow *preview_window) {
 	ENTER();
 	pthread_mutex_lock(&preview_mutex);
@@ -206,6 +277,15 @@ int UVCPreview::setPreviewDisplay(ANativeWindow *preview_window) {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Implements setFrameCallback.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCPreview::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format) {
 	
 	ENTER();
@@ -250,6 +330,15 @@ int UVCPreview::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pi
 	RETURN(0, int);
 }
 
+/**
+ * \brief Implements callbackPixelFormatChanged.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::callbackPixelFormatChanged() {
 	mFrameCallbackFunc = NULL;
 	const size_t sz = requestWidth * requestHeight;
@@ -285,6 +374,15 @@ void UVCPreview::callbackPixelFormatChanged() {
 	}
 }
 
+/**
+ * \brief Implements clearDisplay.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::clearDisplay() {
 	ENTER();
 
@@ -325,6 +423,15 @@ void UVCPreview::clearDisplay() {
 	EXIT();
 }
 
+/**
+ * \brief Implements startPreview.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCPreview::startPreview() {
 	ENTER();
 
@@ -351,6 +458,15 @@ int UVCPreview::startPreview() {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements stopPreview.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCPreview::stopPreview() {
 	ENTER();
 	bool b = isRunning();
@@ -417,6 +533,15 @@ void UVCPreview::uvc_preview_frame_callback(uvc_frame_t *frame, void *vptr_args)
 	}
 }
 
+/**
+ * \brief Implements addPreviewFrame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::addPreviewFrame(uvc_frame_t *frame) {
 
 	pthread_mutex_lock(&preview_mutex);
@@ -431,6 +556,15 @@ void UVCPreview::addPreviewFrame(uvc_frame_t *frame) {
 	}
 }
 
+/**
+ * \brief Implements waitPreviewFrame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 uvc_frame_t *UVCPreview::waitPreviewFrame() {
 	uvc_frame_t *frame = NULL;
 	pthread_mutex_lock(&preview_mutex);
@@ -446,6 +580,15 @@ uvc_frame_t *UVCPreview::waitPreviewFrame() {
 	return frame;
 }
 
+/**
+ * \brief Implements clearPreviewFrame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::clearPreviewFrame() {
 	pthread_mutex_lock(&preview_mutex);
 	{
@@ -456,6 +599,15 @@ void UVCPreview::clearPreviewFrame() {
 	pthread_mutex_unlock(&preview_mutex);
 }
 
+/**
+ * \brief Implements preview_thread_func.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void *UVCPreview::preview_thread_func(void *vptr_args) {
 	int result;
 
@@ -472,6 +624,15 @@ void *UVCPreview::preview_thread_func(void *vptr_args) {
 	pthread_exit(NULL);
 }
 
+/**
+ * \brief Implements prepare_preview.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCPreview::prepare_preview(uvc_stream_ctrl_t *ctrl) {
 	uvc_error_t result;
 
@@ -509,6 +670,15 @@ int UVCPreview::prepare_preview(uvc_stream_ctrl_t *ctrl) {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Implements do_preview.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
 	ENTER();
 
@@ -624,6 +794,15 @@ int copyToSurface(uvc_frame_t *frame, ANativeWindow **window) {
 }
 
 // changed to return original frame instead of returning converted frame even if convert_func is not null.
+/**
+ * \brief Implements draw_preview_one.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 uvc_frame_t *UVCPreview::draw_preview_one(uvc_frame_t *frame, ANativeWindow **window, convFunc_t convert_func, int pixcelBytes) {
 	// ENTER();
 
@@ -660,8 +839,26 @@ uvc_frame_t *UVCPreview::draw_preview_one(uvc_frame_t *frame, ANativeWindow **wi
 //======================================================================
 //
 //======================================================================
+/**
+ * \brief Implements isCapturing.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 inline const bool UVCPreview::isCapturing() const { return mIsCapturing; }
 
+/**
+ * \brief Implements setCaptureDisplay.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 int UVCPreview::setCaptureDisplay(ANativeWindow *capture_window) {
 	ENTER();
 	pthread_mutex_lock(&capture_mutex);
@@ -700,6 +897,15 @@ int UVCPreview::setCaptureDisplay(ANativeWindow *capture_window) {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Implements addCaptureFrame.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::addCaptureFrame(uvc_frame_t *frame) {
 	pthread_mutex_lock(&capture_mutex);
 	if (LIKELY(isRunning())) {
@@ -751,6 +957,15 @@ void UVCPreview::clearCaptureFrame() {
  * @param vptr_args pointer to UVCPreview instance
  */
 // static
+/**
+ * \brief Implements capture_thread_func.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void *UVCPreview::capture_thread_func(void *vptr_args) {
 	int result;
 
@@ -791,6 +1006,15 @@ void UVCPreview::do_capture(JNIEnv *env) {
 	EXIT();
 }
 
+/**
+ * \brief Implements do_capture_idle_loop.
+ *
+ * \param[in] ...
+ * \return ...
+ *
+ * Code Paths:
+ *   1. Normal path
+ */
 void UVCPreview::do_capture_idle_loop(JNIEnv *env) {
 	ENTER();
 	

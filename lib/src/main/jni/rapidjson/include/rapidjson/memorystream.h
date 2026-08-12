@@ -18,6 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief In-memory input byte stream for RapidJSON readers.
+ *
+ * Provides a simple byte stream backed by a memory buffer implementing the Stream concept for parsing.
+ *
+ * Exports:
+ *     MemoryStream: Byte stream reading from a memory buffer with size tracking
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions and Stream concept
+ *
+ * Architecture Note:
+ *     MemoryStream is used to parse JSON from in-memory data without requiring null termination. It is not thread-safe and must be confined to a single parsing thread.
+ */
+
 #ifndef RAPIDJSON_MEMORYSTREAM_H_
 #define RAPIDJSON_MEMORYSTREAM_H_
 
@@ -25,7 +40,7 @@
 
 namespace rapidjson {
 
-//! Represents an in-memory input byte stream.
+//! \brief Represents an in-memory input byte stream.
 /*!
     This class is mainly for being wrapped by EncodedInputStream or AutoUTFInputStream.
 
@@ -36,6 +51,15 @@ namespace rapidjson {
     2. MemoryStream needs size of the source buffer and the buffer don't need to be null terminated. StringStream assume null-terminated string as source.
     3. MemoryStream supports Peek4() for encoding detection. StringStream is specified with an encoding so it should not have Peek4().
     \note implements Stream concept
+
+    Properties:
+        src_: Current read position.
+        begin_: Original head of the buffer.
+        end_: End of stream pointer.
+        size_: Total size of the buffer.
+
+    Thread Safety:
+        Not thread-safe. Instances must not be shared across threads.
 */
 struct MemoryStream {
     typedef char Ch; // byte

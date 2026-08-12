@@ -17,6 +17,28 @@
  * and/or the macros.
  */
 
+/**
+ * \brief Defines error and message codes for the JPEG library.
+ *
+ * Provides error code enumeration and reporting macros for libjpeg-turbo.
+ *
+ * Exports:
+ *     J_MESSAGE_CODE: Enumeration of error and warning codes
+ *     ERREXIT: Fatal error exit macro
+ *     WARNMS: Non-fatal warning macro
+ *     TRACEMS: Informational message macro
+ *     jpeg_std_error: Standard error manager initializer
+ *
+ * Dependencies:
+ *     - jmorecfg.h: Configuration
+ *     - jpeglib.h: Core types
+ *
+ * Architecture Note:
+ *     Error handling is pluggable via jpeg_error_mgr. Applications can override
+ *     error_exit and emit_message to customize behavior. Message strings are
+ *     localized via JMESSAGE macro.
+ */
+
 /*
  * To define the enum list of message codes, include this file without
  * defining macro JMESSAGE.  To create a message string table, include it

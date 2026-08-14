@@ -478,12 +478,18 @@ public final class DeviceFilter {
 	} */
 
 	/**
-	 * 指定したクラス・サブクラス・プロトコルがこのDeviceFilterとマッチするかどうかを返す
-	 * mExcludeフラグは別途#isExcludeか自前でチェックすること
-	 * @param clasz
-	 * @param subclass
-	 * @param protocol
-	 * @return
+	 * Check whether the given class, subclass, and protocol match this filter.
+	 *
+	 * Args:
+	 *     clasz: USB class value to match.
+	 *     subclass: USB subclass value to match.
+	 *     protocol: USB protocol value to match.
+	 *
+	 * Returns:
+	 *     True if all specified filter fields match; false otherwise.
+	 *
+	 * Note:
+	 *     This method does not consider the exclude flag; check isExclude separately.
 	 */
 	private boolean matches(final int clasz, final int subclass, final int protocol) {
 		return ((mClass == -1 || clasz == mClass)

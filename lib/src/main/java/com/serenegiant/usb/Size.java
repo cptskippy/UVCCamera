@@ -222,7 +222,7 @@ public class Size implements Parcelable {
 	}
 
 	private Size(final Parcel source) {
-		// 読み取り順はwriteToParcelでの書き込み順と同じでないとダメ
+		// Read order must match the write order in writeToParcel
 		type = source.readInt();
 		frame_type = source.readInt();
 		index = source.readInt();
@@ -317,7 +317,7 @@ public class Size implements Parcelable {
 	 *     2. If no entry satisfies condition → frameIntervalIndex becomes -1.
 	 */
 	public void setCurrentFrameRate(final float frameRate) {
-		// 一番近いのを選ぶ
+		// Select the closest supported frame rate
 		int index = -1;
 		final int n = fps != null ? fps.length : 0;
 		for (int i = 0; i < n; i++) {
@@ -409,7 +409,7 @@ public class Size implements Parcelable {
 					}
 				}
 			} catch (final Exception e) {
-				// ignore, なんでかminとmaxが0になってるんちゃうかな
+				// Ignore malformed interval data where min/max are unexpectedly zero
 				fps = null;
 			}
 		}

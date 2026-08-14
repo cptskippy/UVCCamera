@@ -147,8 +147,8 @@ public class UVCCamera {
 	}
 
 	private UsbControlBlock mCtrlBlock;
-    protected long mControlSupports;			// カメラコントロールでサポートしている機能フラグ
-    protected long mProcSupports;				// プロセッシングユニットでサポートしている機能フラグ
+    protected long mControlSupports;			// Feature flags supported by the camera control unit
+    protected long mProcSupports;				// Feature flags supported by the processing unit
     protected int mCurrentFrameFormat = FRAME_FORMAT_MJPEG;
 	protected int mCurrentWidth = DEFAULT_PREVIEW_WIDTH, mCurrentHeight = DEFAULT_PREVIEW_HEIGHT;
 	protected float mCurrentBandwidthFactor = DEFAULT_BANDWIDTH;
@@ -289,7 +289,7 @@ public class UVCCamera {
     	stopPreview();
     	if (mNativePtr != 0) {
     		nativeRelease(mNativePtr);
-//    		mNativePtr = 0;	// nativeDestroyを呼ぶのでここでクリアしちゃダメ
+//     mNativePtr = 0; // do not clear here because nativeDestroy will be called
     	}
     	if (mCtrlBlock != null) {
 			mCtrlBlock.close();
@@ -1017,12 +1017,12 @@ public class UVCCamera {
 	public synchronized void updateCameraParams() {
     	if (mNativePtr != 0) {
     		if ((mControlSupports == 0) || (mProcSupports == 0)) {
-        		// サポートしている機能フラグを取得
+        	// Get supported feature flags
     			if (mControlSupports == 0)
     				mControlSupports = nativeGetCtrlSupports(mNativePtr);
     			if (mProcSupports == 0)
     				mProcSupports = nativeGetProcSupports(mNativePtr);
-    	    	// 設定値を取得
+    	    	// Get current control setting values
     	    	if ((mControlSupports != 0) && (mProcSupports != 0)) {
 	    	    	nativeUpdateBrightnessLimit(mNativePtr);
 	    	    	nativeUpdateContrastLimit(mNativePtr);

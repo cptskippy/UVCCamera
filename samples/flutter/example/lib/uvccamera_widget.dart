@@ -5,6 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uvccamera/uvccamera.dart';
 
+/// Widget that manages the full lifecycle of a single UVC camera session.
+///
+/// Handles camera and device permission requests, tracks device attach/detach
+/// and connection state, initializes a [UvcCameraController], subscribes to its
+/// error/status/button event streams, and renders the live preview with picture
+/// and video-recording controls.
+///
+/// Args:
+///   device: The [UvcCameraDevice] this widget controls.
 class UvcCameraWidget extends StatefulWidget {
   final UvcCameraDevice device;
 
@@ -14,6 +23,20 @@ class UvcCameraWidget extends StatefulWidget {
   State<UvcCameraWidget> createState() => _UvcCameraWidgetState();
 }
 
+/// State for [UvcCameraWidget].
+///
+/// Tracks attach/permission/connection flags, the active [UvcCameraController],
+/// and subscriptions to the controller's event streams plus the device-event
+/// stream.
+///
+/// State Machine:
+///   Detached → Attached (on app resume / first build via _attach)
+///   Attached → Detached (on app pause / device detach / dispose)
+///   Device Attached + Camera & Device Permissions + Connected
+///     → Controller Initializing → Previewing
+///
+/// Thread Safety:
+///   UI state; all mutations happen on the main isolate via [setState].
 class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingObserver {
   bool _isAttached = false;
   bool _hasDevicePermission = false;
@@ -28,6 +51,11 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
   StreamSubscription<UvcCameraDeviceEvent>? _deviceEventSubscription;
   String _log = '';
 
+  /// Register the lifecycle observer and start the attach flow.
+  ///
+  /// Side Effects:
+  ///   - Registers this widget as a [WidgetsBindingObserver].
+  ///   - Kicks off [_attach].
   @override
   void initState() {
     super.initState();
@@ -37,6 +65,11 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     _attach();
   }
 
+  /// Remove the lifecycle observer and tear down the session.
+  ///
+  /// Side Effects:
+  ///   - Unregisters the [WidgetsBindingObserver].
+  ///   - Forces a [_detach], releasing the controller and all subscriptions.
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -46,6 +79,12 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     super.dispose();
   }
 
+  /// React to app lifecycle changes by attaching on resume and detaching on pause.
+  ///
+  /// Code Paths:
+  ///   1. Resumed → [_attach].
+  ///   2. Paused → [_detach].
+  ///   3. Other states → no-op.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -55,6 +94,30 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     }
   }
 
+  /// Establish the session for the target device.
+  ///
+  /// Verifies the device is present, requests permissions, and — once the device
+  /// reports connected — creates and initializes the [UvcCameraController],
+  /// subscribing to its error, status, and button streams.
+  ///
+  /// Args:
+  ///   force: When true, re-attach even if already attached (used by
+  ///   [dispose] teardown and preview-interruption recovery).
+  ///
+  /// Side Effects:
+  ///   - Subscribes to [UvcCamera.deviceEventStream].
+  ///   - Requests camera and device permissions.
+  ///   - Creates/initializes [_cameraController] on the connected event.
+  ///
+  /// Code Paths:
+  ///   1. Already attached and not forced → returns immediately.
+  ///   2. Device no longer present in [UvcCamera.getDevices] → no-op.
+  ///   3. attached event → requests permissions (triggers connection).
+  ///   4. connected event → creates controller, initializes, and subscribes to
+  ///      error/status/button streams.
+  ///   5. previewInterrupted error → detaches and re-attaches to recover.
+  ///   6. detached/disconnected events → clears flags and disposes the
+  ///      controller.
   void _attach({bool force = false}) {
     if (_isAttached && !force) {
       return;
@@ -153,6 +216,16 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     _isAttached = true;
   }
 
+  /// Tear down the session and release all resources.
+  ///
+  /// Args:
+  ///   force: When true, detach even if not currently attached (used by
+  ///   [dispose]).
+  ///
+  /// Side Effects:
+  ///   - Clears permission/connection flags.
+  ///   - Cancels button/status/error and device-event subscriptions.
+  ///   - Disposes [_cameraController] and clears the initialize future.
   void _detach({bool force = false}) {
     if (!_isAttached && !force) {
       return;
@@ -179,6 +252,16 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     _isAttached = false;
   }
 
+  /// Request the camera permission, then the UVC device permission.
+  ///
+  /// Device permission can only be requested after camera permission is granted.
+  ///
+  /// Code Paths:
+  ///   1. Camera permission granted → proceed to request device permission.
+  ///   2. Camera permission denied → stop (device permission not requested).
+  ///
+  /// Side Effects:
+  ///   - Updates [_hasCameraPermission] and [_hasDevicePermission] via [setState].
   Future<void> _requestPermissions() async {
     final hasCameraPermission = await _requestCameraPermission().then((value) {
       setState(() {
@@ -202,11 +285,24 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     });
   }
 
+  /// Request permission to access the target UVC device.
+  ///
+  /// Returns:
+  ///   True if device permission is granted.
   Future<bool> _requestDevicePermission() async {
     final devicePermissionStatus = await UvcCamera.requestDevicePermission(widget.device);
     return devicePermissionStatus;
   }
 
+  /// Request the Android camera permission via the permission handler.
+  ///
+  /// Returns:
+  ///   True if the camera permission is granted.
+  ///
+  /// Code Paths:
+  ///   1. Already granted → returns true.
+  ///   2. Denied/restricted → prompts the user and returns the granted result.
+  ///   3. Permanently denied → returns false.
   Future<bool> _requestCameraPermission() async {
     var cameraPermissionStatus = await Permission.camera.status;
     if (cameraPermissionStatus.isGranted) {
@@ -220,10 +316,18 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     }
   }
 
+  /// Start video recording with the given mode via the active controller.
+  ///
+  /// Args:
+  ///   videoRecordingMode: The [UvcCameraMode] to record in.
   Future<void> _startVideoRecording(UvcCameraMode videoRecordingMode) async {
     await _cameraController!.startVideoRecording(videoRecordingMode);
   }
 
+  /// Capture a still image and log the resulting file path and size.
+  ///
+  /// Side Effects:
+  ///   - Appends an "image file" line to [_log].
   Future<void> _takePicture() async {
     final XFile outputFile = await _cameraController!.takePicture();
 
@@ -234,6 +338,10 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     });
   }
 
+  /// Stop video recording and log the resulting file path and size.
+  ///
+  /// Side Effects:
+  ///   - Appends a "video file" line to [_log].
   Future<void> _stopVideoRecording() async {
     final XFile outputFile = await _cameraController!.stopVideoRecording();
 
@@ -244,6 +352,20 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
     });
   }
 
+  /// Build the screen for the target device.
+  ///
+  /// Returns:
+  ///   A status message while a precondition is unmet, otherwise the preview
+  ///   overlaid with the event log and the capture/recording controls.
+  ///
+  /// Code Paths:
+  ///   1. Device not attached → "not attached" message.
+  ///   2. Camera permission missing → "camera permission" message.
+  ///   3. Device permission missing → "device permission" message.
+  ///   4. Device not connected → "not connected" message.
+  ///   5. Controller still initializing → progress indicator.
+  ///   6. Ready → [UvcCameraPreview] with log overlay and picture/recording
+  ///      buttons.
   @override
   Widget build(BuildContext context) {
     if (!_isDeviceAttached) {

@@ -3,6 +3,9 @@ import 'package:uvccamera/uvccamera.dart';
 
 import 'uvccamera_widget.dart';
 
+/// Screen showing the live preview and controls for a single UVC camera.
+///
+/// Wraps [UvcCameraWidget] in a [Scaffold] whose app bar shows the device name.
 class UvcCameraDeviceScreen extends StatelessWidget {
   final UvcCameraDevice device;
 

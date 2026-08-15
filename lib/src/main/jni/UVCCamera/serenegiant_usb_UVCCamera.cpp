@@ -39,11 +39,11 @@
  */
 
 
-#if 1	// デバッグ情報を出さない時
+#if 1	// Disable debug logging
 	#ifndef LOG_NDEBUG
-		#define	LOG_NDEBUG		// LOGV/LOGD/MARKを出力しない時
+		#define	LOG_NDEBUG		// Suppress LOGV/LOGD/MARK output
 		#endif
-	#undef USE_LOGALL			// 指定したLOGxだけを出力
+	#undef USE_LOGALL			// Output only the selected LOGx macros
 #else
 	#define USE_LOGALL
 	#undef LOG_NDEBUG
@@ -57,11 +57,13 @@
 #include "UVCCamera.h"
 
 /**
- * set the value into the long field
- * @param env: this param should not be null
- * @param bullet_obj: this param should not be null
- * @param field_name
- * @params val
+ * Set a long field on the Java object and return the value that was written.
+ *
+ * @param env JNI environment
+ * @param java_obj target Java object
+ * @param field_name Java field name
+ * @param val value to write
+ * @return val
  */
 static jlong setField_long(JNIEnv *env, jobject java_obj, const char *field_name, jlong val) {
 #if LOCAL_DEBUG
@@ -82,8 +84,14 @@ static jlong setField_long(JNIEnv *env, jobject java_obj, const char *field_name
 }
 
 /**
- * @param env: this param should not be null
- * @param bullet_obj: this param should not be null
+ * Set a long field using an already resolved Java class and return the value.
+ *
+ * @param env JNI environment
+ * @param java_obj target Java object
+ * @param clazz Java class used to resolve the field
+ * @param field_name Java field name
+ * @param val value to write
+ * @return val
  */
 static jlong __setField_long(JNIEnv *env, jobject java_obj, jclass clazz, const char *field_name, jlong val) {
 #if LOCAL_DEBUG
@@ -100,8 +108,14 @@ static jlong __setField_long(JNIEnv *env, jobject java_obj, jclass clazz, const 
 }
 
 /**
- * @param env: this param should not be null
- * @param bullet_obj: this param should not be null
+ * Set an int field using an already resolved Java class and return the value.
+ *
+ * @param env JNI environment
+ * @param java_obj target Java object
+ * @param clazz Java class used to resolve the field
+ * @param field_name Java field name
+ * @param val value to write
+ * @return val
  */
 jint __setField_int(JNIEnv *env, jobject java_obj, jclass clazz, const char *field_name, jint val) {
 	LOGV("__setField_int:");
@@ -117,11 +131,13 @@ jint __setField_int(JNIEnv *env, jobject java_obj, jclass clazz, const char *fie
 }
 
 /**
- * set the value into int field
- * @param env: this param should not be null
- * @param java_obj: this param should not be null
- * @param field_name
- * @params val
+ * Set an int field on the Java object and return the value that was written.
+ *
+ * @param env JNI environment
+ * @param java_obj target Java object
+ * @param field_name Java field name
+ * @param val value to write
+ * @return val
  */
 jint setField_int(JNIEnv *env, jobject java_obj, const char *field_name, jint val) {
 	LOGV("setField_int:");
@@ -134,6 +150,13 @@ jint setField_int(JNIEnv *env, jobject java_obj, const char *field_name, jint va
 	return val;
 }
 
+/**
+ * Allocate the native UVCCamera object and store its pointer in the Java object.
+ *
+ * @param env JNI environment
+ * @param thiz Java UVCCamera instance
+ * @return native object ID
+ */
 static ID_TYPE nativeCreate(JNIEnv *env, jobject thiz) {
 
 	ENTER();
@@ -142,7 +165,7 @@ static ID_TYPE nativeCreate(JNIEnv *env, jobject thiz) {
 	RETURN(reinterpret_cast<ID_TYPE>(camera), ID_TYPE);
 }
 
-// native側のカメラオブジェクトを破棄
+// Destroy the native camera object
 static void nativeDestroy(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 
@@ -156,7 +179,7 @@ static void nativeDestroy(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// カメラへ接続
+// Connect to the camera
 static jint nativeConnect(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera,
 	jint vid, jint pid, jint fd,
@@ -174,7 +197,7 @@ static jint nativeConnect(JNIEnv *env, jobject thiz,
 	RETURN(result, jint);
 }
 
-// カメラとの接続を解除
+// Disconnect from the camera and release native resources
 static jint nativeRelease(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 
@@ -231,7 +254,7 @@ static jobject nativeGetSupportedSize(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// プレビュー画面の大きさをセット
+// Set the preview size
 static jint nativeSetPreviewSize(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera, jint width, jint height, jint min_fps, jint max_fps, jint mode, jfloat bandwidth) {
 
@@ -254,7 +277,7 @@ static jint nativeStartPreview(JNIEnv *env, jobject thiz,
 	RETURN(JNI_ERR, jint);
 }
 
-// プレビューを停止
+// Stop the preview
 static jint nativeStopPreview(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 
@@ -307,7 +330,7 @@ static jint nativeSetCaptureDisplay(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// カメラコントロールでサポートしている機能を取得する
+// Get the UVC controls supported by the camera
 static jlong nativeGetCtrlSupports(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 
@@ -323,7 +346,7 @@ static jlong nativeGetCtrlSupports(JNIEnv *env, jobject thiz,
 	RETURN(result, jlong);
 }
 
-// プロセッシングユニットでサポートしている機能を取得する
+// Get the processing-unit controls supported by the camera
 static jlong nativeGetProcSupports(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 
@@ -340,7 +363,7 @@ static jlong nativeGetProcSupports(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateScanningModeLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -350,7 +373,7 @@ static jint nativeUpdateScanningModeLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateScanningModeLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mScanningModeMin", min);
 			setField_int(env, thiz, "mScanningModeMax", max);
 			setField_int(env, thiz, "mScanningModeDef", def);
@@ -384,7 +407,7 @@ static jint nativeGetScanningMode(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateExposureModeLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -394,7 +417,7 @@ static jint nativeUpdateExposureModeLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateExposureModeLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mExposureModeMin", min);
 			setField_int(env, thiz, "mExposureModeMax", max);
 			setField_int(env, thiz, "mExposureModeDef", def);
@@ -428,7 +451,7 @@ static jint nativeGetExposureMode(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateExposurePriorityLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -438,7 +461,7 @@ static jint nativeUpdateExposurePriorityLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateExposurePriorityLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mExposurePriorityMin", min);
 			setField_int(env, thiz, "mExposurePriorityMax", max);
 			setField_int(env, thiz, "mExposurePriorityDef", def);
@@ -472,7 +495,7 @@ static jint nativeGetExposurePriority(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateExposureLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -482,7 +505,7 @@ static jint nativeUpdateExposureLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateExposureLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mExposureMin", min);
 			setField_int(env, thiz, "mExposureMax", max);
 			setField_int(env, thiz, "mExposureDef", def);
@@ -516,7 +539,7 @@ static jint nativeGetExposure(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateExposureRelLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -526,7 +549,7 @@ static jint nativeUpdateExposureRelLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateExposureRelLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mExposureRelMin", min);
 			setField_int(env, thiz, "mExposureRelMax", max);
 			setField_int(env, thiz, "mExposureRelDef", def);
@@ -560,7 +583,7 @@ static jint nativeGetExposureRel(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateAutoFocusLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -570,7 +593,7 @@ static jint nativeUpdateAutoFocusLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateAutoFocusLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mAutoFocusMin", min);
 			setField_int(env, thiz, "mAutoFocusMax", max);
 			setField_int(env, thiz, "mAutoFocusDef", def);
@@ -604,7 +627,7 @@ static jint nativeGetAutoFocus(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateAutoWhiteBlanceLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -614,7 +637,7 @@ static jint nativeUpdateAutoWhiteBlanceLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateAutoWhiteBlanceLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mAutoWhiteBlanceMin", min);
 			setField_int(env, thiz, "mAutoWhiteBlanceMax", max);
 			setField_int(env, thiz, "mAutoWhiteBlanceDef", def);
@@ -648,7 +671,7 @@ static jint nativeGetAutoWhiteBlance(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateAutoWhiteBlanceCompoLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -658,7 +681,7 @@ static jint nativeUpdateAutoWhiteBlanceCompoLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateAutoWhiteBlanceCompoLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mAutoWhiteBlanceCompoMin", min);
 			setField_int(env, thiz, "mAutoWhiteBlanceCompoMax", max);
 			setField_int(env, thiz, "mAutoWhiteBlanceCompoDef", def);
@@ -692,7 +715,7 @@ static jint nativeGetAutoWhiteBlanceCompo(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateBrightnessLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -702,7 +725,7 @@ static jint nativeUpdateBrightnessLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateBrightnessLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mBrightnessMin", min);
 			setField_int(env, thiz, "mBrightnessMax", max);
 			setField_int(env, thiz, "mBrightnessDef", def);
@@ -736,7 +759,7 @@ static jint nativeGetBrightness(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateFocusLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -746,7 +769,7 @@ static jint nativeUpdateFocusLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateFocusLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mFocusMin", min);
 			setField_int(env, thiz, "mFocusMax", max);
 			setField_int(env, thiz, "mFocusDef", def);
@@ -780,7 +803,7 @@ static jint nativeGetFocus(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateFocusRelLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -790,7 +813,7 @@ static jint nativeUpdateFocusRelLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateFocusRelLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mFocusRelMin", min);
 			setField_int(env, thiz, "mFocusRelMax", max);
 			setField_int(env, thiz, "mFocusRelDef", def);
@@ -824,7 +847,7 @@ static jint nativeGetFocusRel(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateIrisLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -834,7 +857,7 @@ static jint nativeUpdateIrisLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateIrisLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mIrisMin", min);
 			setField_int(env, thiz, "mIrisMax", max);
 			setField_int(env, thiz, "mIrisDef", def);
@@ -868,7 +891,7 @@ static jint nativeGetIris(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateIrisRelLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -878,7 +901,7 @@ static jint nativeUpdateIrisRelLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateIrisRelLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mIrisRelMin", min);
 			setField_int(env, thiz, "mIrisRelMax", max);
 			setField_int(env, thiz, "mIrisRelDef", def);
@@ -912,7 +935,7 @@ static jint nativeGetIrisRel(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdatePanLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -922,7 +945,7 @@ static jint nativeUpdatePanLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updatePanLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mPanMin", min);
 			setField_int(env, thiz, "mPanMax", max);
 			setField_int(env, thiz, "mPanDef", def);
@@ -956,7 +979,7 @@ static jint nativeGetPan(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateTiltLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -966,7 +989,7 @@ static jint nativeUpdateTiltLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateTiltLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mTiltMin", min);
 			setField_int(env, thiz, "mTiltMax", max);
 			setField_int(env, thiz, "mTiltDef", def);
@@ -1000,7 +1023,7 @@ static jint nativeGetTilt(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateRollLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1010,7 +1033,7 @@ static jint nativeUpdateRollLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateRollLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mRollMin", min);
 			setField_int(env, thiz, "mRollMax", max);
 			setField_int(env, thiz, "mRollDef", def);
@@ -1044,7 +1067,7 @@ static jint nativeGetRoll(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdatePanRelLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1054,7 +1077,7 @@ static jint nativeUpdatePanRelLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updatePanRelLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mPanRelMin", min);
 			setField_int(env, thiz, "mPanRelMax", max);
 			setField_int(env, thiz, "mPanRelDef", def);
@@ -1088,7 +1111,7 @@ static jint nativeGetPanRel(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateTiltRelLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1098,7 +1121,7 @@ static jint nativeUpdateTiltRelLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateTiltRelLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mTiltRelMin", min);
 			setField_int(env, thiz, "mTiltRelMax", max);
 			setField_int(env, thiz, "mTiltRelDef", def);
@@ -1132,7 +1155,7 @@ static jint nativeGetTiltRel(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateRollRelLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1142,7 +1165,7 @@ static jint nativeUpdateRollRelLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateRollRelLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mRollRelMin", min);
 			setField_int(env, thiz, "mRollRelMax", max);
 			setField_int(env, thiz, "mRollRelDef", def);
@@ -1176,7 +1199,7 @@ static jint nativeGetRollRel(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateContrastLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1186,7 +1209,7 @@ static jint nativeUpdateContrastLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateContrastLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mContrastMin", min);
 			setField_int(env, thiz, "mContrastMax", max);
 			setField_int(env, thiz, "mContrastDef", def);
@@ -1220,7 +1243,7 @@ static jint nativeGetContrast(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java method correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateAutoContrastLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1230,7 +1253,7 @@ static jint nativeUpdateAutoContrastLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateAutoContrastLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mAutoContrastMin", min);
 			setField_int(env, thiz, "mAutoContrastMax", max);
 			setField_int(env, thiz, "mAutoContrastDef", def);
@@ -1264,7 +1287,7 @@ static jint nativeGetAutoContrast(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateSharpnessLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1274,7 +1297,7 @@ static jint nativeUpdateSharpnessLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateSharpnessLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mSharpnessMin", min);
 			setField_int(env, thiz, "mSharpnessMax", max);
 			setField_int(env, thiz, "mSharpnessDef", def);
@@ -1308,7 +1331,7 @@ static jint nativeGetSharpness(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateGainLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1318,7 +1341,7 @@ static jint nativeUpdateGainLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateGainLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mGainMin", min);
 			setField_int(env, thiz, "mGainMax", max);
 			setField_int(env, thiz, "mGainDef", def);
@@ -1352,7 +1375,7 @@ static jint nativeGetGain(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateGammaLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1362,7 +1385,7 @@ static jint nativeUpdateGammaLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateGammaLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mGammaMin", min);
 			setField_int(env, thiz, "mGammaMax", max);
 			setField_int(env, thiz, "mGammaDef", def);
@@ -1396,7 +1419,7 @@ static jint nativeGetGamma(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateWhiteBlanceLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1406,7 +1429,7 @@ static jint nativeUpdateWhiteBlanceLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateWhiteBlanceLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mWhiteBlanceMin", min);
 			setField_int(env, thiz, "mWhiteBlanceMax", max);
 			setField_int(env, thiz, "mWhiteBlanceDef", def);
@@ -1440,7 +1463,7 @@ static jint nativeGetWhiteBlance(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateWhiteBlanceCompoLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1450,7 +1473,7 @@ static jint nativeUpdateWhiteBlanceCompoLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateWhiteBlanceCompoLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mWhiteBlanceCompoMin", min);
 			setField_int(env, thiz, "mWhiteBlanceCompoMax", max);
 			setField_int(env, thiz, "mWhiteBlanceCompoDef", def);
@@ -1484,7 +1507,7 @@ static jint nativeGetWhiteBlanceCompo(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateBacklightCompLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1494,7 +1517,7 @@ static jint nativeUpdateBacklightCompLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateBacklightCompLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mBacklightCompMin", min);
 			setField_int(env, thiz, "mBacklightCompMax", max);
 			setField_int(env, thiz, "mBacklightCompDef", def);
@@ -1528,7 +1551,7 @@ static jint nativeGetBacklightComp(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateSaturationLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1538,7 +1561,7 @@ static jint nativeUpdateSaturationLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateSaturationLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mSaturationMin", min);
 			setField_int(env, thiz, "mSaturationMax", max);
 			setField_int(env, thiz, "mSaturationDef", def);
@@ -1572,7 +1595,7 @@ static jint nativeGetSaturation(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateHueLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1582,7 +1605,7 @@ static jint nativeUpdateHueLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateHueLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mHueMin", min);
 			setField_int(env, thiz, "mHueMax", max);
 			setField_int(env, thiz, "mHueDef", def);
@@ -1616,7 +1639,7 @@ static jint nativeGetHue(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java method correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateAutoHueLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1626,7 +1649,7 @@ static jint nativeUpdateAutoHueLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateAutoHueLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mAutoHueMin", min);
 			setField_int(env, thiz, "mAutoHueMax", max);
 			setField_int(env, thiz, "mAutoHueDef", def);
@@ -1660,7 +1683,7 @@ static jint nativeGetAutoHue(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdatePowerlineFrequencyLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1670,7 +1693,7 @@ static jint nativeUpdatePowerlineFrequencyLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updatePowerlineFrequencyLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mPowerlineFrequencyMin", min);
 			setField_int(env, thiz, "mPowerlineFrequencyMax", max);
 			setField_int(env, thiz, "mPowerlineFrequencyDef", def);
@@ -1704,7 +1727,7 @@ static jint nativeGetPowerlineFrequency(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateZoomLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1714,7 +1737,7 @@ static jint nativeUpdateZoomLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateZoomLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mZoomMin", min);
 			setField_int(env, thiz, "mZoomMax", max);
 			setField_int(env, thiz, "mZoomDef", def);
@@ -1748,7 +1771,7 @@ static jint nativeGetZoom(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateZoomRelLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1758,7 +1781,7 @@ static jint nativeUpdateZoomRelLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateZoomRelLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mZoomRelMin", min);
 			setField_int(env, thiz, "mZoomRelMax", max);
 			setField_int(env, thiz, "mZoomRelDef", def);
@@ -1792,7 +1815,7 @@ static jint nativeGetZoomRel(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateDigitalMultiplierLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1802,7 +1825,7 @@ static jint nativeUpdateDigitalMultiplierLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateDigitalMultiplierLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mDigitalMultiplierMin", min);
 			setField_int(env, thiz, "mDigitalMultiplierMax", max);
 			setField_int(env, thiz, "mDigitalMultiplierDef", def);
@@ -1836,7 +1859,7 @@ static jint nativeGetDigitalMultiplier(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateDigitalMultiplierLimitLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1846,7 +1869,7 @@ static jint nativeUpdateDigitalMultiplierLimitLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateDigitalMultiplierLimitLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mDigitalMultiplierLimitMin", min);
 			setField_int(env, thiz, "mDigitalMultiplierLimitMax", max);
 			setField_int(env, thiz, "mDigitalMultiplierLimitDef", def);
@@ -1880,7 +1903,7 @@ static jint nativeGetDigitalMultiplierLimit(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateAnalogVideoStandardLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1890,7 +1913,7 @@ static jint nativeUpdateAnalogVideoStandardLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateAnalogVideoStandardLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mAnalogVideoStandardMin", min);
 			setField_int(env, thiz, "mAnalogVideoStandardMax", max);
 			setField_int(env, thiz, "mAnalogVideoStandardDef", def);
@@ -1924,7 +1947,7 @@ static jint nativeGetAnalogVideoStandard(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdateAnalogVideoLockStateLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1934,7 +1957,7 @@ static jint nativeUpdateAnalogVideoLockStateLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updateAnalogVideoLockStateLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mAnalogVideoLockStateMin", min);
 			setField_int(env, thiz, "mAnalogVideoLockStateMax", max);
 			setField_int(env, thiz, "mAnalogVideoLockStateDef", def);
@@ -1968,7 +1991,7 @@ static jint nativeGetAnalogVideoLockState(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java method correspond to this function should not be a static mathod
+// The corresponding Java method must not be static
 static jint nativeUpdatePrivacyLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;
@@ -1978,7 +2001,7 @@ static jint nativeUpdatePrivacyLimit(JNIEnv *env, jobject thiz,
 		int min, max, def;
 		result = camera->updatePrivacyLimit(min, max, def);
 		if (!result) {
-			// Java側へ書き込む
+			// Write the value back to Java
 			setField_int(env, thiz, "mPrivacyMin", min);
 			setField_int(env, thiz, "mPrivacyMax", max);
 			setField_int(env, thiz, "mPrivacyDef", def);
@@ -2208,6 +2231,12 @@ static JNINativeMethod methods[] = {
 	{ "nativeGetPrivacy",				"(J)I", (void *) nativeGetPrivacy },
 };
 
+/**
+ * Register the UVCCamera JNI native methods.
+ *
+ * @param env JNI environment
+ * @return 0 on success, -1 if native method registration fails
+ */
 int register_uvccamera(JNIEnv *env) {
 	LOGV("register_uvccamera:");
 	if (registerNativeMethods(env,

@@ -23,19 +23,24 @@
 */
 
 /**
- * \brief Implements Parameters component for UVCCamera native library.
+ * \brief Serialize UVC device, format, and stream descriptors to JSON.
  *
- * Provides implementation details for Parameters within the UVCCamera native library.
+ * Converts libuvc device and streaming-interface descriptors into JSON
+ * documents for the Java layer, including device metadata, supported
+ * formats, frame intervals, and the current stream configuration.
  *
  * Exports:
- *     Parameters: Main component for Parameters
+ *     UVCDiags::getDescriptions: Serialize full UVC device descriptions to JSON.
+ *     UVCDiags::getCurrentStream: Serialize the active stream configuration to JSON.
+ *     UVCDiags::getSupportedSize: Serialize supported frame sizes to JSON.
  *
  * Dependencies:
- *     - libuvc/libusb: USB camera access
- *     - Android NDK: Native build
+ *     - rapidjson: JSON writer
+ *     - libuvc: UVC descriptor structures
  *
  * Architecture Note:
- *     Component participates in UVCCamera pipeline architecture.
+ *     The Java layer parses these JSON documents to expose camera format
+ *     and descriptor information to callers.
  */
 
 #define LOG_TAG "Parameters"
@@ -199,7 +204,7 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 					}
 					writer.EndArray();
 				} else {
-					// 最小fps
+					// Minimum fps
 					writer.String(FRAME_INTERVAL_MIN);
 					writer.StartObject();
 					{
@@ -208,7 +213,7 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 						write(writer, FRAME_INTERVAL_FPS, 10000000 / frame_desc->dwMinFrameInterval);
 					}
 					writer.EndObject();
-					// 最大fps
+					// Maximum fps
 					writer.String(FRAME_INTERVAL_MAX);
 					writer.StartObject();
 					{
@@ -218,7 +223,7 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 					}
 					writer.EndObject();
 					if (frame_desc->dwFrameIntervalStep) {
-						// fpsステップ
+						// fps step
 						writer.String(FRAME_INTERVAL_STEP);
 						writer.StartObject();
 						{

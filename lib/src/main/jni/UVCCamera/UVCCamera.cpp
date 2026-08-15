@@ -47,11 +47,11 @@
  */
 
 #define LOG_TAG "UVCCamera"
-#if 1	// デバッグ情報を出さない時1
+#if 1	// Disable debug logging
 	#ifndef LOG_NDEBUG
-		#define	LOG_NDEBUG		// LOGV/LOGD/MARKを出力しない時
+		#define	LOG_NDEBUG		// Suppress LOGV/LOGD/MARK output
 		#endif
-	#undef USE_LOGALL			// 指定したLOGxだけを出力
+	#undef USE_LOGALL			// Output only the selected LOGx macros
 #else
 	#define USE_LOGALL
 	#undef LOG_NDEBUG
@@ -76,7 +76,7 @@
 //
 //**********************************************************************
 /**
- * コンストラクタ
+ * Constructor
  */
 UVCCamera::UVCCamera()
 :	mFd(0),
@@ -96,7 +96,7 @@ UVCCamera::UVCCamera()
 }
 
 /**
- * デストラクタ
+ * Destructor
  */
 UVCCamera::~UVCCamera() {
 	ENTER();
@@ -165,7 +165,7 @@ void UVCCamera::clearCameraParams() {
 
 //======================================================================
 /**
- * カメラへ接続する
+ * Connect to the camera device
  */
 int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const char *usbfs) {
 	ENTER();
@@ -182,17 +182,17 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 				RETURN(result, int);
 			}
 		}
-		// カメラ機能フラグをクリア
+		// Clear the supported camera feature flags
 		clearCameraParams();
 		fd = dup(fd);
-		// 指定したvid,idを持つデバイスを検索, 見つかれば0を返してmDeviceに見つかったデバイスをセットする(既に1回uvc_ref_deviceを呼んである)
+		// Search for a device with the specified VID/PID; if found, return 0 and set mDevice to the device (uvc_ref_device has already been called once)
 //		result = uvc_find_device2(mContext, &mDevice, vid, pid, NULL, fd);
 		result = uvc_get_device_with_fd(mContext, &mDevice, vid, pid, NULL, fd, busnum, devaddr);
 		if (LIKELY(!result)) {
-			// カメラのopen処理
+			// Open the camera device
 			result = uvc_open(mDevice, &mDeviceHandle);
 			if (LIKELY(!result)) {
-				// open出来た時
+				// Camera opened successfully
 #if LOCAL_DEBUG
 				uvc_print_diag(mDeviceHandle, stderr);
 #endif
@@ -201,10 +201,10 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 				mButtonCallback = new UVCButtonCallback(mDeviceHandle);
 				mPreview = new UVCPreview(mDeviceHandle);
 			} else {
-				// open出来なかった時
+				// Camera open failed
 				LOGE("could not open camera:err=%d", result);
 				uvc_unref_device(mDevice);
-//				SAFE_DELETE(mDevice);	// 参照カウンタが0ならuvc_unref_deviceでmDeviceがfreeされるから不要 XXX クラッシュ, 既に破棄されているのを再度破棄しようとしたからみたい
+//				SAFE_DELETE(mDevice);	// Not needed: mDevice is freed by uvc_unref_device when the reference count reaches 0. XXX This previously crashed because an already destroyed object was destroyed again.
 				mDevice = NULL;
 				mDeviceHandle = NULL;
 				close(fd);
@@ -214,13 +214,13 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 			close(fd);
 		}
 	} else {
-		// カメラが既にopenしている時
+		// Camera is already open
 		LOGW("camera is already opened. you should release first");
 	}
 	RETURN(result, int);
 }
 
-// カメラを開放する
+// Release the camera device
 /**
  * \brief Implements release.
  *
@@ -233,15 +233,15 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 int UVCCamera::release() {
 	ENTER();
 	stopPreview();
-	// カメラのclose処理
+	// Close the camera device
 	if (LIKELY(mDeviceHandle)) {
 		MARK("カメラがopenしていたら開放する");
-		// ステータスコールバックオブジェクトを破棄
+		// Destroy the status callback object
 		SAFE_DELETE(mStatusCallback);
 		SAFE_DELETE(mButtonCallback);
-		// プレビューオブジェクトを破棄
+		// Destroy the preview object
 		SAFE_DELETE(mPreview);
-		// カメラをclose
+		// Close the camera
 		uvc_close(mDeviceHandle);
 		mDeviceHandle = NULL;
 	}
@@ -250,7 +250,7 @@ int UVCCamera::release() {
 		uvc_unref_device(mDevice);
 		mDevice = NULL;
 	}
-	// カメラ機能フラグをクリア
+	// Clear the supported camera feature flags
 	clearCameraParams();
 	if (mUsbFs) {
 		close(mFd);
@@ -424,7 +424,7 @@ int UVCCamera::setCaptureDisplay(ANativeWindow *capture_window) {
 }
 
 //======================================================================
-// カメラのサポートしているコントロール機能を取得する
+// Get the controls supported by the camera
 /**
  * \brief Implements getCtrlSupports.
  *
@@ -439,7 +439,7 @@ int UVCCamera::getCtrlSupports(uint64_t *supports) {
 	uvc_error_t ret = UVC_ERROR_NOT_FOUND;
 	if (LIKELY(mDeviceHandle)) {
 		if (!mCtrlSupports) {
-			// 何個あるのかわからへんねんけど、試した感じは１個みたいやからとりあえず先頭のを返す
+			// The number of controls is unknown, but in practice there seems to be one, so return the first entry
 			const uvc_input_terminal_t *input_terminals = uvc_get_input_terminals(mDeviceHandle);
 			const uvc_input_terminal_t *it;
 			DL_FOREACH(input_terminals, it)
@@ -473,7 +473,7 @@ int UVCCamera::getProcSupports(uint64_t *supports) {
 	uvc_error_t ret = UVC_ERROR_NOT_FOUND;
 	if (LIKELY(mDeviceHandle)) {
 		if (!mPUSupports) {
-			// 何個あるのかわからへんねんけど、試した感じは１個みたいやからとりあえず先頭のを返す
+			// The number of controls is unknown, but in practice there seems to be one, so return the first entry
 			const uvc_processing_unit_t *proc_units = uvc_get_processing_units(mDeviceHandle);
 			const uvc_processing_unit_t *pu;
 			DL_FOREACH(proc_units, pu)
@@ -818,12 +818,12 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	} \
 
 /**
- * カメラコントロール設定の下請け
+ * Helper to set camera control values
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value,
 		paramget_func_i8 get_func, paramset_func_i8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -835,7 +835,7 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value,
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value,
 		paramget_func_u8 get_func, paramset_func_u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -847,7 +847,7 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value,
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value1, uint8_t value2,
 		paramget_func_u8u8 get_func, paramset_func_u8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		uint8_t v1min = (uint8_t)((values.min >> 8) & 0xff);
 		uint8_t v2min = (uint8_t)(values.min & 0xff);
 		uint8_t v1max = (uint8_t)((values.max >> 8) & 0xff);
@@ -866,7 +866,7 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value1, uin
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint8_t value2,
 		paramget_func_i8u8 get_func, paramset_func_i8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		int8_t v1min = (int8_t)((values.min >> 8) & 0xff);
 		uint8_t v2min = (uint8_t)(values.min & 0xff);
 		int8_t v1max = (int8_t)((values.max >> 8) & 0xff);
@@ -885,7 +885,7 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint8_t value2, uint8_t value3,
 		paramget_func_i8u8u8 get_func, paramset_func_i8u8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		int8_t v1min = (int8_t)((values.min >> 16) & 0xff);
 		uint8_t v2min = (uint8_t)((values.min >> 8) & 0xff);
 		uint8_t v3min = (uint8_t)(values.min & 0xff);
@@ -907,12 +907,12 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint
 }
 
 /**
- * カメラコントロール設定の下請け
+ * Helper to set camera control values
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int16_t value,
 		paramget_func_i16 get_func, paramset_func_i16 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -922,12 +922,12 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int16_t value,
 }
 
 /**
- * カメラコントロール設定の下請け
+ * Helper to set camera control values
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint16_t value,
 		paramget_func_u16 get_func, paramset_func_u16 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -937,12 +937,12 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint16_t value,
 }
 
 /**
- * カメラコントロール設定の下請け
+ * Helper to set camera control values
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int32_t value,
 		paramget_func_i32 get_func, paramset_func_i32 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -952,12 +952,12 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int32_t value,
 }
 
 /**
- * カメラコントロール設定の下請け
+ * Helper to set camera control values
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint32_t value,
 		paramget_func_u32 get_func, paramset_func_u32 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -967,7 +967,7 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint32_t value,
 }
 
 //======================================================================
-// スキャニングモード
+// Scanning mode
 /**
  * \brief Implements updateScanningModeLimit.
  *
@@ -986,7 +986,7 @@ int UVCCamera::updateScanningModeLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// スキャニングモードをセット
+// Set scanning mode
 /**
  * \brief Implements setScanningMode.
  *
@@ -1006,7 +1006,7 @@ int UVCCamera::setScanningMode(int mode) {
 	RETURN(r, int);
 }
 
-// スキャニングモード設定を取得
+// Get scanning mode setting
 /**
  * \brief Implements getScanningMode.
  *
@@ -1032,7 +1032,7 @@ int UVCCamera::getScanningMode() {
 }
 
 //======================================================================
-// 露出モード
+// Exposure mode
 /**
  * \brief Implements updateExposureModeLimit.
  *
@@ -1051,7 +1051,7 @@ int UVCCamera::updateExposureModeLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 露出をセット
+// Set exposure
 /**
  * \brief Implements setExposureMode.
  *
@@ -1071,7 +1071,7 @@ int UVCCamera::setExposureMode(int mode) {
 	RETURN(r, int);
 }
 
-// 露出設定を取得
+// Get exposure
 /**
  * \brief Implements getExposureMode.
  *
@@ -1097,7 +1097,7 @@ int UVCCamera::getExposureMode() {
 }
 
 //======================================================================
-// 露出優先設定
+// Exposure priority
 /**
  * \brief Implements updateExposurePriorityLimit.
  *
@@ -1116,7 +1116,7 @@ int UVCCamera::updateExposurePriorityLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 露出優先設定をセット
+// Set exposure priority
 /**
  * \brief Implements setExposurePriority.
  *
@@ -1136,7 +1136,7 @@ int UVCCamera::setExposurePriority(int priority) {
 	RETURN(r, int);
 }
 
-// 露出優先設定を取得
+// Get exposure priority
 /**
  * \brief Implements getExposurePriority.
  *
@@ -1162,7 +1162,7 @@ int UVCCamera::getExposurePriority() {
 }
 
 //======================================================================
-// 露出(絶対値)設定
+// Absolute exposure
 /**
  * \brief Implements updateExposureLimit.
  *
@@ -1181,7 +1181,7 @@ int UVCCamera::updateExposureLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 露出(絶対値)設定をセット
+// Set absolute exposure
 /**
  * \brief Implements setExposure.
  *
@@ -1201,7 +1201,7 @@ int UVCCamera::setExposure(int ae_abs) {
 	RETURN(r, int);
 }
 
-// 露出(絶対値)設定を取得
+// Get absolute exposure
 /**
  * \brief Implements getExposure.
  *
@@ -1227,7 +1227,7 @@ int UVCCamera::getExposure() {
 }
 
 //======================================================================
-// 露出(相対値)設定
+// Relative exposure
 /**
  * \brief Implements updateExposureRelLimit.
  *
@@ -1246,7 +1246,7 @@ int UVCCamera::updateExposureRelLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 露出(相対値)設定をセット
+// Set relative exposure
 /**
  * \brief Implements setExposureRel.
  *
@@ -1266,7 +1266,7 @@ int UVCCamera::setExposureRel(int ae_rel) {
 	RETURN(r, int);
 }
 
-// 露出(相対値)設定を取得
+// Get relative exposure
 /**
  * \brief Implements getExposureRel.
  *
@@ -1292,7 +1292,7 @@ int UVCCamera::getExposureRel() {
 }
 
 //======================================================================
-// オートフォーカス
+// Auto focus
 /**
  * \brief Implements updateAutoFocusLimit.
  *
@@ -1311,7 +1311,7 @@ int UVCCamera::updateAutoFocusLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オートフォーカスをon/off
+// Turn auto focus on/off
 /**
  * \brief Implements setAutoFocus.
  *
@@ -1331,7 +1331,7 @@ int UVCCamera::setAutoFocus(bool autoFocus) {
 	RETURN(r, int);
 }
 
-// オートフォーカスのon/off状態を取得
+// Get auto focus on/off state
 /**
  * \brief Implements getAutoFocus.
  *
@@ -1354,7 +1354,7 @@ bool UVCCamera::getAutoFocus() {
 }
 
 //======================================================================
-// フォーカス(絶対値)調整
+// Adjust absolute focus
 /**
  * \brief Implements updateFocusLimit.
  *
@@ -1373,7 +1373,7 @@ int UVCCamera::updateFocusLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// フォーカス(絶対値)を設定
+// Set absolute focus
 /**
  * \brief Implements setFocus.
  *
@@ -1392,7 +1392,7 @@ int UVCCamera::setFocus(int focus) {
 	RETURN(ret, int);
 }
 
-// フォーカス(絶対値)の現在値を取得
+// Get current absolute focus
 /**
  * \brief Implements getFocus.
  *
@@ -1406,7 +1406,7 @@ int UVCCamera::getFocus() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mFocus, uvc_get_focus_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t value;
 			ret = uvc_get_focus_abs(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1417,7 +1417,7 @@ int UVCCamera::getFocus() {
 }
 
 //======================================================================
-// フォーカス(相対値)調整
+// Adjust relative focus
 /**
  * \brief Implements updateFocusRelLimit.
  *
@@ -1436,7 +1436,7 @@ int UVCCamera::updateFocusRelLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// フォーカス(相対値)を設定
+// Set relative focus
 /**
  * \brief Implements setFocusRel.
  *
@@ -1455,7 +1455,7 @@ int UVCCamera::setFocusRel(int focus_rel) {
 	RETURN(ret, int);
 }
 
-// フォーカス(相対値)の現在値を取得
+// Get current relative focus
 /**
  * \brief Implements getFocusRel.
  *
@@ -1469,7 +1469,7 @@ int UVCCamera::getFocusRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_REL) {
 		int ret = update_ctrl_values(mDeviceHandle, mFocusRel, uvc_get_focus_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int8_t focus;
 			uint8_t speed;
 			ret = uvc_get_focus_rel(mDeviceHandle, &focus, &speed, UVC_GET_CUR);
@@ -1482,7 +1482,7 @@ int UVCCamera::getFocusRel() {
 
 //======================================================================
 /*
-// フォーカス(シンプル)調整
+// Adjust simple focus
 /**
  * \brief Implements updateFocusSimpleLimit.
  *
@@ -1501,7 +1501,7 @@ int UVCCamera::updateFocusSimpleLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// フォーカス(シンプル)を設定
+// Set simple focus
 /**
  * \brief Implements setFocusSimple.
  *
@@ -1520,7 +1520,7 @@ int UVCCamera::setFocusSimple(int focus) {
 	RETURN(ret, int);
 }
 
-// フォーカス(シンプル)の現在値を取得
+// Get current simple focus
 /**
  * \brief Implements getFocusSimple.
  *
@@ -1534,7 +1534,7 @@ int UVCCamera::getFocusSimple() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_SIMPLE) {
 		int ret = update_ctrl_values(mDeviceHandle, mFocusSimple, uvc_get_focus_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t value;
 			ret = uvc_get_focus_simple_range(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1546,7 +1546,7 @@ int UVCCamera::getFocusSimple() {
 */
 
 //======================================================================
-// 絞り(絶対値)調整
+// Adjust absolute iris
 /**
  * \brief Implements updateIrisLimit.
  *
@@ -1565,7 +1565,7 @@ int UVCCamera::updateIrisLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 絞り(絶対値)を設定
+// Set absolute iris
 /**
  * \brief Implements setIris.
  *
@@ -1584,7 +1584,7 @@ int UVCCamera::setIris(int iris) {
 	RETURN(ret, int);
 }
 
-// 絞り(絶対値)の現在値を取得
+// Get current absolute iris
 /**
  * \brief Implements getIris.
  *
@@ -1598,7 +1598,7 @@ int UVCCamera::getIris() {
 	ENTER();
 	if (mCtrlSupports & CTRL_IRIS_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mIris, uvc_get_iris_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_iris_abs(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1609,7 +1609,7 @@ int UVCCamera::getIris() {
 }
 
 //======================================================================
-// 絞り(相対値)調整
+// Adjust relative iris
 /**
  * \brief Implements updateIrisRelLimit.
  *
@@ -1628,7 +1628,7 @@ int UVCCamera::updateIrisRelLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 絞り(相対値)を設定
+// Set relative iris
 /**
  * \brief Implements setIrisRel.
  *
@@ -1647,7 +1647,7 @@ int UVCCamera::setIrisRel(int iris_rel) {
 	RETURN(ret, int);
 }
 
-// 絞り(相対値)の現在値を取得
+// Get current relative iris
 /**
  * \brief Implements getIrisRel.
  *
@@ -1661,7 +1661,7 @@ int UVCCamera::getIrisRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_IRIS_REL) {
 		int ret = update_ctrl_values(mDeviceHandle, mIris, uvc_get_iris_rel);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t iris_rel;
 			ret = uvc_get_iris_rel(mDeviceHandle, &iris_rel, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1672,7 +1672,7 @@ int UVCCamera::getIrisRel() {
 }
 
 //======================================================================
-// Pan(絶対値)調整
+// Adjust absolute pan
 /**
  * \brief Implements updatePanLimit.
  *
@@ -1691,7 +1691,7 @@ int UVCCamera::updatePanLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Pan(絶対値)を設定
+// Set absolute pan
 /**
  * \brief Implements setPan.
  *
@@ -1721,7 +1721,7 @@ int UVCCamera::setPan(int pan) {
 	RETURN(ret, int);
 }
 
-// Pan(絶対値)の現在値を取得
+// Get current absolute pan
 /**
  * \brief Implements getPan.
  *
@@ -1735,7 +1735,7 @@ int UVCCamera::getPan() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PANTILT_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mPan, mTilt, uvc_get_pantilt_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int32_t pan, tilt;
 			ret = uvc_get_pantilt_abs(mDeviceHandle, &pan, &tilt, UVC_GET_CUR);
 			if (LIKELY(!ret)) {
@@ -1749,7 +1749,7 @@ int UVCCamera::getPan() {
 }
 
 //======================================================================
-// Tilt(絶対値)調整
+// Adjust absolute tilt
 /**
  * \brief Implements updateTiltLimit.
  *
@@ -1768,7 +1768,7 @@ int UVCCamera::updateTiltLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Tilt(絶対値)を設定
+// Set absolute tilt
 /**
  * \brief Implements setTilt.
  *
@@ -1798,7 +1798,7 @@ int UVCCamera::setTilt(int tilt) {
 	RETURN(ret, int);
 }
 
-// Tilt(絶対値)の現在値を取得
+// Get current absolute tilt
 /**
  * \brief Implements getTilt.
  *
@@ -1812,7 +1812,7 @@ int UVCCamera::getTilt() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PANTILT_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mPan, mTilt, uvc_get_pantilt_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int32_t pan, tilt;
 			ret = uvc_get_pantilt_abs(mDeviceHandle, &pan, &tilt, UVC_GET_CUR);
 			if (LIKELY(!ret)) {
@@ -1826,7 +1826,7 @@ int UVCCamera::getTilt() {
 }
 
 //======================================================================
-// Roll(絶対値)調整
+// Adjust absolute roll
 /**
  * \brief Implements updateRollLimit.
  *
@@ -1845,7 +1845,7 @@ int UVCCamera::updateRollLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Roll(絶対値)を設定
+// Set absolute roll
 /**
  * \brief Implements setRoll.
  *
@@ -1864,7 +1864,7 @@ int UVCCamera::setRoll(int roll) {
 	RETURN(ret, int);
 }
 
-// Roll(絶対値)の現在値を取得
+// Get current absolute roll
 /**
  * \brief Implements getRoll.
  *
@@ -1878,7 +1878,7 @@ int UVCCamera::getRoll() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ROLL_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mRoll, uvc_get_roll_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t roll;
 			ret = uvc_get_roll_abs(mDeviceHandle, &roll, UVC_GET_CUR);
 			if (LIKELY(!ret)) {
@@ -2029,7 +2029,7 @@ int UVCCamera::getRollRel() {
 }
 
 //======================================================================
-// プライバシーモード
+// Privacy mode
 /**
  * \brief Implements updatePrivacyLimit.
  *
@@ -2048,7 +2048,7 @@ int UVCCamera::updatePrivacyLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// プライバシーモードを設定
+// Set privacy mode
 /**
  * \brief Implements setPrivacy.
  *
@@ -2067,7 +2067,7 @@ int UVCCamera::setPrivacy(int privacy) {
 	RETURN(ret, int);
 }
 
-// プライバシーモードの現在値を取得
+// Get current privacy mode value
 /**
  * \brief Implements getPrivacy.
  *
@@ -2081,7 +2081,7 @@ int UVCCamera::getPrivacy() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PRIVACY) {
 		int ret = update_ctrl_values(mDeviceHandle, mPrivacy, uvc_get_privacy);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t privacy;
 			ret = uvc_get_privacy(mDeviceHandle, &privacy, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2109,7 +2109,7 @@ int UVCCamera::updateDigitalWindowLimit(...not defined...) {
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
-// DigitalWindowを設定
+// Set digital window
 /**
  * \brief Implements setDigitalWindow.
  *
@@ -2125,7 +2125,7 @@ int UVCCamera::setDigitalWindow(int top, int reft, int bottom, int right) {
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
-// DigitalWindowの現在値を取得
+// Get current digital window
 /**
  * \brief Implements getDigitalWindow.
  *
@@ -2160,7 +2160,7 @@ int UVCCamera::updateDigitalRoiLimit(...not defined...) {
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
-// DigitalRoiを設定
+// Set digital ROI
 /**
  * \brief Implements setDigitalRoi.
  *
@@ -2176,7 +2176,7 @@ int UVCCamera::setDigitalRoi(int top, int reft, int bottom, int right) {
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
-// DigitalRoiの現在値を取得
+// Get current digital ROI
 /**
  * \brief Implements getDigitalRoi.
  *
@@ -2213,7 +2213,7 @@ int UVCCamera::updateBacklightCompLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// backlight_compensationを設定
+// Set backlight compensation
 /**
  * \brief Implements setBacklightComp.
  *
@@ -2232,7 +2232,7 @@ int UVCCamera::setBacklightComp(int backlight) {
 	RETURN(ret, int);
 }
 
-// backlight_compensationの現在値を取得
+// Get current backlight compensation
 /**
  * \brief Implements getBacklightComp.
  *
@@ -2246,7 +2246,7 @@ int UVCCamera::getBacklightComp() {
 	ENTER();
 	if (mPUSupports & PU_BACKLIGHT) {
 		int ret = update_ctrl_values(mDeviceHandle, mBacklightComp, uvc_get_backlight_compensation);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t value;
 			ret = uvc_get_backlight_compensation(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2258,7 +2258,7 @@ int UVCCamera::getBacklightComp() {
 
 
 //======================================================================
-// 明るさ
+// Brightness
 /**
  * \brief Implements updateBrightnessLimit.
  *
@@ -2295,7 +2295,7 @@ int UVCCamera::setBrightness(int brightness) {
 	RETURN(ret, int);
 }
 
-// 明るさの現在値を取得
+// Get current brightness value
 /**
  * \brief Implements getBrightness.
  *
@@ -2309,7 +2309,7 @@ int UVCCamera::getBrightness() {
 	ENTER();
 	if (mPUSupports & PU_BRIGHTNESS) {
 		int ret = update_ctrl_values(mDeviceHandle, mBrightness, uvc_get_brightness);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t value;
 			ret = uvc_get_brightness(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2320,7 +2320,7 @@ int UVCCamera::getBrightness() {
 }
 
 //======================================================================
-// コントラスト調整
+// Adjust contrast
 /**
  * \brief Implements updateContrastLimit.
  *
@@ -2339,7 +2339,7 @@ int UVCCamera::updateContrastLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// コントラストを設定
+// Set contrast
 /**
  * \brief Implements setContrast.
  *
@@ -2358,7 +2358,7 @@ int UVCCamera::setContrast(uint16_t contrast) {
 	RETURN(ret, int);
 }
 
-// コントラストの現在値を取得
+// Get current contrast
 /**
  * \brief Implements getContrast.
  *
@@ -2372,7 +2372,7 @@ int UVCCamera::getContrast() {
 	ENTER();
 	if (mPUSupports & PU_CONTRAST) {
 		int ret = update_ctrl_values(mDeviceHandle, mContrast, uvc_get_contrast);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_contrast(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2383,7 +2383,7 @@ int UVCCamera::getContrast() {
 }
 
 //======================================================================
-// オートコントラスト
+// Auto contrast
 /**
  * \brief Implements updateAutoContrastLimit.
  *
@@ -2402,7 +2402,7 @@ int UVCCamera::updateAutoContrastLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オートコントラストをon/off
+// Turn auto contrast on/off
 /**
  * \brief Implements setAutoContrast.
  *
@@ -2422,7 +2422,7 @@ int UVCCamera::setAutoContrast(bool autoContrast) {
 	RETURN(r, int);
 }
 
-// オートコントラストのon/off状態を取得
+// Get auto contrast on/off state
 /**
  * \brief Implements getAutoContrast.
  *
@@ -2445,7 +2445,7 @@ bool UVCCamera::getAutoContrast() {
 }
 
 //======================================================================
-// シャープネス調整
+// Adjust sharpness
 /**
  * \brief Implements updateSharpnessLimit.
  *
@@ -2464,7 +2464,7 @@ int UVCCamera::updateSharpnessLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// シャープネスを設定
+// Set sharpness
 /**
  * \brief Implements setSharpness.
  *
@@ -2483,7 +2483,7 @@ int UVCCamera::setSharpness(int sharpness) {
 	RETURN(ret, int);
 }
 
-// シャープネスの現在値を取得
+// Get current sharpness
 /**
  * \brief Implements getSharpness.
  *
@@ -2497,7 +2497,7 @@ int UVCCamera::getSharpness() {
 	ENTER();
 	if (mPUSupports & PU_SHARPNESS) {
 		int ret = update_ctrl_values(mDeviceHandle, mSharpness, uvc_get_sharpness);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_sharpness(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2508,7 +2508,7 @@ int UVCCamera::getSharpness() {
 }
 
 //======================================================================
-// ゲイン調整
+// Adjust gain
 /**
  * \brief Implements updateGainLimit.
  *
@@ -2527,7 +2527,7 @@ int UVCCamera::updateGainLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ゲインを設定
+// Set gain
 /**
  * \brief Implements setGain.
  *
@@ -2547,7 +2547,7 @@ int UVCCamera::setGain(int gain) {
 	RETURN(ret, int);
 }
 
-// ゲインの現在値を取得
+// Get current gain
 /**
  * \brief Implements getGain.
  *
@@ -2561,7 +2561,7 @@ int UVCCamera::getGain() {
 	ENTER();
 	if (mPUSupports & PU_GAIN) {
 		int ret = update_ctrl_values(mDeviceHandle, mGain, uvc_get_gain);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_gain(mDeviceHandle, &value, UVC_GET_CUR);
 //			LOGI("gain:%d", value);
@@ -2573,7 +2573,7 @@ int UVCCamera::getGain() {
 }
 
 //======================================================================
-// オートホワイトバランス(temp)
+// Auto white balance (temperature)
 /**
  * \brief Implements updateAutoWhiteBlanceLimit.
  *
@@ -2592,7 +2592,7 @@ int UVCCamera::updateAutoWhiteBlanceLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オートホワイトバランス(temp)をon/off
+// Turn auto white balance (temperature) on/off
 /**
  * \brief Implements setAutoWhiteBlance.
  *
@@ -2611,7 +2611,7 @@ int UVCCamera::setAutoWhiteBlance(bool autoWhiteBlance) {
 	RETURN(r, int);
 }
 
-// オートホワイトバランス(temp)のon/off状態を取得
+// Get auto white balance (temperature) on/off state
 /**
  * \brief Implements getAutoWhiteBlance.
  *
@@ -2634,7 +2634,7 @@ bool UVCCamera::getAutoWhiteBlance() {
 }
 
 //======================================================================
-// オートホワイトバランス(compo)
+// Auto white balance (component)
 /**
  * \brief Implements updateAutoWhiteBlanceCompoLimit.
  *
@@ -2653,7 +2653,7 @@ int UVCCamera::updateAutoWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オートホワイトバランス(compo)をon/off
+// Turn auto white balance (component) on/off
 /**
  * \brief Implements setAutoWhiteBlanceCompo.
  *
@@ -2672,7 +2672,7 @@ int UVCCamera::setAutoWhiteBlanceCompo(bool autoWhiteBlanceCompo) {
 	RETURN(r, int);
 }
 
-// オートホワイトバランス(compo)のon/off状態を取得
+// Get auto white balance (component) on/off state
 /**
  * \brief Implements getAutoWhiteBlanceCompo.
  *
@@ -2695,7 +2695,7 @@ bool UVCCamera::getAutoWhiteBlanceCompo() {
 }
 
 //======================================================================
-// ホワイトバランス色温度調整
+// Adjust white balance color temperature
 /**
  * \brief Implements updateWhiteBlanceLimit.
  *
@@ -2714,7 +2714,7 @@ int UVCCamera::updateWhiteBlanceLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ホワイトバランス色温度を設定
+// Set white balance color temperature
 /**
  * \brief Implements setWhiteBlance.
  *
@@ -2734,7 +2734,7 @@ int UVCCamera::setWhiteBlance(int white_blance) {
 	RETURN(ret, int);
 }
 
-// ホワイトバランス色温度の現在値を取得
+// Get current white balance color temperature
 /**
  * \brief Implements getWhiteBlance.
  *
@@ -2748,7 +2748,7 @@ int UVCCamera::getWhiteBlance() {
 	ENTER();
 	if (mPUSupports & PU_WB_TEMP) {
 		int ret = update_ctrl_values(mDeviceHandle, mWhiteBlance, uvc_get_white_balance_temperature);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_white_balance_temperature(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2759,7 +2759,7 @@ int UVCCamera::getWhiteBlance() {
 }
 
 //======================================================================
-// ホワイトバランスcompo調整
+// Adjust white balance component
 /**
  * \brief Implements updateWhiteBlanceCompoLimit.
  *
@@ -2778,7 +2778,7 @@ int UVCCamera::updateWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ホワイトバランスcompoを設定
+// Set white balance component
 /**
  * \brief Implements setWhiteBlanceCompo.
  *
@@ -2798,7 +2798,7 @@ int UVCCamera::setWhiteBlanceCompo(int white_blance_compo) {
 	RETURN(ret, int);
 }
 
-// ホワイトバランスcompoの現在値を取得
+// Get current white balance component
 /**
  * \brief Implements getWhiteBlanceCompo.
  *
@@ -2812,7 +2812,7 @@ int UVCCamera::getWhiteBlanceCompo() {
 	ENTER();
 	if (mPUSupports & PU_WB_COMPO) {
 		int ret = update_ctrl_values(mDeviceHandle, mWhiteBlanceCompo, uvc_get_white_balance_component);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint32_t white_blance_compo;
 			ret = uvc_get_white_balance_component(mDeviceHandle, &white_blance_compo, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2823,7 +2823,7 @@ int UVCCamera::getWhiteBlanceCompo() {
 }
 
 //======================================================================
-// ガンマ調整
+// Adjust gamma
 /**
  * \brief Implements updateGammaLimit.
  *
@@ -2842,7 +2842,7 @@ int UVCCamera::updateGammaLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ガンマを設定
+// Set gamma
 /**
  * \brief Implements setGamma.
  *
@@ -2862,7 +2862,7 @@ int UVCCamera::setGamma(int gamma) {
 	RETURN(ret, int);
 }
 
-// ガンマの現在値を取得
+// Get current gamma
 /**
  * \brief Implements getGamma.
  *
@@ -2876,7 +2876,7 @@ int UVCCamera::getGamma() {
 	ENTER();
 	if (mPUSupports & PU_GAMMA) {
 		int ret = update_ctrl_values(mDeviceHandle, mGamma, uvc_get_gamma);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_gamma(mDeviceHandle, &value, UVC_GET_CUR);
 //			LOGI("gamma:%d", ret);
@@ -2888,7 +2888,7 @@ int UVCCamera::getGamma() {
 }
 
 //======================================================================
-// 彩度調整
+// Adjust saturation
 /**
  * \brief Implements updateSaturationLimit.
  *
@@ -2907,7 +2907,7 @@ int UVCCamera::updateSaturationLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 彩度を設定
+// Set saturation
 /**
  * \brief Implements setSaturation.
  *
@@ -2926,7 +2926,7 @@ int UVCCamera::setSaturation(int saturation) {
 	RETURN(ret, int);
 }
 
-// 彩度の現在値を取得
+// Get current saturation
 /**
  * \brief Implements getSaturation.
  *
@@ -2940,7 +2940,7 @@ int UVCCamera::getSaturation() {
 	ENTER();
 	if (mPUSupports & PU_SATURATION) {
 		int ret = update_ctrl_values(mDeviceHandle, mSaturation, uvc_get_saturation);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_saturation(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2951,7 +2951,7 @@ int UVCCamera::getSaturation() {
 }
 
 //======================================================================
-// 色相調整
+// Adjust hue
 /**
  * \brief Implements updateHueLimit.
  *
@@ -2970,7 +2970,7 @@ int UVCCamera::updateHueLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 色相を設定
+// Set hue
 /**
  * \brief Implements setHue.
  *
@@ -2989,7 +2989,7 @@ int UVCCamera::setHue(int hue) {
 	RETURN(ret, int);
 }
 
-// 色相の現在値を取得
+// Get current hue
 /**
  * \brief Implements getHue.
  *
@@ -3003,7 +3003,7 @@ int UVCCamera::getHue() {
 	ENTER();
 	if (mPUSupports & PU_HUE) {
 		int ret = update_ctrl_values(mDeviceHandle, mHue, uvc_get_hue);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t value;
 			ret = uvc_get_hue(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -3014,7 +3014,7 @@ int UVCCamera::getHue() {
 }
 
 //======================================================================
-// オート色相
+// Auto hue
 /**
  * \brief Implements updateAutoHueLimit.
  *
@@ -3033,7 +3033,7 @@ int UVCCamera::updateAutoHueLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オート色相をon/off
+// Turn auto hue on/off
 /**
  * \brief Implements setAutoHue.
  *
@@ -3053,7 +3053,7 @@ int UVCCamera::setAutoHue(bool autoHue) {
 	RETURN(r, int);
 }
 
-// オート色相のon/off状態を取得
+// Get auto hue on/off state
 /**
  * \brief Implements getAutoHue.
  *
@@ -3076,7 +3076,7 @@ bool UVCCamera::getAutoHue() {
 }
 
 //======================================================================
-// 電源周波数によるチラつき補正
+// Power line frequency flicker correction
 /**
  * \brief Implements updatePowerlineFrequencyLimit.
  *
@@ -3095,7 +3095,7 @@ int UVCCamera::updatePowerlineFrequencyLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 電源周波数によるチラつき補正を設定
+// Set power line frequency flicker correction
 /**
  * \brief Implements setPowerlineFrequency.
  *
@@ -3124,7 +3124,7 @@ int UVCCamera::setPowerlineFrequency(int frequency) {
 	RETURN(ret, int);
 }
 
-// 電源周波数によるチラつき補正値を取得
+// Get power line frequency flicker correction value
 /**
  * \brief Implements getPowerlineFrequency.
  *
@@ -3147,7 +3147,7 @@ int UVCCamera::getPowerlineFrequency() {
 }
 
 //======================================================================
-// ズーム(abs)調整
+// Adjust absolute zoom
 /**
  * \brief Implements updateZoomLimit.
  *
@@ -3166,7 +3166,7 @@ int UVCCamera::updateZoomLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ズーム(abs)を設定
+// Set absolute zoom
 /**
  * \brief Implements setZoom.
  *
@@ -3185,7 +3185,7 @@ int UVCCamera::setZoom(int zoom) {
 	RETURN(ret, int);
 }
 
-// ズーム(abs)の現在値を取得
+// Get current absolute zoom
 /**
  * \brief Implements getZoom.
  *
@@ -3199,7 +3199,7 @@ int UVCCamera::getZoom() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ZOOM_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mZoom, uvc_get_zoom_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_zoom_abs(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -3210,7 +3210,7 @@ int UVCCamera::getZoom() {
 }
 
 //======================================================================
-// ズーム(相対値)調整
+// Adjust relative zoom
 /**
  * \brief Implements updateZoomRelLimit.
  *
@@ -3229,7 +3229,7 @@ int UVCCamera::updateZoomRelLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ズーム(相対値)を設定
+// Set relative zoom
 /**
  * \brief Implements setZoomRel.
  *
@@ -3250,7 +3250,7 @@ int UVCCamera::setZoomRel(int zoom) {
 	RETURN(ret, int);
 }
 
-// ズーム(相対値)の現在値を取得
+// Get current relative zoom
 /**
  * \brief Implements getZoomRel.
  *
@@ -3264,7 +3264,7 @@ int UVCCamera::getZoomRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ZOOM_REL) {
 		int ret = update_ctrl_values(mDeviceHandle, mZoomRel, uvc_get_zoom_rel);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int8_t zoom;
 			uint8_t isdigital;
 			uint8_t speed;
@@ -3277,7 +3277,7 @@ int UVCCamera::getZoomRel() {
 }
 
 //======================================================================
-// digital multiplier調整
+// Adjust digital multiplier
 /**
  * \brief Implements updateDigitalMultiplierLimit.
  *
@@ -3296,7 +3296,7 @@ int UVCCamera::updateDigitalMultiplierLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// digital multiplierを設定
+// Set digital multiplier
 /**
  * \brief Implements setDigitalMultiplier.
  *
@@ -3316,7 +3316,7 @@ int UVCCamera::setDigitalMultiplier(int multiplier) {
 	RETURN(ret, int);
 }
 
-// digital multiplierの現在値を取得
+// Get current digital multiplier
 /**
  * \brief Implements getDigitalMultiplier.
  *
@@ -3330,7 +3330,7 @@ int UVCCamera::getDigitalMultiplier() {
 	ENTER();
 	if (mPUSupports & PU_DIGITAL_MULT) {
 		int ret = update_ctrl_values(mDeviceHandle, mMultiplier, uvc_get_digital_multiplier);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t multiplier;
 			ret = uvc_get_digital_multiplier(mDeviceHandle, &multiplier, UVC_GET_CUR);
 //			LOGI("multiplier:%d", multiplier);
@@ -3342,7 +3342,7 @@ int UVCCamera::getDigitalMultiplier() {
 }
 
 //======================================================================
-// digital multiplier limit調整
+// Adjust digital multiplier limit
 /**
  * \brief Implements updateDigitalMultiplierLimitLimit.
  *
@@ -3361,7 +3361,7 @@ int UVCCamera::updateDigitalMultiplierLimitLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// digital multiplier limitを設定
+// Set digital multiplier limit
 /**
  * \brief Implements setDigitalMultiplierLimit.
  *
@@ -3381,7 +3381,7 @@ int UVCCamera::setDigitalMultiplierLimit(int multiplier_limit) {
 	RETURN(ret, int);
 }
 
-// digital multiplier limitの現在値を取得
+// Get current digital multiplier limit
 /**
  * \brief Implements getDigitalMultiplierLimit.
  *
@@ -3395,7 +3395,7 @@ int UVCCamera::getDigitalMultiplierLimit() {
 	ENTER();
 	if (mPUSupports & PU_DIGITAL_LIMIT) {
 		int ret = update_ctrl_values(mDeviceHandle, mMultiplierLimit, uvc_get_digital_multiplier_limit);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t multiplier_limit;
 			ret = uvc_get_digital_multiplier_limit(mDeviceHandle, &multiplier_limit, UVC_GET_CUR);
 //			LOGI("multiplier_limit:%d", multiplier_limit);
@@ -3458,7 +3458,7 @@ int UVCCamera::getAnalogVideoStandard() {
 	ENTER();
 	if (mPUSupports & PU_AVIDEO_STD) {
 		int ret = update_ctrl_values(mDeviceHandle, mAnalogVideoStandard, uvc_get_analog_video_standard);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t standard;
 			ret = uvc_get_analog_video_standard(mDeviceHandle, &standard, UVC_GET_CUR);
 //			LOGI("standard:%d", standard);
@@ -3521,7 +3521,7 @@ int UVCCamera::getAnalogVideoLockState() {
 	ENTER();
 	if (mPUSupports & PU_AVIDEO_LOCK) {
 		int ret = update_ctrl_values(mDeviceHandle, mAnalogVideoLockState, uvc_get_analog_video_lockstate);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t status;
 			ret = uvc_get_analog_video_lockstate(mDeviceHandle, &status, UVC_GET_CUR);
 //			LOGI("status:%d", status);

@@ -235,7 +235,7 @@ int UVCCamera::release() {
 	stopPreview();
 	// Close the camera device
 	if (LIKELY(mDeviceHandle)) {
-		MARK("カメラがopenしていたら開放する");
+		MARK("close the camera if it was open");
 		// Destroy the status callback object
 		SAFE_DELETE(mStatusCallback);
 		SAFE_DELETE(mButtonCallback);
@@ -246,7 +246,7 @@ int UVCCamera::release() {
 		mDeviceHandle = NULL;
 	}
 	if (LIKELY(mDevice)) {
-		MARK("カメラを開放");
+		MARK("release the camera device");
 		uvc_unref_device(mDevice);
 		mDevice = NULL;
 	}

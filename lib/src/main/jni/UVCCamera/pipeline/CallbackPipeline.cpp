@@ -4,21 +4,8 @@
 
 #if 1	// set 1 if you don't need debug message
 
-/**
- * \brief Implements CallbackPipeline component for UVCCamera native library.
- *
- * Provides implementation details for CallbackPipeline within the UVCCamera native library.
- *
- * Exports:
- *     CallbackPipeline: Main component for CallbackPipeline
- *
- * Dependencies:
- *     - libuvc/libusb: USB camera access
- *     - Android NDK: Native build
- *
- * Architecture Note:
- *     Component participates in UVCCamera pipeline architecture.
- */
+// Implementation for CallbackPipeline.h; see the header for the public pipeline interface.
+
 
 	#ifndef LOG_NDEBUG
 		#define	LOG_NDEBUG		// ignore LOGV/LOGD/MARK
@@ -59,15 +46,6 @@ CallbackPipeline::~CallbackPipeline() {
 	EXIT();
 }
 
-/**
- * \brief Implements setFrameCallback.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 int CallbackPipeline::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format) {
 
 	ENTER();
@@ -109,15 +87,6 @@ int CallbackPipeline::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, 
 	RETURN(0, int);
 }
 
-/**
- * \brief Implements callbackPixelFormatChanged.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void CallbackPipeline::callbackPixelFormatChanged(const uint32_t &width, const uint32_t &height) {
 	mFrameCallbackFunc = NULL;
 	const size_t sz = width * height;
@@ -154,15 +123,6 @@ void CallbackPipeline::callbackPixelFormatChanged(const uint32_t &width, const u
 	}
 }
 
-/**
- * \brief Implements do_capture.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void CallbackPipeline::do_capture(JNIEnv *env) {
 	ENTER();
 

@@ -27,6 +27,15 @@
 
 #include "utilbase.h"
 
+/**
+ * \brief Fixed-type growable array used by the UVCCamera native layer.
+ *
+ * Stores raw `T` values and grows by doubling capacity when full. The array
+ * does not own heap resources beyond its backing storage; element lifetimes
+ * are managed by the caller.
+ *
+ * \tparam T Element type stored in the array.
+ */
 template <class T>
 class ObjectArray {
 private:
@@ -73,7 +82,10 @@ public:
 		return m_size;
 	}
 	/**
-	 * remove T which posisioned on index
+	 * \brief Remove and return the element stored at `index`.
+	 *
+	 * \param[in] index Position of the element to remove.
+	 * \return The removed element.
 	 */
 	T remove(int index) {
 		T obj = m_elements[index];
@@ -84,7 +96,9 @@ public:
 		return obj;
 	}
 	/**
-	 * search the T object and remove if exist
+	 * \brief Remove the first element equal to `object` if present.
+	 *
+	 * \param[in] object Element to search for and remove.
 	 */
 	void removeObject(T object) {
 		for (int i = 0; i < size(); i++) {
@@ -95,8 +109,11 @@ public:
 		}
 	}
 	/**
-	 * get last T and remove from this array ¥
-	 * this is faster than remove(size()-1)
+	 * \brief Remove and return the last element.
+	 *
+	 * This is faster than `remove(size() - 1)` because it does not shift elements.
+	 *
+	 * \return The removed last element, or `NULL` if the array is empty.
 	 */
 	inline T last() {
 		if LIKELY(m_size > 0)
@@ -105,8 +122,10 @@ public:
 			return NULL;
 	}
 	/**
-	 * search the T object and return it's index
-	 * if the T is not in this array, return -1
+	 * \brief Find the first index of an element equal to `object`.
+	 *
+	 * \param[in] object Element to search for.
+	 * \return Index of the first matching element, or -1 if not present.
 	 */
 	int getIndex(const T object) {
 		int result = -1;
@@ -120,7 +139,10 @@ public:
 	}
 
 	/**
-	 * clear the T array but never delete actual T instance
+	 * \brief Reset the element count without deleting element storage.
+	 *
+	 * The backing array is resized to the initial minimum size, but existing
+	 * objects are not explicitly destroyed.
 	 */
 	inline void clear() {
 		size(min_size);

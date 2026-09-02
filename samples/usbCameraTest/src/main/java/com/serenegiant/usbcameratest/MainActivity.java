@@ -45,7 +45,7 @@ import com.serenegiant.widget.SimpleUVCCameraTextureView;
 import java.nio.ByteBuffer;
 
 /**
- * Manages USB UVC camera lifecycle and preview for the main activity.
+ * Manage USB UVC camera lifecycle and preview in the demo activity.
  *
  * Initializes UI components, registers USB monitor, and handles camera connect/disconnect events.
  * Lifecycle follows Android Activity lifecycle with synchronized access to camera resources.
@@ -67,7 +67,7 @@ import java.nio.ByteBuffer;
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 
 	private final Object mSync = new Object();
-    // for accessing USB and USB camera
+	// for accessing USB and USB camera
     private USBMonitor mUSBMonitor;
 	private UVCCamera mUVCCamera;
 	private SimpleUVCCameraTextureView mUVCCameraView;
@@ -203,7 +203,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 							});
 						}
 					});
-//					camera.setPreviewTexture(camera.getSurfaceTexture());
+					//					camera.setPreviewTexture(camera.getSurfaceTexture());
 					if (mPreviewSurface != null) {
 						mPreviewSurface.release();
 						mPreviewSurface = null;
@@ -211,7 +211,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 					try {
 						camera.setPreviewSize(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG);
 					} catch (final IllegalArgumentException e) {
-						// fallback to YUV mode
+					// fallback to YUV mode
 						try {
 							camera.setPreviewSize(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.DEFAULT_PREVIEW_MODE);
 						} catch (final IllegalArgumentException e1) {
@@ -223,7 +223,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 					if (st != null) {
 						mPreviewSurface = new Surface(st);
 						camera.setPreviewDisplay(mPreviewSurface);
-//						camera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565/*UVCCamera.PIXEL_FORMAT_NV21*/);
+						//						camera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565/*UVCCamera.PIXEL_FORMAT_NV21*/);
 						camera.startPreview();
 					}
 					synchronized (mSync) {
@@ -235,7 +235,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 		@Override
 		public void onDisconnect(final UsbDevice device, final UsbControlBlock ctrlBlock) {
-			// XXX you should check whether the coming device equal to camera device that currently using
+		// XXX you should check whether the coming device equal to camera device that currently using
 			releaseCamera();
 		}
 
@@ -258,7 +258,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 					mUVCCamera.close();
 					mUVCCamera.destroy();
 				} catch (final Exception e) {
-					//
+				//
 				}
 				mUVCCamera = null;
 			}
@@ -309,7 +309,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					// FIXME
+				// FIXME
 				}
 			}, 0);
 		}
@@ -318,23 +318,23 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 	// if you need frame data as byte array on Java side, you can use this callback method with UVCCamera#setFrameCallback
 	// if you need to create Bitmap in IFrameCallback, please refer following snippet.
 /*	final Bitmap bitmap = Bitmap.createBitmap(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, Bitmap.Config.RGB_565);
-	private final IFrameCallback mIFrameCallback = new IFrameCallback() {
-		@Override
-		public void onFrame(final ByteBuffer frame) {
-			frame.clear();
-			synchronized (bitmap) {
-				bitmap.copyPixelsFromBuffer(frame);
-			}
-			mImageView.post(mUpdateImageTask);
-		}
-	};
-	
-	private final Runnable mUpdateImageTask = new Runnable() {
-		@Override
-		public void run() {
-			synchronized (bitmap) {
-				mImageView.setImageBitmap(bitmap);
-			}
-		}
-	}; */
+private final IFrameCallback mIFrameCallback = new IFrameCallback() {
+@Override
+public void onFrame(final ByteBuffer frame) {
+frame.clear();
+synchronized (bitmap) {
+bitmap.copyPixelsFromBuffer(frame);
+}
+mImageView.post(mUpdateImageTask);
+}
+};
+ *
+private final Runnable mUpdateImageTask = new Runnable() {
+@Override
+public void run() {
+synchronized (bitmap) {
+mImageView.setImageBitmap(bitmap);
+}
+}
+ */
 }

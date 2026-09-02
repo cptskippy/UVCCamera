@@ -43,35 +43,8 @@
  * @brief Support for finding, inspecting and opening UVC devices
  */
 
-/**
- * \brief Manage UVC device enumeration, opening, and descriptor parsing.
- *
- * Provides public API for finding, inspecting, and opening UVC devices via libusb.
- * Handles device list management, reference counting, and VideoControl descriptor parsing.
- *
- * Exports:
- *   uvc_find_device: Find device by VID/PID/serial
- *   uvc_find_device2: Find device via libusb_find_device for non-rooted Android
- *   uvc_get_device_with_fd: Create device from file descriptor for Android >=7
- *   uvc_open: Open a UVC device handle
- *   uvc_close: Close device handle
- *   uvc_get_device_list: Enumerate UVC devices
- *   uvc_get_device_descriptor: Get device descriptor info
- *   uvc_ref_device/uvc_unref_device: Reference counting
- *   uvc_get_input_terminals, uvc_get_output_terminals, uvc_get_processing_units, uvc_get_extension_units: Descriptor accessors
- *   uvc_set_status_callback, uvc_set_button_callback: Status callbacks
- *
- * Dependencies:
- *   - libusb: USB device enumeration and I/O
- *   - libuvc/libuvc_internal.h: Internal types and helpers
- *   - libuvc/libuvc.h: Public API definitions
- *
- * Architecture Note:
- *   Device handling is central to libuvc. Devices are enumerated via libusb, parsed for UVC
- *   descriptors, and reference counted. Opening a device claims the control interface and
- *   optionally starts a status monitoring transfer. The module is not thread-safe for
- *   concurrent open/close operations on the same context.
- */
+// Implementation for libuvc device enumeration and handling; see libuvc/libuvc.h for the public API.
+
 
 #define LOCAL_DEBUG 0
 

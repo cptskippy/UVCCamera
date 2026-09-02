@@ -45,46 +45,27 @@ import com.serenegiant.utils.HandlerThreadHandler;
 import com.serenegiant.utils.PermissionCheck;
 
 /**
- * Created by saki on 2016/11/18.
- *
- */
-/**
- * Manages BaseActivity functionality.
- *
- * Responsibility: Provides core BaseActivity operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of BaseActivity
+ * Base activity that schedules work on the UI and worker threads, manages
+ * toast notifications, and handles runtime permission requests and results
+ * for the USB camera sample applications.
  */
 
 public class BaseActivity extends Activity
 	implements MessageDialogFragmentV4.MessageDialogListener {
 
-	private static boolean DEBUG = false;	// FIXME 実働時はfalseにセットすること
+	private static boolean DEBUG = false;	// FIXME set to false for production
 	private static final String TAG = BaseActivity.class.getSimpleName();
 
-	/** UI操作のためのHandler */
+	/** Handler for UI-thread operations. */
 	private final Handler mUIHandler = new Handler(Looper.getMainLooper());
 	private final Thread mUiThread = mUIHandler.getLooper().getThread();
-	/** ワーカースレッド上で処理するためのHandler */
 	private Handler mWorkerHandler;
 	private long mWorkerThreadID = -1;
 
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// ワーカースレッドを生成
+		// create the worker thread
 		if (mWorkerHandler == null) {
 			mWorkerHandler = HandlerThreadHandler.createHandler(TAG);
 			mWorkerThreadID = mWorkerHandler.getLooper().getThread().getId();
@@ -99,43 +80,26 @@ public class BaseActivity extends Activity
 
 	@Override
 	protected synchronized void onDestroy() {
-		// ワーカースレッドを破棄
+	// release the worker thread
 		if (mWorkerHandler != null) {
 			try {
 				mWorkerHandler.getLooper().quit();
 			} catch (final Exception e) {
-				//
+			//
 			}
 			mWorkerHandler = null;
 		}
 		super.onDestroy();
 	}
 
-//================================================================================
+	//================================================================================
 	/**
-	 * UIスレッドでRunnableを実行するためのヘルパーメソッド
-	 * @param task
-	 * @param duration
+	 * Post a task to run on the UI thread, optionally after a delay.
+	 *
+	 * Args:
+	 *     task: Runnable to execute; ignored when null.
+	 *     duration: Delay in milliseconds before running the task.
 	 */
-/**
- * Runonuithread.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public final void runOnUiThread(final Runnable task, final long duration) {
 		if (task == null) return;
@@ -152,28 +116,11 @@ public class BaseActivity extends Activity
 	}
 
 	/**
-	 * UIスレッド上で指定したRunnableが実行待ちしていれば実行待ちを解除する
-	 * @param task
+	 * Remove a pending task from the UI thread queue.
+	 *
+	 * Args:
+	 *     task: Runnable to remove; ignored when null.
 	 */
-/**
- * Removefromuithread.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public final void removeFromUiThread(final Runnable task) {
 		if (task == null) return;
@@ -181,10 +128,12 @@ public class BaseActivity extends Activity
 	}
 
 	/**
-	 * ワーカースレッド上で指定したRunnableを実行する
-	 * 未実行の同じRunnableがあればキャンセルされる(後から指定した方のみ実行される)
-	 * @param task
-	 * @param delayMillis
+	 * Queue a task to run on the worker thread, canceling any pending
+	 * identical task so only the latest is executed.
+	 *
+	 * Args:
+	 *     task: Runnable to execute; ignored when null.
+	 *     delayMillis: Delay in milliseconds before running the task.
 	 */
 	protected final synchronized void queueEvent(final Runnable task, final long delayMillis) {
 		if ((task == null) || (mWorkerHandler == null)) return;
@@ -198,28 +147,33 @@ public class BaseActivity extends Activity
 				mWorkerHandler.post(task);
 			}
 		} catch (final Exception e) {
-			// ignore
+		// ignore
 		}
 	}
 
 	/**
-	 * 指定したRunnableをワーカースレッド上で実行予定であればキャンセルする
-	 * @param task
+	 * Cancel a pending task on the worker thread.
+	 *
+	 * Args:
+	 *     task: Runnable to remove; ignored when null.
 	 */
 	protected final synchronized void removeEvent(final Runnable task) {
 		if (task == null) return;
 		try {
 			mWorkerHandler.removeCallbacks(task);
 		} catch (final Exception e) {
-			// ignore
+		// ignore
 		}
 	}
 
-//================================================================================
+	//================================================================================
 	private Toast mToast;
 	/**
-	 * Toastでメッセージを表示
-	 * @param msg
+	 * Show a toast with a string resource and optional format arguments.
+	 *
+	 * Args:
+	 *     msg: String resource identifier for the toast message.
+	 *     args: Format arguments for the string resource.
 	 */
 	protected void showToast(@StringRes final int msg, final Object... args) {
 		removeFromUiThread(mShowToastTask);
@@ -228,7 +182,7 @@ public class BaseActivity extends Activity
 	}
 
 	/**
-	 * Toastが表示されていればキャンセルする
+	 * Cancel any active toast and clear the pending toast task.
 	 */
 	protected void clearToast() {
 		removeFromUiThread(mShowToastTask);
@@ -239,7 +193,7 @@ public class BaseActivity extends Activity
 				mToast = null;
 			}
 		} catch (final Exception e) {
-			// ignore
+		// ignore
 		}
 	}
 
@@ -254,40 +208,8 @@ public class BaseActivity extends Activity
 
 		@Override
 		/**
-		 * Run.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Display the queued toast message on the UI thread.
 		 */
-/**
- * Run.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public void run() {
@@ -300,84 +222,50 @@ public class BaseActivity extends Activity
 				mToast = Toast.makeText(BaseActivity.this, _msg, Toast.LENGTH_SHORT);
 				mToast.show();
 			} catch (final Exception e) {
-				// ignore
+			// ignore
 			}
 		}
 	}
 
-//================================================================================
+	//================================================================================
 	/**
-	 * MessageDialogFragmentメッセージダイアログからのコールバックリスナー
-	 * @param dialog
-	 * @param requestCode
-	 * @param permissions
-	 * @param result
+	 * Handle the result of a permission message dialog.
+	 *
+	 * Args:
+	 *     dialog: The dialog that produced the result.
+	 *     requestCode: The request code the permission was requested with.
+	 *     permissions: The permissions being requested.
+	 *     result: True when the user confirmed the dialog.
 	 */
 	@SuppressLint("NewApi")
 	@Override
-/**
- * Onmessagedialogresult.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void onMessageDialogResult(final MessageDialogFragmentV4 dialog, final int requestCode, final String[] permissions, final boolean result) {
 		if (result) {
-			// メッセージダイアログでOKを押された時はパーミッション要求する
+		// request the permissions when the user confirmed the dialog
 			if (BuildCheck.isMarshmallow()) {
 				requestPermissions(permissions, requestCode);
 				return;
 			}
 		}
-		// メッセージダイアログでキャンセルされた時とAndroid6でない時は自前でチェックして#checkPermissionResultを呼び出す
+		// when the dialog was canceled or on pre-Android 6, check the result and call checkPermissionResult
 		for (final String permission: permissions) {
 			checkPermissionResult(requestCode, permission, PermissionCheck.hasPermission(this, permission));
 		}
 	}
 
 	/**
-	 * パーミッション要求結果を受け取るためのメソッド
-	 * @param requestCode
-	 * @param permissions
-	 * @param grantResults
+	 * Receive the result of a runtime permission request.
+	 *
+	 * Args:
+	 *     requestCode: The request code the permission was requested with.
+	 *     permissions: The permissions that were requested.
+	 *     grantResults: The grant result for each permission.
 	 */
 	@Override
-/**
- * Onrequestpermissionsresult.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions, @NonNull final int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);	// 何もしてないけど一応呼んどく
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);	// no-op, but call super for correctness
 		final int n = Math.min(permissions.length, grantResults.length);
 		for (int i = 0; i < n; i++) {
 			checkPermissionResult(requestCode, permissions[i], grantResults[i] == PackageManager.PERMISSION_GRANTED);
@@ -385,14 +273,16 @@ public class BaseActivity extends Activity
 	}
 
 	/**
-	 * パーミッション要求の結果をチェック
-	 * ここではパーミッションを取得できなかった時にToastでメッセージ表示するだけ
-	 * @param requestCode
-	 * @param permission
-	 * @param result
+	 * Check a permission request result and show a toast when the
+	 * permission was not granted.
+	 *
+	 * Args:
+	 *     requestCode: The request code the permission was requested with.
+	 *     permission: The permission that was requested.
+	 *     result: True when the permission was granted.
 	 */
 	protected void checkPermissionResult(final int requestCode, final String permission, final boolean result) {
-		// パーミッションがないときにはメッセージを表示する
+	// show a message when the permission is missing
 		if (!result && (permission != null)) {
 			if (Manifest.permission.RECORD_AUDIO.equals(permission)) {
 				showToast(R.string.permission_audio);
@@ -406,16 +296,18 @@ public class BaseActivity extends Activity
 		}
 	}
 
-	// 動的パーミッション要求時の要求コード
+	// request codes for dynamic permission requests
 	protected static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 0x12345;
 	protected static final int REQUEST_PERMISSION_AUDIO_RECORDING = 0x234567;
 	protected static final int REQUEST_PERMISSION_NETWORK = 0x345678;
 	protected static final int REQUEST_PERMISSION_CAMERA = 0x537642;
 
 	/**
-	 * 外部ストレージへの書き込みパーミッションが有るかどうかをチェック
-	 * なければ説明ダイアログを表示する
-	 * @return true 外部ストレージへの書き込みパーミッションが有る
+	 * Check for external storage write permission, showing an explanation
+	 * dialog when it is missing.
+	 *
+	 * Returns:
+	 *     True when external storage write permission is available.
 	 */
 	protected boolean checkPermissionWriteExternalStorage() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
@@ -432,9 +324,11 @@ public class BaseActivity extends Activity
 	}
 
 	/**
-	 * 録音のパーミッションが有るかどうかをチェック
-	 * なければ説明ダイアログを表示する
-	 * @return true 録音のパーミッションが有る
+	 * Check for audio recording permission, showing an explanation dialog
+	 * when it is missing.
+	 *
+	 * Returns:
+	 *     True when audio recording permission is available.
 	 */
 	protected boolean checkPermissionAudio() {
 		if (!PermissionCheck.hasAudio(this)) {
@@ -447,9 +341,11 @@ public class BaseActivity extends Activity
 	}
 
 	/**
-	 * ネットワークアクセスのパーミッションが有るかどうかをチェック
-	 * なければ説明ダイアログを表示する
-	 * @return true ネットワークアクセスのパーミッションが有る
+	 * Check for network access permission, showing an explanation dialog
+	 * when it is missing.
+	 *
+	 * Returns:
+	 *     True when network access permission is available.
 	 */
 	protected boolean checkPermissionNetwork() {
 		if (!PermissionCheck.hasNetwork(this)) {
@@ -462,9 +358,11 @@ public class BaseActivity extends Activity
 	}
 
 	/**
-	 * カメラアクセスのパーミッションがあるかどうかをチェック
-	 * なければ説明ダイアログを表示する
-	 * @return true カメラアクセスのパーミッションが有る
+	 * Check for camera access permission, showing an explanation dialog
+	 * when it is missing.
+	 *
+	 * Returns:
+	 *     True when camera access permission is available.
 	 */
 	protected boolean checkPermissionCamera() {
 		if (!PermissionCheck.hasCamera(this)) {

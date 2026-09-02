@@ -4,21 +4,8 @@
 #include "utilbase.h"
 #include "UVCStatusCallback.h"
 
-/**
- * \brief Implements UVCStatusCallback component for UVCCamera native library.
- *
- * Provides implementation details for UVCStatusCallback within the UVCCamera native library.
- *
- * Exports:
- *     UVCStatusCallback: Main component for UVCStatusCallback
- *
- * Dependencies:
- *     - libuvc/libusb: USB camera access
- *     - Android NDK: Native build
- *
- * Architecture Note:
- *     Component participates in UVCCamera pipeline architecture.
- */
+// Implementation for UVCStatusCallback.h; see the header for the callback interface.
+
 
 #include "libuvc_internal.h"
 
@@ -42,15 +29,6 @@ UVCStatusCallback::~UVCStatusCallback() {
 	EXIT();
 }
 
-/**
- * \brief Implements setCallback.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 int UVCStatusCallback::setCallback(JNIEnv *env, jobject status_callback_obj) {
 	
 	ENTER();
@@ -84,15 +62,6 @@ int UVCStatusCallback::setCallback(JNIEnv *env, jobject status_callback_obj) {
 	RETURN(0, int);
 }
 
-/**
- * \brief Implements notifyStatusCallback.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void UVCStatusCallback::notifyStatusCallback(JNIEnv* env, uvc_status_class status_class, int event, int selector, uvc_status_attribute status_attribute, void *data, size_t data_len) {
 
 	pthread_mutex_lock(&status_mutex);
@@ -107,15 +76,6 @@ void UVCStatusCallback::notifyStatusCallback(JNIEnv* env, uvc_status_class statu
 	pthread_mutex_unlock(&status_mutex);
 }
 
-/**
- * \brief Implements uvc_status_callback.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void UVCStatusCallback::uvc_status_callback(uvc_status_class status_class, int event, int selector, uvc_status_attribute status_attribute, void *data, size_t data_len, void *user_ptr) {
 
 	UVCStatusCallback *statusCallback = reinterpret_cast<UVCStatusCallback *>(user_ptr);

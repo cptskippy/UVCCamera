@@ -47,81 +47,31 @@ import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.USBMonitor;
 
 import com.serenegiant.usbcameracommon.R;
+
 /**
- * Manages CameraDialog functionality.
+ * Show a UVC camera selection dialog.
  *
- * Responsibility: Provides core CameraDialog operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mUSBMonitor: Field mUSBMonitor
-    mSpinner: Field mSpinner
-    mDeviceListAdapter: Field mDeviceListAdapter
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of CameraDialog
+ * The hosting activity must implement {@link CameraDialogParent}.
  */
-/**
- * Manages CameraDialog functionality.
- *
- * Responsibility: Provides core CameraDialog operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of CameraDialog
- */
-
-
-
 public class CameraDialog extends DialogFragment {
 	private static final String TAG = CameraDialog.class.getSimpleName();
 
+	/**
+	 * Host contract for a camera-selection dialog.
+	 */
 	public interface CameraDialogParent {
 		public USBMonitor getUSBMonitor();
 		public void onDialogResult(boolean canceled);
 	}
 
 	/**
-	 * Helper method
-	 * @param parent FragmentActivity
-	 * @return
+	 * Show a UVC camera selection dialog on the given activity.
+	 *
+	 * Args:
+	 *   parent: the hosting activity; must implement {@link CameraDialogParent}
+	 * Returns:
+	 *   the shown dialog, or null if it could not be shown
 	 */
-/**
- * Showdialog.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public static CameraDialog showDialog(final Activity parent/* add parameters here if you need */) {
 		CameraDialog dialog = newInstance(/* add parameters here if you need */);
 		try {
@@ -131,27 +81,10 @@ public class CameraDialog extends DialogFragment {
 		}
     	return dialog;
 	}
-/**
- * Newinstance.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
-
+	/**
+	 * Create a new CameraDialog with empty arguments.
+	 */
 	public static CameraDialog newInstance(/* add parameters here if you need */) {
 		final CameraDialog dialog = new CameraDialog();
 		final Bundle args = new Bundle();
@@ -165,51 +98,17 @@ public class CameraDialog extends DialogFragment {
 	private DeviceListAdapter mDeviceListAdapter;
 
 	public CameraDialog(/* no arguments */) {
-		// Fragment need default constructor
+	// Fragment need default constructor
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	/**
-	 * Onattach.
+	 * Acquire the USBMonitor from the hosting activity.
 	 *
-	 * 
-	Args:
-	    activity: Parameter activity controls behavior.
-	Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 * Args:
+	 *   activity: the hosting activity; must implement {@link CameraDialogParent}
 	 */
-/**
- * Onattach.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
        if (mUSBMonitor == null)
@@ -224,46 +123,12 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	@Override
-    /**
-     * Oncreate.
-     *
-     * 
-    Args:
-        savedInstanceState: Parameter savedInstanceState controls behavior.
-    Returns:
-     *     Description of the return value.
-     *
-     * Raises:
-     *     Exception: When an error occurs.
-     *
-     * Side Effects:
-     *     - May mutate internal state.
-     *
-     * Code Paths:
-     *     1. If preconditions met → executes normally.
-     *     2. On error → logs and returns default.
-     */
 /**
- * Oncreate.
+ * Use the fragment arguments when no saved instance state was provided.
  *
  * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
+ *   savedInstanceState: the saved instance state, or null
  */
-
-
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (savedInstanceState == null)
@@ -272,45 +137,11 @@ public class CameraDialog extends DialogFragment {
 
 	@Override
 	/**
-	 * Onsaveinstancestate.
+	 * Copy the fragment arguments into the out-state bundle.
 	 *
-	 * 
-	Args:
-	    saveInstanceState: Parameter saveInstanceState controls behavior.
-	Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 * Args:
+	 *   saveInstanceState: the bundle that receives the saved state
 	 */
-/**
- * Onsaveinstancestate.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 	public void onSaveInstanceState(final Bundle saveInstanceState) {
 		final Bundle args = getArguments();
 		if (args != null)
@@ -319,46 +150,14 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	@Override
-    /**
-     * Oncreatedialog.
-     *
-     * 
-    Args:
-        savedInstanceState: Parameter savedInstanceState controls behavior.
-    Returns:
-     *     Description of the return value.
-     *
-     * Raises:
-     *     Exception: When an error occurs.
-     *
-     * Side Effects:
-     *     - May mutate internal state.
-     *
-     * Code Paths:
-     *     1. If preconditions met → executes normally.
-     *     2. On error → logs and returns default.
-     */
 /**
- * Oncreatedialog.
+ * Build the AlertDialog that lists the available UVC cameras.
  *
  * Args:
- *     param: Parameter controls behavior.
- *
+ *   savedInstanceState: the saved instance state, or null
  * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
+ *   the created dialog
  */
-
-
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setView(initView());
@@ -373,8 +172,10 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	/**
-	 * create view that this fragment shows
-	 * @return
+	 * Create the view that this fragment shows.
+	 *
+	 * Returns:
+	 *   the inflated dialog view
 	 */
 	private final View initView() {
 		final View rootView = getActivity().getLayoutInflater().inflate(R.layout.dialog_camera, null);
@@ -387,42 +188,8 @@ public class CameraDialog extends DialogFragment {
 
 	@Override
 	/**
-	 * Onresume.
-	 *
-	 * Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 * Refresh the device list and bind the refresh button.
 	 */
-/**
- * Onresume.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 	public void onResume() {
 		super.onResume();
 		updateDevices();
@@ -435,45 +202,11 @@ public class CameraDialog extends DialogFragment {
 	private final OnClickListener mOnClickListener = new OnClickListener() {
 		@Override
 		/**
-		 * Onclick.
+		 * Refresh the device list when the refresh button is clicked.
 		 *
-		 * 
-		Args:
-		    v: Parameter v controls behavior.
-		Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Args:
+		 *   v: the clicked view
 		 */
-/**
- * Onclick.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 		public void onClick(final View v) {
 			switch (v.getId()) {
 			case android.R.id.button3:
@@ -486,46 +219,12 @@ public class CameraDialog extends DialogFragment {
 	private final DialogInterface.OnClickListener mOnDialogClickListener = new DialogInterface.OnClickListener() {
 		@Override
 		/**
-		 * Onclick.
+		 * Handle the OK or Cancel button click.
 		 *
-		 * 
-		Args:
-		    dialog: Parameter dialog controls behavior.
-		    which: Parameter which controls behavior.
-		Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Args:
+		 *   dialog: the clicked dialog
+		 *   which: the id of the clicked button
 		 */
-/**
- * Onclick.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 		public void onClick(final DialogInterface dialog, final int which) {
 			switch (which) {
 			case DialogInterface.BUTTON_POSITIVE:
@@ -544,105 +243,21 @@ public class CameraDialog extends DialogFragment {
 
 	@Override
 	/**
-	 * Oncancel.
+	 * Notify the hosting activity that the dialog was canceled.
 	 *
-	 * 
-	Args:
-	    dialog: Parameter dialog controls behavior.
-	Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 * Args:
+	 *   dialog: the canceled dialog
 	 */
-/**
- * Oncancel.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 	public void onCancel(final DialogInterface dialog) {
 		((CameraDialogParent)getActivity()).onDialogResult(true);
 		super.onCancel(dialog);
 	}
 
 	/**
-
-	 * Updatedevices.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Rebuild the device list and update the spinner adapter.
 	 */
-/**
- * Updatedevices.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
-
 	public void updateDevices() {
-//		mUSBMonitor.dumpDevices();
+	//		mUSBMonitor.dumpDevices();
 		final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(getActivity(), com.github.cptskippy.uvccamera.lib.R.xml.device_filter);
 		mDeviceListAdapter = new DeviceListAdapter(getActivity(), mUSBMonitor.getDeviceList(filter.get(0)));
 		mSpinner.setAdapter(mDeviceListAdapter);
@@ -660,87 +275,21 @@ public class CameraDialog extends DialogFragment {
 
 		@Override
 		/**
-		 * Getcount.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Return the number of devices in the list.
 		 */
-/**
- * Getcount.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 		public int getCount() {
 			return mList.size();
 		}
 
 		@Override
 		/**
-		 * Getitem.
+		 * Get the device at the given position.
 		 *
-		 * 
-		Args:
-		    position: Parameter position controls behavior.
-		Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Args:
+		 *   position: the row index
+		 * Returns:
+		 *   the device, or null if the position is out of range
 		 */
-/**
- * Getitem.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 		public UsbDevice getItem(final int position) {
 			if ((position >= 0) && (position < mList.size()))
 				return mList.get(position);
@@ -750,92 +299,28 @@ public class CameraDialog extends DialogFragment {
 
 		@Override
 		/**
-		 * Getitemid.
+		 * Return the row position as the item id.
 		 *
-		 * 
-		Args:
-		    position: Parameter position controls behavior.
-		Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Args:
+		 *   position: the row index
+		 * Returns:
+		 *   the row position
 		 */
-/**
- * Getitemid.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 		public long getItemId(final int position) {
 			return position;
 		}
 
 		@Override
 		/**
-		 * Getview.
+		 * Create or fill the list row for a device.
 		 *
-		 * 
-		Args:
-		    position: Parameter position controls behavior.
-		    convertView: Parameter convertView controls behavior.
-		    parent: Parameter parent controls behavior.
-		Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Args:
+		 *   position: the row index
+		 *   convertView: the row view to reuse, or null
+		 *   parent: the list view
+		 * Returns:
+		 *   the row view
 		 */
-/**
- * Getview.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 		public View getView(final int position, View convertView, final ViewGroup parent) {
 			if (convertView == null) {
 				convertView = mInflater.inflate(R.layout.listitem_device, parent, false);

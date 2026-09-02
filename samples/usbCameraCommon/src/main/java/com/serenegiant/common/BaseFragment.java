@@ -48,23 +48,10 @@ import com.serenegiant.utils.PermissionCheck;
  *
  */
 /**
- * Manages BaseFragment functionality.
+ * Base fragment for the USB camera sample apps.
  *
- * Responsibility: Provides core BaseFragment operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of BaseFragment
+ * Provides UI and worker thread handlers, toast helpers, and runtime
+ * permission request handling.
  */
 
 public class BaseFragment extends Fragment
@@ -76,7 +63,6 @@ public class BaseFragment extends Fragment
 	/** UI操作のためのHandler */
 	private final Handler mUIHandler = new Handler(Looper.getMainLooper());
 	private final Thread mUiThread = mUIHandler.getLooper().getThread();
-	/** ワーカースレッド上で処理するためのHandler */
 	private Handler mWorkerHandler;
 	private long mWorkerThreadID = -1;
 
@@ -85,26 +71,9 @@ public class BaseFragment extends Fragment
 	}
 
 	@Override
-/**
- * Oncreate.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Create the worker thread handler on first invocation.
+	 */
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// ワーカースレッドを生成
@@ -116,107 +85,38 @@ public class BaseFragment extends Fragment
 
 	@Override
 	/**
-	 * Onpause.
-	 *
-	 * Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 * Cancel any pending toast before pausing.
 	 */
-/**
- * Onpause.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 	public void onPause() {
 		clearToast();
 		super.onPause();
 	}
 
 	@Override
-/**
- * Ondestroy.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Quit and release the worker thread handler.
+	 */
 	public synchronized void onDestroy() {
-		// ワーカースレッドを破棄
+	// ワーカースレッドを破棄
 		if (mWorkerHandler != null) {
 			try {
 				mWorkerHandler.getLooper().quit();
 			} catch (final Exception e) {
-				//
+			//
 			}
 			mWorkerHandler = null;
 		}
 		super.onDestroy();
 	}
 
-//================================================================================
+	//================================================================================
 	/**
 	 * UIスレッドでRunnableを実行するためのヘルパーメソッド
-	 * @param task
-	 * @param duration
+	 *
+	 * Args:
+	 *     task: Runnable to execute on the UI thread.
+	 *     duration: Delay in milliseconds before executing the task.
 	 */
-/**
- * Runonuithread.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public final void runOnUiThread(final Runnable task, final long duration) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -233,28 +133,10 @@ public class BaseFragment extends Fragment
 
 	/**
 	 * UIスレッド上で指定したRunnableが実行待ちしていれば実行待ちを解除する
-	 * @param task
+	 *
+	 * Args:
+	 *     task: Runnable to remove from the UI thread queue.
 	 */
-/**
- * Removefromuithread.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public final void removeFromUiThread(final Runnable task) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -263,8 +145,10 @@ public class BaseFragment extends Fragment
 	/**
 	 * ワーカースレッド上で指定したRunnableを実行する
 	 * 未実行の同じRunnableがあればキャンセルされる(後から指定した方のみ実行される)
-	 * @param task
-	 * @param delayMillis
+	 *
+	 * Args:
+	 *     task: Runnable to execute on the worker thread.
+	 *     delayMillis: Delay in milliseconds before executing the task.
 	 */
 	protected final synchronized void queueEvent(final Runnable task, final long delayMillis) {
 		if ((task == null) || (mWorkerHandler == null)) return;
@@ -278,28 +162,32 @@ public class BaseFragment extends Fragment
 				mWorkerHandler.post(task);
 			}
 		} catch (final Exception e) {
-			// ignore
+		// ignore
 		}
 	}
 
 	/**
 	 * 指定したRunnableをワーカースレッド上で実行予定であればキャンセルする
-	 * @param task
+	 *
+	 * Args:
+	 *     task: Runnable to cancel on the worker thread.
 	 */
 	protected final synchronized void removeEvent(final Runnable task) {
 		if (task == null) return;
 		try {
 			mWorkerHandler.removeCallbacks(task);
 		} catch (final Exception e) {
-			// ignore
+		// ignore
 		}
 	}
 
-//================================================================================
+	//================================================================================
 	private Toast mToast;
 	/**
 	 * Toastでメッセージを表示
-	 * @param msg
+	 *
+	 * Args:
+	 *     msg: String resource id of the message to show.
 	 */
 	protected void showToast(@StringRes final int msg, final Object... args) {
 		removeFromUiThread(mShowToastTask);
@@ -319,7 +207,7 @@ public class BaseFragment extends Fragment
 				mToast = null;
 			}
 		} catch (final Exception e) {
-			// ignore
+		// ignore
 		}
 	}
 
@@ -334,42 +222,8 @@ public class BaseFragment extends Fragment
 
 		@Override
 		/**
-		 * Run.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Show the toast with the stored message.
 		 */
-/**
- * Run.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 		public void run() {
 			try {
 				if (mToast != null) {
@@ -384,44 +238,26 @@ public class BaseFragment extends Fragment
 				}
 				mToast.show();
 			} catch (final Exception e) {
-				// ignore
+			// ignore
 			}
 		}
 	}
 
-//================================================================================
+	//================================================================================
 	/**
 	 * MessageDialogFragmentメッセージダイアログからのコールバックリスナー
-	 * @param dialog
-	 * @param requestCode
-	 * @param permissions
-	 * @param result
+	 *
+	 * Args:
+	 *     dialog: The dialog that produced the result.
+	 *     requestCode: Request code passed to the dialog.
+	 *     permissions: Permissions the dialog asked about.
+	 *     result: True if the user accepted, false if cancelled.
 	 */
 	@SuppressLint("NewApi")
 	@Override
-/**
- * Onmessagedialogresult.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public void onMessageDialogResult(final MessageDialogFragment dialog, final int requestCode, final String[] permissions, final boolean result) {
 		if (result) {
-			// メッセージダイアログでOKを押された時はパーミッション要求する
+		// メッセージダイアログでOKを押された時はパーミッション要求する
 			if (BuildCheck.isMarshmallow()) {
 				requestPermissions(permissions, requestCode);
 				return;
@@ -435,31 +271,13 @@ public class BaseFragment extends Fragment
 
 	/**
 	 * パーミッション要求結果を受け取るためのメソッド
-	 * @param requestCode
-	 * @param permissions
-	 * @param grantResults
+	 *
+	 * Args:
+	 *     requestCode: Request code of the permission request.
+	 *     permissions: Permissions that were requested.
+	 *     grantResults: Grant result for each requested permission.
 	 */
 	@Override
-/**
- * Onrequestpermissionsresult.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions, @NonNull final int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);	// 何もしてないけど一応呼んどく
 		final int n = Math.min(permissions.length, grantResults.length);
@@ -471,12 +289,14 @@ public class BaseFragment extends Fragment
 	/**
 	 * パーミッション要求の結果をチェック
 	 * ここではパーミッションを取得できなかった時にToastでメッセージ表示するだけ
-	 * @param requestCode
-	 * @param permission
-	 * @param result
+	 *
+	 * Args:
+	 *     requestCode: Request code of the permission request.
+	 *     permission: Permission that was checked.
+	 *     result: True if the permission is granted.
 	 */
 	protected void checkPermissionResult(final int requestCode, final String permission, final boolean result) {
-		// パーミッションがないときにはメッセージを表示する
+	// パーミッションがないときにはメッセージを表示する
 		if (!result && (permission != null)) {
 			if (Manifest.permission.RECORD_AUDIO.equals(permission)) {
 				showToast(R.string.permission_audio);
@@ -499,7 +319,9 @@ public class BaseFragment extends Fragment
 	/**
 	 * 外部ストレージへの書き込みパーミッションが有るかどうかをチェック
 	 * なければ説明ダイアログを表示する
-	 * @return true 外部ストレージへの書き込みパーミッションが有る
+	 *
+	 * Returns:
+	 *     true 外部ストレージへの書き込みパーミッションが有る.
 	 */
 	protected boolean checkPermissionWriteExternalStorage() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
@@ -518,7 +340,9 @@ public class BaseFragment extends Fragment
 	/**
 	 * 録音のパーミッションが有るかどうかをチェック
 	 * なければ説明ダイアログを表示する
-	 * @return true 録音のパーミッションが有る
+	 *
+	 * Returns:
+	 *     true 録音のパーミッションが有る.
 	 */
 	protected boolean checkPermissionAudio() {
 		if (!PermissionCheck.hasAudio(getActivity())) {
@@ -533,7 +357,9 @@ public class BaseFragment extends Fragment
 	/**
 	 * ネットワークアクセスのパーミッションが有るかどうかをチェック
 	 * なければ説明ダイアログを表示する
-	 * @return true ネットワークアクセスのパーミッションが有る
+	 *
+	 * Returns:
+	 *     true ネットワークアクセスのパーミッションが有る.
 	 */
 	protected boolean checkPermissionNetwork() {
 		if (!PermissionCheck.hasNetwork(getActivity())) {
@@ -548,7 +374,9 @@ public class BaseFragment extends Fragment
 	/**
 	 * カメラアクセスのパーミッションがあるかどうかをチェック
 	 * なければ説明ダイアログを表示する
-	 * @return true カメラアクセスのパーミッションが有る
+	 *
+	 * Returns:
+	 *     true カメラアクセスのパーミッションが有る.
 	 */
 	protected boolean checkPermissionCamera() {
 		if (!PermissionCheck.hasCamera(getActivity())) {

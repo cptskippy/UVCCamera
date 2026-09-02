@@ -37,44 +37,20 @@ import android.media.MediaFormat;
 import android.media.MediaRecorder;
 import android.util.Log;
 /**
- * Manages MediaAudioEncoder functionality.
+ * Encode microphone audio as AAC and write it to a MediaMuxerWrapper.
  *
- * Responsibility: Provides core MediaAudioEncoder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mAudioThread: Field mAudioThread
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MediaAudioEncoder
- */
-/**
- * Manages MediaAudioEncoder functionality.
- *
- * Responsibility: Provides core MediaAudioEncoder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
+ * Captures 16-bit mono PCM at 44.1 kHz on a dedicated AudioThread, trying
+ * the DEFAULT, MIC, and CAMCORDER audio sources in order. If no source can
+ * be opened, it encodes a few silent frames so the output file still holds
+ * a continuous audio track. prepare() creates the AAC-LC MediaCodec; the
+ * worker thread inherited from MediaEncoder drains output and writes
+ * samples through the muxer.
  *
  * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MediaAudioEncoder
+ *   Constructed → Prepared → Recording → Released
+ *   (Released is reached automatically once the worker thread finishes
+ *    draining after stopRecording())
  */
-
-
 
 public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 	private static final boolean DEBUG = true;  // TODO set false on release
@@ -110,8 +86,8 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 		audioFormat.setInteger(MediaFormat.KEY_CHANNEL_MASK, AudioFormat.CHANNEL_IN_MONO);
 		audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE);
 		audioFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, 1);
-//      audioFormat.setLong(MediaFormat.KEY_MAX_INPUT_SIZE, inputFile.length());
-//      audioFormat.setLong(MediaFormat.KEY_DURATION, (long)durationInMs );
+		//      audioFormat.setLong(MediaFormat.KEY_MAX_INPUT_SIZE, inputFile.length());
+		//      audioFormat.setLong(MediaFormat.KEY_DURATION, (long)durationInMs );
 		if (DEBUG) Log.i(TAG, "format: " + audioFormat);
 		mMediaCodec = MediaCodec.createEncoderByType(MIME_TYPE);
 		mMediaCodec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
@@ -149,48 +125,29 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 	};
 
 	/**
-	 * Thread to capture audio data from internal mic as uncompressed 16bit PCM data
-	 * and write them to the MediaCodec encoder
+	 * Capture audio from the internal microphone as 16-bit PCM and feed it
+	 * to the MediaCodec encoder.
 	 */
 	private class AudioThread extends Thread {
 		@Override
 		@SuppressLint("MissingPermission")
 		/**
-		 * Run.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
+		 * Read PCM chunks from the microphone and queue them to the encoder
+		 * until capture stops.
 		 *
 		 * Side Effects:
-		 *     - May mutate internal state.
+		 *     - Opens an AudioRecord and reads from the microphone
+		 *     - Queues encoded PCM buffers to the MediaCodec via encode()
 		 *
 		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 *     1. Try the DEFAULT, MIC, and CAMCORDER sources in order until one
+		 *        opens and reaches STATE_INITIALIZED.
+		 *     2. If a source opened → startRecording and read 1024-sample chunks
+		 *        while capturing, encoding each chunk.
+		 *     3. If no source opened → encode up to 5 silent 1024-sample frames,
+		 *        50 ms apart, so the audio track stays continuous.
+		 *     4. Always release the AudioRecord when done.
 		 */
-/**
- * Run.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 		public void run() {
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO); // THREAD_PRIORITY_URGENT_AUDIO
@@ -227,7 +184,7 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 						audioRecord.startRecording();
 						try {
 							for ( ; mIsCapturing && !mRequestStop && !mIsEOS ; ) {
-								// read audio data from internal mic
+							// read audio data from internal mic
 								buf.clear();
 								try {
 									readBytes = audioRecord.read(buf, SAMPLES_PER_FRAME);
@@ -235,7 +192,7 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 									break;
 								}
 								if (readBytes > 0) {
-									// set audio data to encoder
+								// set audio data to encoder
 									buf.position(readBytes);
 									buf.flip();
 									encode(buf, readBytes, getPTSUs());
@@ -279,9 +236,15 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 	}
 
 	/**
-	 * select the first codec that match a specific MIME type
-	 * @param mimeType
-	 * @return
+	 * Find the first audio encoder codec that supports a MIME type.
+	 *
+	 * Args:
+	 *     mimeType: MIME type to match against each encoder's supported types,
+	 *         e.g. "audio/mp4a-latm".
+	 *
+	 * Returns:
+	 *     The first MediaCodecInfo for an encoder supporting the MIME type,
+	 *     or null if no encoder matches.
 	 */
 	private static final MediaCodecInfo selectAudioCodec(final String mimeType) {
 		if (DEBUG) Log.v(TAG, "selectAudioCodec:");

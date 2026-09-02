@@ -16,43 +16,17 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.annotation.SuppressLint;
 import android.os.SystemClock;
 /**
- * Manages Time functionality.
+ * Provide a monotonic nanosecond clock for interval measurements.
  *
- * Responsibility: Provides core Time operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of Time
- */
-/**
- * Manages Time functionality.
- *
- * Responsibility: Provides core Time operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of Time
+ * Wraps either SystemClock.elapsedRealtimeNanos() (API 17+) or
+ * System.nanoTime(), chosen once by reset(). The static flag
+ * prohibitElapsedRealtimeNanos (default true) forces the System.nanoTime()
+ * path so behavior stays identical across API levels.
  */
 
 
@@ -65,51 +39,31 @@ public class Time {
 	static {
 		reset();
 	}
-/**
- * Nanotime.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * Return the current time on the selected monotonic nanosecond clock.
+	 *
+	 * Returns:
+	 *     Nanoseconds on the clock chosen by reset(). Use differences of
+	 *     successive calls to measure elapsed intervals.
+	 */
 
 
 	public static long nanoTime() {
 		return sTime.timeNs();
 	}
-/**
- * Reset.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * Select the clock implementation and rebuild the static instance.
+	 *
+	 * Side Effects:
+	 *     - Replaces the static sTime instance.
+	 *
+	 * Code Paths:
+	 *     1. If prohibitElapsedRealtimeNanos is false and API >= 17 →
+	 *        TimeJellyBeanMr1 (SystemClock.elapsedRealtimeNanos).
+	 *     2. Otherwise → base Time (System.nanoTime).
+	 */
 
-	
+
 	public static void reset() {
 		if (!prohibitElapsedRealtimeNanos && BuildCheck.isJellyBeanMr1()) {
 			sTime = new TimeJellyBeanMr1();
@@ -117,54 +71,25 @@ public class Time {
 			sTime = new Time();
 		}
 	}
-	
+
 	private Time() {
 	}
-	
+
 	@SuppressLint("NewApi")
 	private static class TimeJellyBeanMr1 extends Time {
 		/**
-		 * Timens.
+		 * Return nanoseconds from SystemClock.elapsedRealtimeNanos().
 		 *
 		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 *     Nanoseconds since boot, excluding deep sleep.
 		 */
-/**
- * Timens.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public long timeNs() {
 			return SystemClock.elapsedRealtimeNanos();
 		}
 	}
-	
+
 	protected long timeNs() {
 		return System.nanoTime();
 	}

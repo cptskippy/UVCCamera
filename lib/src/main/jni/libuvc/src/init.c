@@ -80,27 +80,8 @@ YUV stream from a UVC device such as a standard webcam.
  * @brief Setup routines used to construct UVC access contexts
  */
 
-/**
- * \brief Initialize and shutdown libuvc library context and event handling.
- *
- * Provides uvc_init, uvc_exit, and internal event handler thread management.
- * Handles libusb context ownership and cleanup.
- *
- * Exports:
- *   uvc_init: Create UVC context
- *   uvc_exit: Destroy UVC context
- *   uvc_init2: Create context with custom usbfs path
- *
- * Dependencies:
- *   - libusb: USB context initialization
- *   - pthread: Event handler thread
- *   - libuvc/libuvc_internal.h: Internal structures
- *
- * Architecture Note:
- *   libuvc can own its libusb context or use an external one. The first opened
- *   device spawns a background event handler thread; the last closed device
- *   terminates it. Initialization is not thread-safe.
- */
+// Implementation for libuvc initialization and shutdown; see libuvc/libuvc.h for the public API.
+
 
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"

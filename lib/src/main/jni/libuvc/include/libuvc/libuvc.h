@@ -26,8 +26,12 @@
  *   libuvc is a thin wrapper over libusb with UVC protocol parsing. Public headers
  *   define opaque types and control structures; implementation resides in src/. The
  *   API is designed for embedding in Android/JNI layers where libusb is provided by
- *   the host. Thread safety is not guaranteed across multiple concurrent operations
- *   on the same handle.
+ *   the host. Control transfers are serialized per device handle. Frame conversion is
+ *   CPU-intensive per frame, and caller-owned buffers are never modified. libuvc can
+ *   own its libusb context or use an external one; the first opened device starts an
+ *   internal event-handler thread, and the last closed device terminates it.
+ *   Thread safety is not guaranteed across multiple concurrent operations on the same
+ *   handle.
  */
 #ifdef __cplusplus
 extern "C" {

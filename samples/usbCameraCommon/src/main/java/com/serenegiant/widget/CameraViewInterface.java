@@ -29,43 +29,20 @@ import android.view.Surface;
 
 import com.serenegiant.encoder.IVideoEncoder;
 /**
- * Manages CameraViewInterface functionality.
+ * Define the contract shared by camera preview surface views.
  *
- * Responsibility: Provides core CameraViewInterface operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of CameraViewInterface
- */
-/**
- * Manages CameraViewInterface functionality.
- *
- * Responsibility: Provides core CameraViewInterface operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of CameraViewInterface
+ * Implementations (UVCCameraTextureView, AspectRatioTextureView) wrap a
+ * SurfaceTexture/Surface pair and report surface lifecycle events through
+ * Callback so the owning activity can start and stop camera preview in step
+ * with the view.
  */
 
 
 
 public interface CameraViewInterface extends IAspectRatioView {
+	/**
+	 * Receives camera-view surface lifecycle events.
+	 */
 	public interface Callback {
 		public void onSurfaceCreated(CameraViewInterface view, Surface surface);
 		public void onSurfaceChanged(CameraViewInterface view, Surface surface, int width, int height);

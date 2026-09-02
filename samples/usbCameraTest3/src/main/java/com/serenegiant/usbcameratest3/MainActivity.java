@@ -304,7 +304,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 	/**
 	 * to access from CameraDialog
-	 * @return
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	@Override
 	public USBMonitor getUSBMonitor() {

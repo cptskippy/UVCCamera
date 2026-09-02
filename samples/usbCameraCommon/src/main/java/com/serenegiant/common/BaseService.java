@@ -30,45 +30,11 @@ import android.util.Log;
 
 import com.serenegiant.utils.HandlerThreadHandler;
 /**
- * Manages BaseService functionality.
+ * Base {@link Service} for the USB camera samples.
  *
- * Responsibility: Provides core BaseService operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mWorkerHandler: Field mWorkerHandler
-    mWorkerThreadID: Field mWorkerThreadID
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of BaseService
+ * Starts a worker handler in {@link #onCreate()} and quits it in {@link #onDestroy()};
+ * provides helpers to post and cancel Runnables on the UI and worker threads.
  */
-/**
- * Manages BaseService functionality.
- *
- * Responsibility: Provides core BaseService operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of BaseService
- */
-
-
 
 public abstract class BaseService extends Service {
 	private static boolean DEBUG = false;	// FIXME 実働時はfalseにセットすること
@@ -77,31 +43,13 @@ public abstract class BaseService extends Service {
 	/** UI操作のためのHandler */
 	private final Handler mUIHandler = new Handler(Looper.getMainLooper());
 	private final Thread mUiThread = mUIHandler.getLooper().getThread();
-	/** ワーカースレッド上で処理するためのHandler */
 	private Handler mWorkerHandler;
 	private long mWorkerThreadID = -1;
 
 	@Override
-/**
- * Oncreate.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Creates the worker handler if it does not exist yet.
+	 */
 	public void onCreate() {
 		super.onCreate();
 		// ワーカースレッドを生成
@@ -112,65 +60,30 @@ public abstract class BaseService extends Service {
 	}
 
 	@Override
-/**
- * Ondestroy.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Quits the worker handler and releases it before calling {@link Service#onDestroy()}.
+	 */
 	public synchronized void onDestroy() {
-		// ワーカースレッドを破棄
+	// ワーカースレッドを破棄
 		if (mWorkerHandler != null) {
 			try {
 				mWorkerHandler.getLooper().quit();
 			} catch (final Exception e) {
-				//
+			//
 			}
 			mWorkerHandler = null;
 		}
 		super.onDestroy();
 	}
 
-//================================================================================
+	//================================================================================
 	/**
 	 * UIスレッドでRunnableを実行するためのヘルパーメソッド
-	 * @param task
-	 * @param duration
+	 *
+	 * Args:
+	 *     task: Runnable to run on the UI thread; any pending identical task is removed first. Ignored if null.
+	 *     duration: delay in milliseconds; if positive, the task is always posted with delay.
 	 */
-/**
- * Runonuithread.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public final void runOnUiThread(final Runnable task, final long duration) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -187,28 +100,10 @@ public abstract class BaseService extends Service {
 
 	/**
 	 * UIスレッド上で指定したRunnableが実行待ちしていれば実行待ちを解除する
-	 * @param task
+	 *
+	 * Args:
+	 *     task: pending Runnable to remove from the UI thread queue; ignored if null.
 	 */
-/**
- * Removefromuithread.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public final void removeFromUiThread(final Runnable task) {
 		if (task == null) return;
 		mUIHandler.removeCallbacks(task);
@@ -217,8 +112,10 @@ public abstract class BaseService extends Service {
 	/**
 	 * ワーカースレッド上で指定したRunnableを実行する
 	 * 未実行の同じRunnableがあればキャンセルされる(後から指定した方のみ実行される)
-	 * @param task
-	 * @param delayMillis
+	 *
+	 * Args:
+	 *     task: Runnable to run on the worker thread; any pending identical task is removed first. Ignored if null.
+	 *     delayMillis: delay in milliseconds; if zero or negative, the task runs immediately on the worker thread.
 	 */
 	protected final synchronized void queueEvent(final Runnable task, final long delayMillis) {
 		if ((task == null) || (mWorkerHandler == null)) return;
@@ -232,20 +129,22 @@ public abstract class BaseService extends Service {
 				mWorkerHandler.post(task);
 			}
 		} catch (final Exception e) {
-			// ignore
+		// ignore
 		}
 	}
 
 	/**
 	 * 指定したRunnableをワーカースレッド上で実行予定であればキャンセルする
-	 * @param task
+	 *
+	 * Args:
+	 *     task: pending Runnable to cancel on the worker thread; ignored if null.
 	 */
 	protected final synchronized void removeEvent(final Runnable task) {
 		if (task == null) return;
 		try {
 			mWorkerHandler.removeCallbacks(task);
 		} catch (final Exception e) {
-			// ignore
+		// ignore
 		}
 	}
 }

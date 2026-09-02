@@ -40,44 +40,6 @@ import android.util.Log;
  * never execute color space conversion. This means that color tone of resulted movie will be different
  * from that you expected/can see on screen.
  */
-/**
- * Manages MediaVideoBufferEncoder functionality.
- *
- * Responsibility: Provides core MediaVideoBufferEncoder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mColorFormat: Field mColorFormat
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MediaVideoBufferEncoder
- */
-/**
- * Manages MediaVideoBufferEncoder functionality.
- *
- * Responsibility: Provides core MediaVideoBufferEncoder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MediaVideoBufferEncoder
- */
-
 
 public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncoder {
 	private static final boolean DEBUG = true;	// TODO set false on release
@@ -99,66 +61,14 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
 	}
 
 	/**
-
-	 * Encode.
-
+	 * Encode the given NV21(YUV420SP) frame.
 	 *
-
-	 * 
-
-	Args:
-
-	    buffer: Parameter buffer controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     buffer: the NV21(YUV420SP) frame to encode; ignored when not capturing.
 	 */
-/**
- * Encode.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 
 	public void encode(final ByteBuffer buffer) {
-//    	if (DEBUG) Log.v(TAG, "encode:buffer=" + buffer);
+	//    	if (DEBUG) Log.v(TAG, "encode:buffer=" + buffer);
 		synchronized (mSync) {
 			if (!mIsCapturing || mRequestStop) return;
 		}
@@ -204,16 +114,20 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
 		return bitrate;
 	}
 
-    /**
-     * select the first codec that match a specific MIME type
-     * @param mimeType
-     * @return null if no codec matched
-     */
+/**
+ * select the first codec that match a specific MIME type
+ *
+ * Args:
+ *     mimeType: The mime type value.
+ *
+ * Returns:
+ *     null if no codec matched.
+ */
     @SuppressWarnings("deprecation")
 	protected final MediaCodecInfo selectVideoCodec(final String mimeType) {
     	if (DEBUG) Log.v(TAG, "selectVideoCodec:");
 
-    	// get the list of available codecs
+	// get the list of available codecs
         final int numCodecs = MediaCodecList.getCodecCount();
         for (int i = 0; i < numCodecs; i++) {
         	final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
@@ -221,7 +135,7 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
             if (!codecInfo.isEncoder()) {	// skipp decoder
                 continue;
             }
-            // select first codec that match a specific MIME type and color format
+// select first codec that match a specific MIME type and color format
             final String[] types = codecInfo.getSupportedTypes();
             for (int j = 0; j < types.length; j++) {
                 if (types[j].equalsIgnoreCase(mimeType)) {
@@ -237,10 +151,12 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
         return null;
     }
 
-    /**
-     * select color format available on specific codec and we can use.
-     * @return 0 if no colorFormat is matched
-     */
+/**
+ * select color format available on specific codec and we can use.
+ *
+ * Returns:
+ *     0 if no colorFormat is matched.
+ */
     protected static final int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
 		if (DEBUG) Log.i(TAG, "selectColorFormat: ");
     	int result = 0;
@@ -271,10 +187,10 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
     protected static int[] recognizedFormats;
 	static {
 		recognizedFormats = new int[] {
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
         	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
         	MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
+	//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
 		};
 	}
 

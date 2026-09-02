@@ -202,21 +202,8 @@ void SQLiteBufferedPipeline::clear() {
  * if you want to delete all record(s), use clear instead
  */
 
-/**
- * \brief Implements SQLiteBufferedPipeline component for UVCCamera native library.
- *
- * Provides implementation details for SQLiteBufferedPipeline within the UVCCamera native library.
- *
- * Exports:
- *     SQLiteBufferedPipeline: Main component for SQLiteBufferedPipeline
- *
- * Dependencies:
- *     - libuvc/libusb: USB camera access
- *     - Android NDK: Native build
- *
- * Architecture Note:
- *     Component participates in UVCCamera pipeline architecture.
- */
+// Implementation for SQLiteBufferedPipeline.h; see the header for the public pipeline interface.
+
 
 /*protected*/
 int SQLiteBufferedPipeline::delete_older(const nsecs_t &dtime) {
@@ -255,15 +242,6 @@ int SQLiteBufferedPipeline::purge_older(const nsecs_t &limit_rel_nsec) {
 	RETURN(result, int);
 }
 
-/**
- * \brief Implements getCount.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 int SQLiteBufferedPipeline::getCount() {
 	ENTER();
 

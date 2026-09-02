@@ -255,11 +255,15 @@ public final class DeviceFilter {
 	/**
 	 * read as integer values with default value from xml(w/o exception throws)
 	 * resource integer id is also resolved into integer
-	 * @param parser
-	 * @param namespace
-	 * @param name
-	 * @param defaultValue
-	 * @return
+	 *
+	 * Args:
+	 *     parser: XML pull parser positioned at the attribute to read.
+	 *     namespace: XML namespace for the attribute; empty string means no namespace.
+	 *     name: Attribute name to read.
+	 *     defaultValue: Value returned when the attribute is missing, empty, or invalid.
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private static final int getAttributeInteger(final Context context, final XmlPullParser parser, final String namespace, final String name, final int defaultValue) {
 		int result = defaultValue;
@@ -295,12 +299,16 @@ public final class DeviceFilter {
 	 * read as boolean values with default value from xml(w/o exception throws)
 	 * resource boolean id is also resolved into boolean
 	 * if the value is zero, return false, if the value is non-zero integer, return true
-	 * @param context
-	 * @param parser
-	 * @param namespace
-	 * @param name
-	 * @param defaultValue
-	 * @return
+	 *
+	 * Args:
+	 *     context: Android context used to resolve resources or system services.
+	 *     parser: XML pull parser positioned at the attribute to read.
+	 *     namespace: XML namespace for the attribute; empty string means no namespace.
+	 *     name: Attribute name to read.
+	 *     defaultValue: Value returned when the attribute is missing, empty, or invalid.
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private static final boolean getAttributeBoolean(final Context context, final XmlPullParser parser, final String namespace, final String name, final boolean defaultValue) {
 		boolean result = defaultValue;
@@ -340,11 +348,15 @@ public final class DeviceFilter {
 	/**
 	 * read as String attribute with default value from xml(w/o exception throws)
 	 * resource string id is also resolved into string
-	 * @param parser
-	 * @param namespace
-	 * @param name
-	 * @param defaultValue
-	 * @return
+	 *
+	 * Args:
+	 *     parser: XML pull parser positioned at the attribute to read.
+	 *     namespace: XML namespace for the attribute; empty string means no namespace.
+	 *     name: Attribute name to read.
+	 *     defaultValue: Value returned when the attribute is missing, empty, or invalid.
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private static final String getAttributeString(final Context context, final XmlPullParser parser, final String namespace, final String name, final String defaultValue) {
 		String result = defaultValue;

@@ -69,51 +69,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 abstract class AbstractUVCCameraHandler extends Handler {
 	private static final boolean DEBUG = true;  // TODO set false on release
 	private static final String TAG = "AbsUVCCameraHandler";
-/**
- * Manages CameraCallback functionality.
- *
- * Responsibility: Provides core CameraCallback operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mBandwidthFactor: Field mBandwidthFactor
-    mIsPreviewing: Field mIsPreviewing
-    mIsRecording: Field mIsRecording
-    mSoundPool: Field mSoundPool
-    mSoundId: Field mSoundId
-    mHandler: Field mHandler
-    mUVCCamera: Field mUVCCamera
-    mMuxer: Field mMuxer
-    mVideoEncoder: Field mVideoEncoder
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of CameraCallback
- */
-/**
- * Manages CameraCallback functionality.
- *
- * Responsibility: Provides core CameraCallback operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of CameraCallback
- */
+	/**
+	 * Receive camera open, close, preview, and recording events.
+	 */
 
 
 
@@ -145,55 +103,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Getwidth.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Return the preview width in pixels, or 0 if the camera thread is gone.
 	 */
-/**
- * Getwidth.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -203,55 +114,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Getheight.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Return the preview height in pixels, or 0 if the camera thread is gone.
 	 */
-/**
- * Getheight.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -261,55 +125,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Isopened.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Return true if the camera is opened.
 	 */
-/**
- * Isopened.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -319,55 +136,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Ispreviewing.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Return true if the preview is running.
 	 */
-/**
- * Ispreviewing.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -377,55 +147,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Isrecording.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Return true if recording is in progress.
 	 */
-/**
- * Isrecording.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -435,61 +158,11 @@ State Machine:
 	}
 
 	/**
-
-	 * Isequal.
-
+	 * Return true if the given device is the opened camera.
 	 *
-
-	 * 
-
-	Args:
-
-	    device: Parameter device controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     device: the USB device to compare with.
 	 */
-/**
- * Isequal.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -515,61 +188,11 @@ State Machine:
 	}
 
 	/**
-
-	 * Open.
-
+	 * Open the camera with the given control block.
 	 *
-
-	 * 
-
-	Args:
-
-	    ctrlBlock: Parameter ctrlBlock controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     ctrlBlock: the USB control block of the device to open.
 	 */
-/**
- * Open.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -579,55 +202,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Close.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Stop the preview and close the camera if it is opened.
 	 */
-/**
- * Close.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -641,63 +217,12 @@ State Machine:
 	}
 
 	/**
-
-	 * Resize.
-
+	 * Resize the preview size. Not supported, always throws UnsupportedOperationException.
 	 *
-
-	 * 
-
-	Args:
-
-	    width: Parameter width controls behavior.
-
-	    height: Parameter height controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     width: the new preview width in pixels.
+	 *     height: the new preview height in pixels.
 	 */
-/**
- * Resize.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -715,55 +240,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Stoppreview.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Stop the preview and recording, waiting for the preview to actually stop.
 	 */
-/**
- * Stoppreview.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -777,9 +255,9 @@ State Machine:
 			synchronized (thread.mSync) {
 				sendEmptyMessage(MSG_PREVIEW_STOP);
 				if (!isCameraThread()) {
-					// wait for actually preview stopped to avoid releasing Surface/SurfaceTexture
-					// while preview is still running.
-					// therefore this method will take a time to execute
+				// wait for actually preview stopped to avoid releasing Surface/SurfaceTexture
+				// while preview is still running.
+				// therefore this method will take a time to execute
 					try {
 						thread.mSync.wait();
 					} catch (final InterruptedException e) {
@@ -801,55 +279,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Startrecording.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Start video and audio recording.
 	 */
-/**
- * Startrecording.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -859,55 +290,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Stoprecording.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Stop video and audio recording.
 	 */
-/**
- * Stoprecording.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -916,55 +300,8 @@ State Machine:
 	}
 
 	/**
-
-	 * Release.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Close the camera and release the camera thread.
 	 */
-/**
- * Release.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -975,61 +312,11 @@ State Machine:
 	}
 
 	/**
-
-	 * Addcallback.
-
+	 * Add a callback for camera lifecycle events.
 	 *
-
-	 * 
-
-	Args:
-
-	    callback: Parameter callback controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     callback: the callback to register, ignored if null.
 	 */
-/**
- * Addcallback.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1044,61 +331,11 @@ State Machine:
 	}
 
 	/**
-
-	 * Removecallback.
-
+	 * Remove a previously registered camera lifecycle callback.
 	 *
-
-	 * 
-
-	Args:
-
-	    callback: Parameter callback controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     callback: the callback to remove, ignored if null.
 	 */
-/**
- * Removecallback.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1116,61 +353,11 @@ State Machine:
 	}
 
 	/**
-
-	 * Checksupportflag.
-
+	 * Check if the opened camera supports the given property flag.
 	 *
-
-	 * 
-
-	Args:
-
-	    flag: Parameter flag controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     flag: the property flag to check, e.g. UVCCamera.PU_BRIGHTNESS.
 	 */
-/**
- * Checksupportflag.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1181,61 +368,11 @@ State Machine:
 	}
 
 	/**
-
-	 * Getvalue.
-
+	 * Return the current value of the given property.
 	 *
-
-	 * 
-
-	Args:
-
-	    flag: Parameter flag controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     flag: either UVCCamera.PU_BRIGHTNESS or UVCCamera.PU_CONTRAST.
 	 */
-/**
- * Getvalue.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1254,63 +391,12 @@ State Machine:
 	}
 
 	/**
-
-	 * Setvalue.
-
+	 * Set the value of the given property and return the actual value.
 	 *
-
-	 * 
-
-	Args:
-
-	    flag: Parameter flag controls behavior.
-
-	    value: Parameter value controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     flag: either UVCCamera.PU_BRIGHTNESS or UVCCamera.PU_CONTRAST.
+	 *     value: the new property value.
 	 */
-/**
- * Setvalue.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1331,61 +417,11 @@ State Machine:
 	}
 
 	/**
-
-	 * Resetvalue.
-
+	 * Reset the given property to its default value and return the actual value.
 	 *
-
-	 * 
-
-	Args:
-
-	    flag: Parameter flag controls behavior.
-
-	Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Args:
+	 *     flag: either UVCCamera.PU_BRIGHTNESS or UVCCamera.PU_CONTRAST.
 	 */
-/**
- * Resetvalue.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1407,43 +443,9 @@ State Machine:
 
 	@Override
 	/**
-	 * Handlemessage.
-	 *
-	 * 
-	Args:
-	    msg: Parameter msg controls behavior.
-	Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 * Dispatch the message to the camera thread.
 	 */
-/**
- * Handlemessage.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+
 
 
 	public void handleMessage(final Message msg) {
@@ -1497,30 +499,43 @@ State Machine:
 		/**
 		 * shutter sound
 		 */
+
+
+
 		private SoundPool mSoundPool;
 		private int mSoundId;
 		private AbstractUVCCameraHandler mHandler;
 		/**
 		 * for accessing UVC camera
 		 */
+
+
+
 		private UVCCamera mUVCCamera;
 		/**
 		 * muxer for audio/video recording
 		 */
+
+
+
 		private MediaMuxerWrapper mMuxer;
 		private MediaVideoBufferEncoder mVideoEncoder;
 
 		/**
 		 *
-		 * @param clazz Class extends AbstractUVCCameraHandler
-		 * @param parent parent Activity
-		 * @param cameraView for still capturing
-		 * @param encoderType 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder
-		 * @param width
-		 * @param height
-		 * @param format either FRAME_FORMAT_YUYV(0) or FRAME_FORMAT_MJPEG(1)
-		 * @param bandwidthFactor
+		 * Args:
+		 *     clazz: Class extends AbstractUVCCameraHandler.
+		 *     parent: parent Activity.
+		 *     cameraView: for still capturing.
+		 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+		 *     width: The width value in pixels.
+		 *     height: The height value in pixels.
+		 *     format: either FRAME_FORMAT_YUYV(0) or FRAME_FORMAT_MJPEG(1).
+		 *     bandwidthFactor: The bandwidth factor value.
 		 */
+
+
+
 		CameraThread(final Class<? extends AbstractUVCCameraHandler> clazz,
 			final Activity parent, final CameraViewInterface cameraView,
 			final int encoderType, final int width, final int height, final int format,
@@ -1545,55 +560,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Gethandler.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Return the handler created on this thread, waiting if it is not created yet.
 		 */
-/**
- * Gethandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1610,55 +578,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Getwidth.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Return the preview width in pixels.
 		 */
-/**
- * Getwidth.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1669,55 +590,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Getheight.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Return the preview height in pixels.
 		 */
-/**
- * Getheight.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1728,55 +602,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Iscameraopened.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Return true if the camera device is opened.
 		 */
-/**
- * Iscameraopened.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1787,55 +614,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Ispreviewing.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Return true if the preview is running.
 		 */
-/**
- * Ispreviewing.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1846,55 +626,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Isrecording.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Return true if recording is in progress.
 		 */
-/**
- * Isrecording.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1905,61 +638,11 @@ State Machine:
 		}
 
 		/**
-
-		 * Isequal.
-
+		 * Return true if the given device is the opened camera.
 		 *
-
-		 * 
-
-		Args:
-
-		    device: Parameter device controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Args:
+		 *     device: the USB device to compare with.
 		 */
-/**
- * Isequal.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1968,61 +651,11 @@ State Machine:
 		}
 
 		/**
-
-		 * Handleopen.
-
+		 * Close the current camera and open the camera with the given control block.
 		 *
-
-		 * 
-
-		Args:
-
-		    ctrlBlock: Parameter ctrlBlock controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Args:
+		 *     ctrlBlock: the USB control block of the device to open.
 		 */
-/**
- * Handleopen.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2043,55 +676,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Handleclose.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Stop recording and close the camera, destroying the UVCCamera instance.
 		 */
-/**
- * Handleclose.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2111,61 +697,11 @@ State Machine:
 		}
 
 		/**
-
-		 * Handlestartpreview.
-
+		 * Start the preview on the given surface.
 		 *
-
-		 * 
-
-		Args:
-
-		    surface: Parameter surface controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Args:
+		 *     surface: a SurfaceHolder, Surface, or SurfaceTexture for the preview.
 		 */
-/**
- * Handlestartpreview.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2176,7 +712,7 @@ State Machine:
 				mUVCCamera.setPreviewSize(mWidth, mHeight, 1, 31, mPreviewMode, mBandwidthFactor);
 			} catch (final IllegalArgumentException e) {
 				try {
-					// fallback to YUV mode
+				// fallback to YUV mode
 					mUVCCamera.setPreviewSize(mWidth, mHeight, 1, 31, UVCCamera.DEFAULT_PREVIEW_MODE, mBandwidthFactor);
 				} catch (final IllegalArgumentException e1) {
 					callOnError(e1);
@@ -2199,55 +735,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Handlestoppreview.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Stop the preview and notify the threads waiting for it.
 		 */
-/**
- * Handlestoppreview.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2267,61 +756,11 @@ State Machine:
 		}
 
 		/**
-
-		 * Handlecapturestill.
-
+		 * Capture a still image, play the shutter sound, and save it as a PNG file.
 		 *
-
-		 * 
-
-		Args:
-
-		    path: Parameter path controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Args:
+		 *     path: the output file path, or a generated path in the DCIM directory if empty.
 		 */
-/**
- * Handlecapturestill.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2355,55 +794,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Handlestartrecording.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Start recording video and audio with the configured encoders.
 		 */
-/**
- * Handlestartrecording.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2420,13 +812,13 @@ State Machine:
 				case 2: // for video capturing using MediaVideoBufferEncoder
 					videoEncoder = new MediaVideoBufferEncoder(muxer, getWidth(), getHeight(), mMediaEncoderListener);
 					break;
-				// case 0:  // for video capturing using MediaSurfaceEncoder
+					// case 0:  // for video capturing using MediaSurfaceEncoder
 				default:
 					new MediaSurfaceEncoder(muxer, getWidth(), getHeight(), mMediaEncoderListener);
 					break;
 				}
 				if (true) {
-					// for audio capturing
+				// for audio capturing
 					new MediaAudioEncoder(muxer, mMediaEncoderListener);
 				}
 				muxer.prepare();
@@ -2446,55 +838,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Handlestoprecording.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Stop recording, finalize the media file, and notify the callbacks.
 		 */
-/**
- * Handlestoprecording.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2512,7 +857,7 @@ State Machine:
 			try {
 				mWeakCameraView.get().setVideoEncoder(null);
 			} catch (final Exception e) {
-				// ignore
+			// ignore
 			}
 			if (muxer != null) {
 				muxer.stopRecording();
@@ -2525,43 +870,12 @@ State Machine:
 		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
 			@Override
 			/**
-			 * Onframe.
+			 * Encode the given NV21 frame.
 			 *
-			 * 
-			Args:
-			    frame: Parameter frame controls behavior.
-			Returns:
-			 *     Description of the return value.
-			 *
-			 * Raises:
-			 *     Exception: When an error occurs.
-			 *
-			 * Side Effects:
-			 *     - May mutate internal state.
-			 *
-			 * Code Paths:
-			 *     1. If preconditions met → executes normally.
-			 *     2. On error → logs and returns default.
+			 * Args:
+			 *     frame: the NV21 frame buffer from the camera.
 			 */
-/**
- * Onframe.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+
 
 
 			public void onFrame(final ByteBuffer frame) {
@@ -2577,61 +891,11 @@ State Machine:
 		};
 
 		/**
-
-		 * Handleupdatemedia.
-
+		 * Add the captured media file to the media store.
 		 *
-
-		 * 
-
-		Args:
-
-		    path: Parameter path controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Args:
+		 *     path: the path of the media file to register.
 		 */
-/**
- * Handleupdatemedia.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2657,55 +921,8 @@ State Machine:
 		}
 
 		/**
-
-		 * Handlerelease.
-
-		 *
-
-		 * Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
+		 * Close the camera, clear the callbacks, and quit the looper.
 		 */
-/**
- * Handlerelease.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -2723,43 +940,12 @@ State Machine:
 		private final MediaEncoder.MediaEncoderListener mMediaEncoderListener = new MediaEncoder.MediaEncoderListener() {
 			@Override
 			/**
-			 * Onprepared.
+			 * Called when the encoder is prepared, start the capture.
 			 *
-			 * 
-			Args:
-			    encoder: Parameter encoder controls behavior.
-			Returns:
-			 *     Description of the return value.
-			 *
-			 * Raises:
-			 *     Exception: When an error occurs.
-			 *
-			 * Side Effects:
-			 *     - May mutate internal state.
-			 *
-			 * Code Paths:
-			 *     1. If preconditions met → executes normally.
-			 *     2. On error → logs and returns default.
+			 * Args:
+			 *     encoder: the prepared media encoder.
 			 */
-/**
- * Onprepared.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+
 
 
 			public void onPrepared(final MediaEncoder encoder) {
@@ -2782,43 +968,12 @@ State Machine:
 
 			@Override
 			/**
-			 * Onstopped.
+			 * Called when the encoder is stopped, finalize the recording.
 			 *
-			 * 
-			Args:
-			    encoder: Parameter encoder controls behavior.
-			Returns:
-			 *     Description of the return value.
-			 *
-			 * Raises:
-			 *     Exception: When an error occurs.
-			 *
-			 * Side Effects:
-			 *     - May mutate internal state.
-			 *
-			 * Code Paths:
-			 *     1. If preconditions met → executes normally.
-			 *     2. On error → logs and returns default.
+			 * Args:
+			 *     encoder: the stopped media encoder.
 			 */
-/**
- * Onstopped.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+
 
 
 			public void onStopped(final MediaEncoder encoder) {
@@ -2852,20 +1007,23 @@ State Machine:
 		/**
 		 * prepare and load shutter sound for still image capturing
 		 */
+
+
+
 		@SuppressLint("SoonBlockedPrivateApi")
 		protected void loadShutterSound(final Context context) {
-			// Define a default stream type
+		// Define a default stream type
 			int streamType = AudioManager.STREAM_SYSTEM;
 
 			// Conditionally handle reflection based on the Android version
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S_V2) {  // API 32 is Android 12L
 				try {
-					// Use reflection only for older versions
+				// Use reflection only for older versions
 					final Class<?> audioSystemClass = Class.forName("android.media.AudioSystem");
 					final Field sseField = audioSystemClass.getDeclaredField("STREAM_SYSTEM_ENFORCED");
 					streamType = sseField.getInt(null);
 				} catch (final Exception e) {
-					// If reflection fails, fall back to STREAM_SYSTEM
+				// If reflection fails, fall back to STREAM_SYSTEM
 					streamType = AudioManager.STREAM_SYSTEM;
 				}
 			}
@@ -2875,7 +1033,7 @@ State Machine:
 				try {
 					mSoundPool.release();
 				} catch (final Exception e) {
-					// Handle the exception (optional)
+				// Handle the exception (optional)
 				}
 				mSoundPool = null;
 			}
@@ -2887,40 +1045,9 @@ State Machine:
 
 		@Override
 		/**
-		 * Run.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
+		 * Create the camera handler and run the message loop.
 		 */
-/**
- * Run.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+
 
 
 		public void run() {

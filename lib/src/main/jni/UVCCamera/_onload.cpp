@@ -22,21 +22,8 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
-/**
- * \brief Implements _onload component for UVCCamera native library.
- *
- * Provides implementation details for _onload within the UVCCamera native library.
- *
- * Exports:
- *     _onload: Main component for _onload
- *
- * Dependencies:
- *     - libuvc/libusb: USB camera access
- *     - Android NDK: Native build
- *
- * Architecture Note:
- *     Component participates in UVCCamera pipeline architecture.
- */
+// JNI_OnLoad bootstrap for the UVCCamera native library; see libUVCCamera.h for shared includes.
+
 
 
 #include "_onload.h"

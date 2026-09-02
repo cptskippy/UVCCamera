@@ -336,7 +336,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 	/**
 	 * to access from CameraDialog
-	 * @return
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	@Override
 	public USBMonitor getUSBMonitor() {
@@ -394,7 +396,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 	private int mSettingMode = -1;
 	/**
 	 * 設定画面を表示
-	 * @param mode
+	 *
+	 * Args:
+	 *     mode: Mode value
 	 */
 	private final void showSettings(final int mode) {
 		if (DEBUG) Log.v(TAG, String.format("showSettings:%08x", mode));
@@ -426,7 +430,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 	/**
 	 * 設定画面を非表示にする
-	 * @param fadeOut trueならばフェードアウトさせる, falseなら即座に非表示にする
+	 *
+	 * Args:
+	 *     fadeOut: trueならばフェードアウトさせる, falseなら即座に非表示にする
 	 */
 	protected final void hideSetting(final boolean fadeOut) {
 		removeFromUiThread(mSettingHideTask);

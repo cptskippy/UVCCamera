@@ -34,92 +34,105 @@ import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
 
 /**
- * UVC camera platform.
+ * Android-side UVC camera platform for the Flutter plugin.
+ *
+ * Owns the USB monitor and one {@link UvcCameraResources} entry per opened camera. Opens cameras with the
+ * best-matching frame size and format, starts the preview into a Flutter surface producer, and bridges
+ * device, error, status, and button events to Flutter through event channels.
+ *
+ * Methods that take a cameraId throw IllegalArgumentException when no resources are registered for that
+ * camera. Event casting posts to the main looper because Flutter event sinks must be used from the
+ * platform thread.
  */
 /* package-private */ class UvcCameraPlatform {
 
-    /**
-     * Log tag
-     */
+/**
+ * Log tag
+ */
     private static final String TAG = UvcCameraPlatform.class.getSimpleName();
 
-    /**
-     * libuvc's {@code uvc_status_class} to {@code UvcCameraStatusClass} enum mapping.
-     */
+/**
+ * libuvc's {@code uvc_status_class} to {@code UvcCameraStatusClass} enum mapping.
+ */
     public static final Map<Integer, String> STATUS_CLASS_LIBUVC_VALUE_TO_ENUM_NAME = Map.of(
-            /* UVC_STATUS_CLASS_CONTROL */ 0x10, "control",
-            /* UVC_STATUS_CLASS_CONTROL_CAMERA */ 0x11, "controlCamera",
-            /* UVC_STATUS_CLASS_CONTROL_PROCESSING */ 0x12, "controlProcessing"
+/* UVC_STATUS_CLASS_CONTROL */ 0x10, "control",
+/* UVC_STATUS_CLASS_CONTROL_CAMERA */ 0x11, "controlCamera",
+/* UVC_STATUS_CLASS_CONTROL_PROCESSING */ 0x12, "controlProcessing"
     );
 
-    /**
-     * libuvc's {@code uvc_status_attribute} to {@code UvcCameraStatusAttribute} enum mapping.
-     */
+/**
+ * libuvc's {@code uvc_status_attribute} to {@code UvcCameraStatusAttribute} enum mapping.
+ */
     public static final Map<Integer, String> STATUS_ATTRIBUTE_LIBUVC_VALUE_TO_ENUM_NAME = Map.of(
-            /* UVC_STATUS_ATTRIBUTE_VALUE_CHANGE */ 0x00, "valueChange",
-            /* UVC_STATUS_ATTRIBUTE_INFO_CHANGE */ 0x01, "infoChange",
-            /* UVC_STATUS_ATTRIBUTE_FAILURE_CHANGE */ 0x02, "errorChange",
-            /* UVC_STATUS_ATTRIBUTE_UNKNOWN */ 0xff, "unknown"
+/* UVC_STATUS_ATTRIBUTE_VALUE_CHANGE */ 0x00, "valueChange",
+/* UVC_STATUS_ATTRIBUTE_INFO_CHANGE */ 0x01, "infoChange",
+/* UVC_STATUS_ATTRIBUTE_FAILURE_CHANGE */ 0x02, "errorChange",
+/* UVC_STATUS_ATTRIBUTE_UNKNOWN */ 0xff, "unknown"
     );
 
-    /**
-     * Main looper handler
-     */
+/**
+ * Main looper handler
+ */
     private final Handler mainLooperHandler = new Handler(Looper.getMainLooper());
 
-    /**
-     * Application context
-     */
+/**
+ * Application context
+ */
     private final WeakReference<Context> applicationContext;
 
-    /**
-     * Binary messenger
-     */
+/**
+ * Binary messenger
+ */
     private final WeakReference<BinaryMessenger> binaryMessenger;
 
-    /**
-     * Texture registry
-     */
+/**
+ * Texture registry
+ */
     private final TextureRegistry textureRegistry;
 
-    /**
-     * "uvccamera/device_events" event stream handler
-     */
+/**
+ * "uvccamera/device_events" event stream handler
+ */
     private final UvcCameraDeviceEventStreamHandler deviceEventStreamHandler;
 
-    /**
-     * USB monitor
-     */
+/**
+ * USB monitor
+ */
     private final USBMonitor usbMonitor;
 
-    /**
-     * Pending device permission request device name
-     */
+/**
+ * Pending device permission request device name
+ */
     private String pendingDevicePermissionRequestDeviceName;
 
-    /**
-     * Pending device permission request result handler
-     */
+/**
+ * Pending device permission request result handler
+ */
     private UvcCameraDevicePermissionRequestResultHandler pendingDevicePermissionRequestResultHandler;
 
-    /**
-     * Lock for {@link #pendingDevicePermissionRequestDeviceName} and
-     * {@link #pendingDevicePermissionRequestResultHandler}
-     */
+/**
+ * Lock for {@link #pendingDevicePermissionRequestDeviceName} and
+ * {@link #pendingDevicePermissionRequestResultHandler}
+ */
     private final Object pendingDevicePermissionRequestLock = new Object();
 
-    /**
-     * Opened camera resources
-     */
+/**
+ * Opened camera resources
+ */
     private final Map<Integer, UvcCameraResources> camerasResources = new ConcurrentHashMap<>();
 
-    /**
-     * Constructs a new {@link UvcCameraPlatform} instance
-     *
-     * @param applicationContext the application context
-     * @param binaryMessenger    the binary messenger
-     * @param textureRegistry    the texture registry
-     */
+/**
+ * Create a new {@link UvcCameraPlatform} instance.
+ *
+ * Args:
+ *     applicationContext: the application context
+ *     binaryMessenger: the binary messenger
+ *     textureRegistry: the texture registry
+ *     deviceEventStreamHandler: the stream handler for the "uvccamera/device_events" event channel
+ *
+ * Side Effects:
+ *     - Creates and registers a USB monitor whose device listener is bound to this platform
+ */
     public UvcCameraPlatform(
             final @NonNull Context applicationContext,
             final @NonNull BinaryMessenger binaryMessenger,
@@ -135,10 +148,14 @@ import io.flutter.view.TextureRegistry;
         usbMonitor.register();
     }
 
-    /**
-     * Releases the resources
-     */
-    /* package-private */ void release() {
+/**
+ * Release the platform resources.
+ *
+ * Side Effects:
+ *     - Unregisters and destroys the USB monitor
+ *     - Clears the application context and binary messenger references
+ */
+/* package-private */ void release() {
         usbMonitor.unregister();
         usbMonitor.destroy();
 
@@ -146,12 +163,13 @@ import io.flutter.view.TextureRegistry;
         binaryMessenger.clear();
     }
 
-    /**
-     * Casts the device attached event
-     *
-     * @param device the USB device
-     */
-    /* package-private */ void castDeviceAttachedEvent(final UsbDevice device) {
+/**
+ * Cast the device attached event.
+ *
+ * Args:
+ *     device: the USB device
+ */
+/* package-private */ void castDeviceAttachedEvent(final UsbDevice device) {
         Log.v(TAG, "castDeviceAttachedEvent: device=" + device);
 
         final var eventSink = deviceEventStreamHandler.getEventSink();
@@ -176,12 +194,13 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Casts the device detached event
-     *
-     * @param device the USB device
-     */
-    /* package-private */ void castDeviceDetachedEvent(final UsbDevice device) {
+/**
+ * Cast the device detached event.
+ *
+ * Args:
+ *     device: the USB device
+ */
+/* package-private */ void castDeviceDetachedEvent(final UsbDevice device) {
         Log.v(TAG, "castDeviceDetachedEvent: device=" + device);
 
         final var eventSink = deviceEventStreamHandler.getEventSink();
@@ -206,12 +225,13 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Casts the device connected event
-     *
-     * @param device the USB device
-     */
-    /* package-private */ void castDeviceConnectedEvent(final UsbDevice device) {
+/**
+ * Cast the device connected event.
+ *
+ * Args:
+ *     device: the USB device
+ */
+/* package-private */ void castDeviceConnectedEvent(final UsbDevice device) {
         Log.v(TAG, "castDeviceConnectedEvent: device=" + device);
 
         final var eventSink = deviceEventStreamHandler.getEventSink();
@@ -236,12 +256,13 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Casts the device disconnected event
-     *
-     * @param device the USB device
-     */
-    /* package-private */ void castDeviceDisconnectedEvent(final UsbDevice device) {
+/**
+ * Cast the device disconnected event.
+ *
+ * Args:
+ *     device: the USB device
+ */
+/* package-private */ void castDeviceDisconnectedEvent(final UsbDevice device) {
         Log.v(TAG, "castDeviceDisconnectedEvent: device=" + device);
 
         final var eventSink = deviceEventStreamHandler.getEventSink();
@@ -266,11 +287,15 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Checks if the device supports UVC camera
-     *
-     * @return true if the device supports UVC camera, false otherwise
-     */
+/**
+ * Check whether the device supports UVC camera.
+ *
+ * Returns:
+ *     true if the device supports UVC camera, false otherwise
+ *
+ * Raises:
+ *     IllegalStateException: the application context reference has expired
+ */
     public boolean isSupported() {
         final var applicationContext = this.applicationContext.get();
         if (applicationContext == null) {
@@ -280,21 +305,27 @@ import io.flutter.view.TextureRegistry;
         return applicationContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST);
     }
 
-    /**
-     * Lists the UVC camera devices
-     *
-     * @return the list of UVC camera devices
-     */
+/**
+ * List the UVC camera devices.
+ *
+ * Returns:
+ *     the list of UVC camera devices
+ */
     public List<UsbDevice> getDevices() {
         return usbMonitor.getDeviceList();
     }
 
-    /**
-     * Requests permission to access the specified UVC camera device
-     *
-     * @param deviceName    the name of the UVC camera device
-     * @param resultHandler the handler to be notified when the device permission request result is available
-     */
+/**
+ * Request permission to access the specified UVC camera device.
+ *
+ * Args:
+ *     deviceName: the name of the UVC camera device
+ *     resultHandler: the handler to be notified when the device permission request result is available
+ *
+ * Raises:
+ *     IllegalArgumentException: no UVC camera device with the given name is connected
+ *     IllegalStateException: a device permission request is already pending
+ */
     public void requestDevicePermission(
             final @NonNull String deviceName,
             final @NonNull UvcCameraDevicePermissionRequestResultHandler resultHandler
@@ -319,12 +350,13 @@ import io.flutter.view.TextureRegistry;
         usbMonitor.requestPermission(device);
     }
 
-    /**
-     * Fulfills the device permission request
-     *
-     * @param usbDevice the USB device
-     */
-    /* package-private */ void fulfillDevicePermissionRequest(final UsbDevice usbDevice) {
+/**
+ * Fulfill the pending device permission request.
+ *
+ * Args:
+ *     usbDevice: the USB device
+ */
+/* package-private */ void fulfillDevicePermissionRequest(final UsbDevice usbDevice) {
         synchronized (UvcCameraPlatform.this.pendingDevicePermissionRequestLock) {
             if (UvcCameraPlatform.this.pendingDevicePermissionRequestResultHandler == null) {
                 Log.w(TAG, "No pending device permission request");
@@ -342,12 +374,13 @@ import io.flutter.view.TextureRegistry;
         }
     }
 
-    /**
-     * Rejects the device permission request
-     *
-     * @param usbDevice the USB device
-     */
-    /* package-private */ void rejectDevicePermissionRequest(final UsbDevice usbDevice) {
+/**
+ * Reject the pending device permission request.
+ *
+ * Args:
+ *     usbDevice: the USB device
+ */
+/* package-private */ void rejectDevicePermissionRequest(final UsbDevice usbDevice) {
         synchronized (pendingDevicePermissionRequestLock) {
             if (pendingDevicePermissionRequestResultHandler == null) {
                 Log.w(TAG, "No pending device permission request");
@@ -365,13 +398,21 @@ import io.flutter.view.TextureRegistry;
         }
     }
 
-    /**
-     * Opens the specified UVC camera device
-     *
-     * @param deviceName       the name of the UVC camera device
-     * @param desiredFrameArea the desired frame area
-     * @return camera ID
-     */
+/**
+ * Open the specified UVC camera device.
+ *
+ * Args:
+ *     deviceName: the name of the UVC camera device
+ *     desiredFrameArea: the desired frame area
+ *
+ * Returns:
+ *     camera ID
+ *
+ * Raises:
+ *     IllegalArgumentException: no UVC camera device with the given name is connected
+ *     IllegalStateException: the binary messenger reference has expired, or the camera open, size
+ *         query, callback setup, frame format selection, or preview start fails
+ */
     public int openCamera(final @NonNull String deviceName, final int desiredFrameArea) {
         Log.v(TAG, "openCamera: deviceName=" + deviceName + ", desiredFrameArea=" + desiredFrameArea);
 
@@ -385,7 +426,7 @@ import io.flutter.view.TextureRegistry;
             throw new IllegalStateException("binaryMessenger reference has expired");
         }
 
-        // NOTE: The device is already connected, this should just retrieve the device control block
+// NOTE: The device is already connected, this should just retrieve the device control block
         final var deviceCtrlBlock = usbMonitor.openDevice(device);
 
         final var camera = new UVCCamera();
@@ -418,11 +459,11 @@ import io.flutter.view.TextureRegistry;
         final var desiredFrameSize = supportedSizesWithAreaDelta.get(0).first;
         Log.d(TAG, "openCamera: best size found: " + desiredFrameSize);
 
-        // Set the error callback
+// Set the error callback
         Log.d(TAG, "openCamera: setting error callback");
         final var errorCallback = new UvcCameraErrorCallback(this, cameraId);
 
-        // Set the status callback
+// Set the status callback
         Log.d(TAG, "openCamera: setting status callback");
         final var statusCallback = new UvcCameraStatusCallback(this, cameraId);
         try {
@@ -434,7 +475,7 @@ import io.flutter.view.TextureRegistry;
         }
         Log.d(TAG, "openCamera: status callback set");
 
-        // Set the button callback
+// Set the button callback
         Log.d(TAG, "openCamera: setting button callback");
         final var buttonCallback = new UvcCameraButtonCallback(this, cameraId);
         try {
@@ -445,7 +486,7 @@ import io.flutter.view.TextureRegistry;
             throw new IllegalStateException("Failed to set button callback", e);
         }
 
-        // Set the preview size and the frame format
+// Set the preview size and the frame format
         Log.d(TAG, "openCamera: setting preview size and frame format");
         Integer frameFormat = null;
         for (final var desiredFrameFormat : List.of(UVCCamera.FRAME_FORMAT_MJPEG, UVCCamera.FRAME_FORMAT_YUYV)) {
@@ -468,7 +509,7 @@ import io.flutter.view.TextureRegistry;
         }
         Log.d(TAG, "openCamera: preview size and frame format set: frameFormat=" + frameFormat);
 
-        // Set the preview display surface and start the preview
+// Set the preview display surface and start the preview
         Log.d(TAG, "openCamera: setting preview surface and starting preview");
         final var cameraSurfaceProducer = textureRegistry.createSurfaceProducer();
         cameraSurfaceProducer.setSize(desiredFrameSize.width, desiredFrameSize.height);
@@ -484,7 +525,7 @@ import io.flutter.view.TextureRegistry;
             throw new IllegalStateException("Failed to start preview", e);
         }
 
-        // Create the error event channel
+// Create the error event channel
         final var errorEventChannel = new EventChannel(
                 binaryMessenger,
                 "uvccamera/camera@" + cameraId + "/error_events"
@@ -492,7 +533,7 @@ import io.flutter.view.TextureRegistry;
         final var errorEventStreamHandler = new UvcCameraErrorEventStreamHandler();
         errorEventChannel.setStreamHandler(errorEventStreamHandler);
 
-        // Create the status event channel
+// Create the status event channel
         final var statusEventChannel = new EventChannel(
                 binaryMessenger,
                 "uvccamera/camera@" + cameraId + "/status_events"
@@ -500,7 +541,7 @@ import io.flutter.view.TextureRegistry;
         final var statusEventStreamHandler = new UvcCameraStatusEventStreamHandler();
         statusEventChannel.setStreamHandler(statusEventStreamHandler);
 
-        // Create the button event channel
+// Create the button event channel
         final var buttonEventChannel = new EventChannel(
                 binaryMessenger,
                 "uvccamera/camera@" + cameraId + "/button_events"
@@ -530,11 +571,15 @@ import io.flutter.view.TextureRegistry;
         return cameraId;
     }
 
-    /**
-     * Closes the specified camera
-     *
-     * @param cameraId the camera ID
-     */
+/**
+ * Close the specified camera.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *
+ * Raises:
+ *     IllegalArgumentException: no camera resources are registered for the given camera ID
+ */
     public void closeCamera(final int cameraId) {
         Log.v(TAG, "closeCamera: cameraId=" + cameraId);
 
@@ -622,12 +667,15 @@ import io.flutter.view.TextureRegistry;
         }
     }
 
-    /**
-     * Gets the camera texture ID
-     *
-     * @param cameraId the camera ID
-     * @return the camera texture ID
-     */
+/**
+ * Get the camera texture ID.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *
+ * Returns:
+ *     the camera texture ID
+ */
     public long getCameraTextureId(final int cameraId) {
         Log.v(TAG, "getCameraTextureId"
                 + ": cameraId=" + cameraId
@@ -641,14 +689,15 @@ import io.flutter.view.TextureRegistry;
         return cameraResources.surfaceSurfaceProducer().id();
     }
 
-    /**
-     * Casts the camera error event
-     *
-     * @param cameraId the camera ID
-     * @param type     the error type
-     * @param reason   the error reason
-     */
-    /* package-private */ void castCameraErrorEvent(final int cameraId, final String type, final String reason) {
+/**
+ * Cast the camera error event.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *     type: the error type
+ *     reason: the error reason
+ */
+/* package-private */ void castCameraErrorEvent(final int cameraId, final String type, final String reason) {
         Log.v(TAG, "castCameraErrorEvent"
                 + ": cameraId=" + cameraId
                 + ", type=" + type
@@ -679,11 +728,12 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Attaches to the camera error callback
-     *
-     * @param cameraId the camera ID
-     */
+/**
+ * Attach to the camera error callback.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ */
     public void attachToCameraErrorCallback(final int cameraId) {
         Log.v(TAG, "attachToCameraErrorCallback: cameraId=" + cameraId);
 
@@ -695,11 +745,12 @@ import io.flutter.view.TextureRegistry;
         cameraResources.errorCallback().enableEventsCasting();
     }
 
-    /**
-     * Detaches from the camera error callback
-     *
-     * @param cameraId the camera ID
-     */
+/**
+ * Detach from the camera error callback.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ */
     public void detachFromCameraErrorCallback(final int cameraId) {
         Log.v(TAG, "detachFromCameraErrorCallback: cameraId=" + cameraId);
 
@@ -711,17 +762,18 @@ import io.flutter.view.TextureRegistry;
         cameraResources.errorCallback().disableEventsCasting();
     }
 
-    /**
-     * Casts the camera status event
-     *
-     * @param cameraId        the camera ID
-     * @param statusClass     the status class
-     * @param event           the event
-     * @param selector        the selector
-     * @param statusAttribute the status attribute
-     * @param data            the data
-     */
-    /* package-private */ void castCameraStatusEvent(
+/**
+ * Cast the camera status event.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *     statusClass: the status class
+ *     event: the event
+ *     selector: the selector
+ *     statusAttribute: the status attribute
+ *     data: the data
+ */
+/* package-private */ void castCameraStatusEvent(
             final int cameraId,
             int statusClass,
             int event,
@@ -776,11 +828,12 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Attaches to the camera button callback
-     *
-     * @param cameraId the camera ID
-     */
+/**
+ * Attach to the camera status callback.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ */
     public void attachToCameraStatusCallback(final int cameraId) {
         Log.v(TAG, "attachToCameraStatusCallback: cameraId=" + cameraId);
 
@@ -792,11 +845,12 @@ import io.flutter.view.TextureRegistry;
         cameraResources.statusCallback().enableEventsCasting();
     }
 
-    /**
-     * Detaches from the camera button callback
-     *
-     * @param cameraId the camera ID
-     */
+/**
+ * Detach from the camera status callback.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ */
     public void detachFromCameraStatusCallback(final int cameraId) {
         Log.v(TAG, "detachFromCameraStatusCallback: cameraId=" + cameraId);
 
@@ -808,14 +862,15 @@ import io.flutter.view.TextureRegistry;
         cameraResources.statusCallback().disableEventsCasting();
     }
 
-    /**
-     * Casts the camera button event
-     *
-     * @param cameraId the camera ID
-     * @param button   the button
-     * @param state    the state
-     */
-    /* package-private */ void castCameraButtonEvent(final int cameraId, final int button, final int state) {
+/**
+ * Cast the camera button event.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *     button: the button
+ *     state: the state
+ */
+/* package-private */ void castCameraButtonEvent(final int cameraId, final int button, final int state) {
         Log.v(TAG, "castCameraButtonEvent"
                 + ": cameraId=" + cameraId
                 + ", button=" + button
@@ -844,11 +899,12 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Attaches to the camera button callback
-     *
-     * @param cameraId the camera ID
-     */
+/**
+ * Attach to the camera button callback.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ */
     public void attachToCameraButtonCallback(final int cameraId) {
         Log.v(TAG, "attachToCameraButtonCallback: cameraId=" + cameraId);
 
@@ -860,11 +916,12 @@ import io.flutter.view.TextureRegistry;
         cameraResources.buttonCallback().enableEventsCasting();
     }
 
-    /**
-     * Detaches from the camera button callback
-     *
-     * @param cameraId the camera ID
-     */
+/**
+ * Detach from the camera button callback.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ */
     public void detachFromCameraButtonCallback(final int cameraId) {
         Log.v(TAG, "detachFromCameraButtonCallback: cameraId=" + cameraId);
 
@@ -876,12 +933,15 @@ import io.flutter.view.TextureRegistry;
         cameraResources.buttonCallback().disableEventsCasting();
     }
 
-    /**
-     * Gets the supported sizes for the specified camera
-     *
-     * @param cameraId the camera ID
-     * @return the supported sizes
-     */
+/**
+ * Get the supported sizes for the specified camera.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *
+ * Returns:
+ *     the supported sizes
+ */
     public List<Size> getSupportedSizes(final int cameraId) {
         Log.v(TAG, "getSupportedSizes: cameraId=" + cameraId);
 
@@ -893,12 +953,15 @@ import io.flutter.view.TextureRegistry;
         return UVCCamera.getSupportedSize(-1, cameraResources.camera().getSupportedSize());
     }
 
-    /**
-     * Gets the preview size for the specified camera
-     *
-     * @param cameraId the camera ID
-     * @return the preview size
-     */
+/**
+ * Get the preview size for the specified camera.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *
+ * Returns:
+ *     the preview size
+ */
     public Size getPreviewSize(final int cameraId) {
         Log.v(TAG, "getPreviewSize: cameraId=" + cameraId);
 
@@ -910,14 +973,15 @@ import io.flutter.view.TextureRegistry;
         return cameraResources.camera().getPreviewSize();
     }
 
-    /**
-     * Sets the preview size for the specified camera
-     *
-     * @param cameraId    the camera ID
-     * @param frameWidth  the frame width
-     * @param frameHeight the frame height
-     * @param frameFormat the frame format
-     */
+/**
+ * Set the preview size for the specified camera.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *     frameWidth: the frame width
+ *     frameHeight: the frame height
+ *     frameFormat: the frame format
+ */
     public void setPreviewSize(
             final int cameraId,
             final int frameWidth,
@@ -943,12 +1007,17 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Takes a picture for the specified camera
-     *
-     * @param cameraId      the camera ID
-     * @param resultHandler the handler to be notified when the picture is taken
-     */
+/**
+ * Take a picture for the specified camera.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *     resultHandler: the handler to be notified when the picture is taken
+ *
+ * Raises:
+ *     IllegalStateException: the application context reference has expired, or the picture file
+ *         cannot be created
+ */
     public void takePicture(final int cameraId, UvcCameraTakePictureResultHandler resultHandler) {
         Log.v(TAG, "takePicture"
                 + ": cameraId=" + cameraId
@@ -983,15 +1052,16 @@ import io.flutter.view.TextureRegistry;
         );
     }
 
-    /**
-     * Handles the taken picture
-     *
-     * @param cameraId      the camera ID
-     * @param outputFile    the output file
-     * @param frame         the frame
-     * @param resultHandler the result handler
-     */
-    /* package-private */ void handleTakenPicture(
+/**
+ * Handle the taken picture.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *     outputFile: the output file
+ *     frame: the frame
+ *     resultHandler: the result handler
+ */
+/* package-private */ void handleTakenPicture(
             final int cameraId,
             final File outputFile,
             final ByteBuffer frame,
@@ -1009,15 +1079,15 @@ import io.flutter.view.TextureRegistry;
             throw new IllegalArgumentException("Camera resources not found: " + cameraId);
         }
 
-        // Create copy of the frame data as the frame buffer is owned by the native side (libuvc)
+// Create copy of the frame data as the frame buffer is owned by the native side (libuvc)
         final var frameData = new byte[frame.remaining()];
         frame.get(frameData);
 
-        // NOTE: The frame callback should've been detached here yet that will cause a deadlock
+// NOTE: The frame callback should've been detached here yet that will cause a deadlock
 
-        // Save the taken picture to the file using the worker looper
+// Save the taken picture to the file using the worker looper
         mainLooperHandler.post(() -> {
-            // Detach the frame callback
+// Detach the frame callback
             cameraResources.camera().setFrameCallback(null, 0);
 
             try {
@@ -1030,13 +1100,14 @@ import io.flutter.view.TextureRegistry;
         });
     }
 
-    /**
-     * Saves the taken picture to the specified file
-     *
-     * @param cameraId   the camera ID
-     * @param outputFile the output file
-     * @param frameData  the frame data
-     */
+/**
+ * Save the taken picture to the specified file.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *     outputFile: the output file
+ *     frameData: the frame data
+ */
     private void saveTakenPictureToFile(final int cameraId, final File outputFile, final byte[] frameData) {
         Log.v(TAG, "saveTakenPictureToFile"
                 + ": cameraId=" + cameraId
@@ -1082,14 +1153,21 @@ import io.flutter.view.TextureRegistry;
         }
     }
 
-    /**
-     * Starts video recording for the specified camera
-     *
-     * @param cameraId    the camera ID
-     * @param frameWidth  the frame width
-     * @param frameHeight the frame height
-     * @return the video recording file
-     */
+/**
+ * Start video recording for the specified camera.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ *     frameWidth: the frame width
+ *     frameHeight: the frame height
+ *
+ * Returns:
+ *     the video recording file
+ *
+ * Raises:
+ *     IllegalStateException: the application context reference has expired, or the recording file
+ *         cannot be created, prepared, or started
+ */
     public File startVideoRecording(final int cameraId, final int frameWidth, final int frameHeight) {
         Log.v(TAG, "startVideoRecording"
                 + ": cameraId=" + cameraId
@@ -1146,11 +1224,12 @@ import io.flutter.view.TextureRegistry;
         return outputFile;
     }
 
-    /**
-     * Stops video recording for the specified camera
-     *
-     * @param cameraId the camera ID
-     */
+/**
+ * Stop video recording for the specified camera.
+ *
+ * Args:
+ *     cameraId: the camera ID
+ */
     public void stopVideoRecording(final int cameraId) {
         Log.v(TAG, "stopVideoRecording: cameraId=" + cameraId);
 
@@ -1166,12 +1245,15 @@ import io.flutter.view.TextureRegistry;
         mediaRecorder.reset();
     }
 
-    /**
-     * Finds the UVC camera device by name
-     *
-     * @param deviceName the name of the UVC camera device
-     * @return the UVC camera device, or null if not found
-     */
+/**
+ * Find the UVC camera device by name.
+ *
+ * Args:
+ *     deviceName: the name of the UVC camera device
+ *
+ * Returns:
+ *     the UVC camera device, or null if not found
+ */
     private UsbDevice findDeviceByName(final @NonNull String deviceName) {
         for (final var device : usbMonitor.getDeviceList()) {
             if (device.getDeviceName().equals(deviceName)) {

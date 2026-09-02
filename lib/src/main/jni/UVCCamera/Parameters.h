@@ -25,14 +25,17 @@
 /**
  * \brief Diagnostic helpers for UVC device inspection.
  *
- * Provides string-based diagnostics for UVC devices and stream controls.
- * Used for logging and debugging camera capabilities.
+ * Provides string- and JSON-based diagnostics for UVC devices, formats, and
+ * stream controls. The JSON output is consumed by the Java layer to expose
+ * camera capabilities and the current stream configuration.
  *
  * Exports:
  *     UVCDiags: Diagnostic helper class.
  *
  * Dependencies:
  *     - libUVCCamera.h: Core native includes.
+ *     - rapidjson: JSON writer used by descriptor serialization.
+ *     - libuvc: UVC descriptor structures.
  *
  * Architecture Note:
  *     Stateless helper; instances are cheap to create and destroy.

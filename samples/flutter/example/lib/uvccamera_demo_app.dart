@@ -9,6 +9,7 @@ import 'uvccamera_devices_screen.dart';
 class UvcCameraDemoApp extends StatefulWidget {
   const UvcCameraDemoApp({super.key});
 
+  /// Create the state object for [UvcCameraDemoApp].
   @override
   State<UvcCameraDemoApp> createState() => _UvcCameraDemoAppState();
 }
@@ -16,6 +17,7 @@ class UvcCameraDemoApp extends StatefulWidget {
 /// State for [UvcCameraDemoApp]. Builds the [MaterialApp] shell and routes to
 /// [UvcCameraDevicesScreen].
 class _UvcCameraDemoAppState extends State<UvcCameraDemoApp> {
+  /// Build the example application shell and route to the device list screen.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

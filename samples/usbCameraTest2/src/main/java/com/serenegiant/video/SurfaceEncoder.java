@@ -65,8 +65,8 @@ public class SurfaceEncoder extends Encoder {
 	}
 
 	/**
-	* Returns the encoder's input surface.
-	*/
+	 * Get the encoder input surface.
+	 */
 	public Surface getInputSurface() {
 		return mInputSurface;
 	}
@@ -118,8 +118,8 @@ public class SurfaceEncoder extends Encoder {
 	}
 
 	/**
-	* Releases encoder resources.
-	*/
+	 * Releases encoder resources.
+	 */
 	@Override
 	protected void release() {
 		if (DEBUG) Log.i(TAG, "release:");

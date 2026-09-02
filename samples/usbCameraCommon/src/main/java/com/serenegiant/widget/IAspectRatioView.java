@@ -16,29 +16,14 @@ package com.serenegiant.widget;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 /**
- * アスペクト比を一定に保つView用のインターフェースを定義
- */
-/**
- * Manages IAspectRatioView functionality.
+ * Define the contract for views that keep a fixed aspect ratio.
  *
- * Responsibility: Provides core IAspectRatioView operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of IAspectRatioView
+ * Implementations (e.g. AspectRatioTextureView, UVCCameraTextureView) resize
+ * themselves so the rendered camera image preserves the requested
+ * width-to-height ratio while fitting the surrounding layout.
  */
 
 public interface IAspectRatioView {

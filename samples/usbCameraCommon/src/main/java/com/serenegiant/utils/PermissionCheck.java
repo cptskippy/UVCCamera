@@ -16,7 +16,7 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
@@ -33,62 +33,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 /**
- * Manages PermissionCheck functionality.
- *
- * Responsibility: Provides core PermissionCheck operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of PermissionCheck
+ * Check and request runtime permissions.
  */
-/**
- * Manages PermissionCheck functionality.
- *
- * Responsibility: Provides core PermissionCheck operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of PermissionCheck
- */
-
-
 
 public final class PermissionCheck {
-/**
- * Dumppermissions.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * Dump permission group names to the log.
+	 *
+	 * Args:
+	 *     context: Android context used to query permission groups.
+	 */
 
 
 	public static final void dumpPermissions(final Context context) {
@@ -106,30 +60,15 @@ public final class PermissionCheck {
 
 	/**
 	 * パーミッションを確認
-	 * @param context
-	 * @param permissionName
-	 * @return 指定したパーミッションがあればtrue
+	 *
+	 * Args:
+	 *     context: Android context used for the check.
+	 *     permissionName: Permission string to check.
+	 *
+	 * Returns:
+	 *     指定したパーミッションがあればtrue.
 	 */
 	@SuppressLint("NewApi")
-/**
- * Haspermission.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static boolean hasPermission(final Context context, final String permissionName) {
     	if (context == null) return false;
@@ -155,118 +94,58 @@ public final class PermissionCheck {
     	return result;
     }
 
-    /**
-     * 録音のミッションがあるかどうかを確認
-     * @param context
-     * @return 録音のパーミッションがあればtrue
-     */
 /**
- * Hasaudio.
+ * 録音のミッションがあるかどうかを確認
  *
  * Args:
- *     param: Parameter controls behavior.
+ *     context: Android context used for the check.
  *
  * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
+ *     録音のパーミッションがあればtrue.
  */
 
     public static boolean hasAudio(final Context context) {
     	return hasPermission(context, permission.RECORD_AUDIO);
     }
 
-    /**
-     * ネットワークへのアクセスパーミッションがあるかどうかを確認
-     * @param context
-     * @return ネットワークへのアクセスパーミッションがあればtrue
-     */
 /**
- * Hasnetwork.
+ * ネットワークへのアクセスパーミッションがあるかどうかを確認
  *
  * Args:
- *     param: Parameter controls behavior.
+ *     context: Android context used for the check.
  *
  * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
+ *     ネットワークへのアクセスパーミッションがあればtrue.
  */
 
     public static boolean hasNetwork(final Context context) {
     	return hasPermission(context, permission.INTERNET);
     }
 
-    /**
-     * 外部ストレージへの書き込みパーミッションがあるかどうかを確認
-     * @param context
-     * @return 外部ストレージへの書き込みパーミッションがあればtrue
-     */
 /**
- * Haswriteexternalstorage.
+ * 外部ストレージへの書き込みパーミッションがあるかどうかを確認
  *
  * Args:
- *     param: Parameter controls behavior.
+ *     context: Android context used for the check.
  *
  * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
+ *     外部ストレージへの書き込みパーミッションがあればtrue.
  */
 
     public static boolean hasWriteExternalStorage(final Context context) {
     	return hasPermission(context, permission.WRITE_EXTERNAL_STORAGE);
     }
 
-    /**
-     * 外部ストレージからの読み込みパーミッションがあるかどうかを確認
-     * @param context
-     * @return 外部ストレージへの読み込みパーミッションがあればtrue
-     */
-    @SuppressLint("InlinedApi")
 /**
- * Hasreadexternalstorage.
+ * 外部ストレージからの読み込みパーミッションがあるかどうかを確認
  *
  * Args:
- *     param: Parameter controls behavior.
+ *     context: Android context used for the check.
  *
  * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
+ *     外部ストレージへの読み込みパーミッションがあればtrue.
  */
+    @SuppressLint("InlinedApi")
 
 	public static boolean hasReadExternalStorage(final Context context) {
     	if (BuildCheck.isAndroid4())
@@ -277,28 +156,13 @@ public final class PermissionCheck {
 
 	/**
 	 * 位置情報アクセスのパーミッションが有るかどうかを確認
-	 * @param context
-	 * @return
+	 *
+	 * Args:
+	 *     context: Android context used for the check.
+	 *
+	 * Returns:
+	 *     true if both coarse and fine location permissions are granted.
 	 */
-/**
- * Hasaccesslocation.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static boolean hasAccessLocation(final Context context) {
 		return hasPermission(context, permission.ACCESS_COARSE_LOCATION)
@@ -307,28 +171,13 @@ public final class PermissionCheck {
 
 	/**
 	 * 低精度位置情報アクセスのパーミッションが有るかどうかを確認
-	 * @param context
-	 * @return
+	 *
+	 * Args:
+	 *     context: Android context used for the check.
+	 *
+	 * Returns:
+	 *     true if the coarse location access permission is granted.
 	 */
-/**
- * Hasaccesscoarselocation.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static boolean hasAccessCoarseLocation(final Context context) {
 		return hasPermission(context, permission.ACCESS_COARSE_LOCATION);
@@ -336,28 +185,13 @@ public final class PermissionCheck {
 
 	/**
 	 * 高精度位置情報アクセスのパーミッションが有るかどうかを確認
-	 * @param context
-	 * @return
+	 *
+	 * Args:
+	 *     context: Android context used for the check.
+	 *
+	 * Returns:
+	 *     true if the fine location access permission is granted.
 	 */
-/**
- * Hasaccessfinelocation.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static boolean hasAccessFineLocation(final Context context) {
 		return hasPermission(context, permission.ACCESS_FINE_LOCATION);
@@ -365,28 +199,13 @@ public final class PermissionCheck {
 
 	/**
 	 * カメラへアクセス可能かどうか
-	 * @param context
-	 * @return
+	 *
+	 * Args:
+	 *     context: Android context used for the check.
+	 *
+	 * Returns:
+	 *     true if the camera permission is granted.
 	 */
-/**
- * Hascamera.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static boolean hasCamera(final Context context) {
 		return hasPermission(context, permission.CAMERA);
@@ -394,27 +213,10 @@ public final class PermissionCheck {
 
 	/**
 	 * アプリの詳細設定へ遷移させる(パーミッションを取得できなかった時など)
-	 * @param context
+	 *
+	 * Args:
+	 *     context: Android context used to start the settings activity.
 	 */
-/**
- * Opensettings.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static void openSettings(final Context context) {
 	    final Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -425,11 +227,17 @@ public final class PermissionCheck {
 
 	/**
 	 * AndroidManifest.xmlに設定されているはずのパーミッションをチェックする
-	 * @param context
-	 * @param expectations
-	 * @return 空リストなら全てのパーミッションが入っていた,
-	 * @throws IllegalArgumentException
-	 * @throws PackageManager.NameNotFoundException
+	 *
+	 * Args:
+	 *     context: Android context of the app to check.
+	 *     expectations: Permissions expected to be declared in AndroidManifest.xml.
+	 *
+	 * Returns:
+	 *     空リストなら全てのパーミッションが入っていた.
+	 *
+	 * Raises:
+	 *     IllegalArgumentException: When context or expectations is null.
+	 *     PackageManager.NameNotFoundException: When the app package is not found.
 	 */
 	public static List<String> missingPermissions(final Context context, final String[] expectations) throws IllegalArgumentException, PackageManager.NameNotFoundException {
 	    return missingPermissions(context, new ArrayList<String>(Arrays.asList(expectations)));
@@ -437,11 +245,17 @@ public final class PermissionCheck {
 
 	/**
 	 * AndroidManifest.xmlに設定されているはずのパーミッションをチェックする
-	 * @param context
-	 * @param expectations
-	 * @return 空リストなら全てのパーミッションが入っていた,
-	 * @throws IllegalArgumentException
-	 * @throws PackageManager.NameNotFoundException
+	 *
+	 * Args:
+	 *     context: Android context of the app to check.
+	 *     expectations: Permissions expected to be declared in AndroidManifest.xml.
+	 *
+	 * Returns:
+	 *     空リストなら全てのパーミッションが入っていた.
+	 *
+	 * Raises:
+	 *     IllegalArgumentException: When context or expectations is null.
+	 *     PackageManager.NameNotFoundException: When the app package is not found.
 	 */
 	public static List<String> missingPermissions(final Context context, final List<String> expectations) throws IllegalArgumentException, PackageManager.NameNotFoundException {
 	    if (context == null || expectations == null) {

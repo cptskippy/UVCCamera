@@ -16,43 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
-/**
- * Manages IDrawer2dES2 functionality.
- *
- * Responsibility: Provides core IDrawer2dES2 operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of IDrawer2dES2
  */
-/**
- * Manages IDrawer2dES2 functionality.
- *
- * Responsibility: Provides core IDrawer2dES2 operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of IDrawer2dES2
- */
-
-
 
 public interface IDrawer2dES2 extends IDrawer2D {
 	public int glGetAttribLocation(final String name);

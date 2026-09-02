@@ -219,7 +219,9 @@ public class CameraClient implements ICameraClient {
 	/**
 	 * get reference to instance of IUVCService
 	 * you should not call this from UI thread, this method block until the service is available
-	 * @return
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private IUVCService getService() {
 		synchronized (mServiceSync) {

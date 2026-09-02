@@ -16,43 +16,10 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
-/**
- * Manages FpsCounter functionality.
- *
- * Responsibility: Provides core FpsCounter operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of FpsCounter
  */
 /**
- * Manages FpsCounter functionality.
- *
- * Responsibility: Provides core FpsCounter operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of FpsCounter
+ * Count frames and calculate FPS.
  */
-
-
 
 public class FpsCounter {
 	private int cnt, prevCnt;
@@ -61,27 +28,9 @@ public class FpsCounter {
 	public FpsCounter() {
 		reset();
 	}
-/**
- * Reset.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
+	/**
+	 * Reset the counter.
+	 */
 	public synchronized FpsCounter reset() {
 		cnt = prevCnt = 0;
 		startTime = prevTime = Time.nanoTime() - 1;
@@ -91,54 +40,13 @@ public class FpsCounter {
 	/**
 	 * フレームをカウント
 	 */
-/**
- * Count.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public synchronized void count() {
 		cnt++;
 	}
 
 	/**
 	 * FPSの値を更新, 1秒程度毎に呼び出す
-	 * @return
 	 */
-/**
- * Update.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 	public synchronized FpsCounter update() {
 		final long t = Time.nanoTime();
 		fps = (cnt - prevCnt) * 1000000000.0f / (t - prevTime);
@@ -147,51 +55,15 @@ public class FpsCounter {
 		totalFps = cnt * 1000000000.0f / (t - startTime);
 		return this;
 	}
-/**
- * Getfps.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
+	/**
+	 * Get current fps.
+	 */
 	public synchronized float getFps() {
 		return fps;
 	}
-/**
- * Gettotalfps.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
+	/**
+	 * Get total fps.
+	 */
 	public synchronized float getTotalFps() {
 		return totalFps;
 	}

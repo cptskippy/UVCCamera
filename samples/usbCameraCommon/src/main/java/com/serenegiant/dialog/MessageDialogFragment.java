@@ -16,7 +16,7 @@ package com.serenegiant.dialog;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -34,51 +34,32 @@ import com.serenegiant.utils.BuildCheck;
  * パーミッション要求前に説明用のダイアログを表示するためのDialogFragment
  */
 /**
- * Manages MessageDialogFragment functionality.
- *
- * Responsibility: Provides core MessageDialogFragment operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MessageDialogFragment
+ * Show a permission-explanation dialog before requesting permissions.
  */
 
 public class MessageDialogFragment extends DialogFragment {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = MessageDialogFragment.class.getSimpleName();
 
+	/**
+	 * Receives the result of a message dialog.
+	 */
 	public static interface MessageDialogListener {
 		public void onMessageDialogResult(final MessageDialogFragment dialog, final int requestCode, final String[] permissions, final boolean result);
 	}
-/**
- * Showdialog.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * Create and show a new dialog on the given activity.
+	 *
+	 * Args:
+	 *     parent: Activity used to display the dialog.
+	 *     requestCode: Request code passed back to the listener.
+	 *     id_title: Resource ID of the dialog title.
+	 *     id_message: Resource ID of the dialog message.
+	 *     permissions: Permissions explained by the dialog.
+	 *
+	 * Returns:
+	 *     The shown dialog fragment.
+	 */
 
 
 	public static MessageDialogFragment showDialog(final Activity parent, final int requestCode, final int id_title, final int id_message, final String[] permissions) {
@@ -86,25 +67,19 @@ public class MessageDialogFragment extends DialogFragment {
 		dialog.show(parent.getFragmentManager(), TAG);
 		return dialog;
 	}
-/**
- * Showdialog.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * Create and show a new dialog on the given fragment.
+	 *
+	 * Args:
+	 *     parent: Fragment used to display the dialog.
+	 *     requestCode: Request code passed back to the listener.
+	 *     id_title: Resource ID of the dialog title.
+	 *     id_message: Resource ID of the dialog message.
+	 *     permissions: Permissions explained by the dialog.
+	 *
+	 * Returns:
+	 *     The shown dialog fragment.
+	 */
 
 
 	public static MessageDialogFragment showDialog(final Fragment parent, final int requestCode, final int id_title, final int id_message, final String[] permissions) {
@@ -113,25 +88,18 @@ public class MessageDialogFragment extends DialogFragment {
 		dialog.show(parent.getFragmentManager(), TAG);
 		return dialog;
 	}
-/**
- * Newinstance.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * Create a new dialog fragment with the given arguments.
+	 *
+	 * Args:
+	 *     requestCode: Request code passed back to the listener.
+	 *     id_title: Resource ID of the dialog title.
+	 *     id_message: Resource ID of the dialog message.
+	 *     permissions: Permissions explained by the dialog; null is treated as empty.
+	 *
+	 * Returns:
+	 *     The new dialog fragment.
+	 */
 
 
 	public static MessageDialogFragment newInstance(final int requestCode, final int id_title, final int id_message, final String[] permissions) {
@@ -156,43 +124,14 @@ public class MessageDialogFragment extends DialogFragment {
 	@SuppressLint("NewApi")
 	@Override
 	/**
-	 * Onattach.
+	 * Look up the MessageDialogListener from the activity, target fragment, or parent fragment.
 	 *
-	 * 
-	Args:
-	    activity: Parameter activity controls behavior.
-	Returns:
-	 *     Description of the return value.
+	 * Args:
+	 *     activity: Activity this fragment is being attached to.
 	 *
 	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 *     ClassCastException: If no listener is found.
 	 */
-/**
- * Onattach.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 	public void onAttach(final Activity activity) {
@@ -216,55 +155,26 @@ public class MessageDialogFragment extends DialogFragment {
 			}
 		}
 		if (mDialogListener == null) {
-//			Log.w(TAG, "caller activity/fragment must implement PermissionDetailDialogFragmentListener");
+		//			Log.w(TAG, "caller activity/fragment must implement PermissionDetailDialogFragmentListener");
         	throw new ClassCastException(activity.toString());
 		}
 	}
 
-//	@Override
-//    public void onCreate(final Bundle savedInstanceState) {
-//    	super.onCreate(savedInstanceState);
-//    	final Bundle args = savedInstanceState != null ? savedInstanceState : getArguments();
-//	}
+	//	@Override
+	//    public void onCreate(final Bundle savedInstanceState) {
+	//    	super.onCreate(savedInstanceState);
+	//    	final Bundle args = savedInstanceState != null ? savedInstanceState : getArguments();
+	//	}
 
 	@Override
-    /**
-     * Oncreatedialog.
-     *
-     * 
-    Args:
-        savedInstanceState: Parameter savedInstanceState controls behavior.
-    Returns:
-     *     Description of the return value.
-     *
-     * Raises:
-     *     Exception: When an error occurs.
-     *
-     * Side Effects:
-     *     - May mutate internal state.
-     *
-     * Code Paths:
-     *     1. If preconditions met → executes normally.
-     *     2. On error → logs and returns default.
-     */
 /**
- * Oncreatedialog.
+ * Build the AlertDialog from the fragment arguments.
  *
  * Args:
- *     param: Parameter controls behavior.
+ *     savedInstanceState: Previously saved state, or null if none.
  *
  * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
+ *     Dialog showing the title, message, and OK/Cancel buttons.
  */
 
 
@@ -284,49 +194,17 @@ public class MessageDialogFragment extends DialogFragment {
 				new DialogInterface.OnClickListener() {
 					@Override
 					/**
-					 * Onclick.
+					 * Report the OK click to the listener.
 					 *
-					 * 
-					Args:
-					    dialog: Parameter dialog controls behavior.
-					    whichButton: Parameter whichButton controls behavior.
-					Returns:
-					 *     Description of the return value.
-					 *
-					 * Raises:
-					 *     Exception: When an error occurs.
-					 *
-					 * Side Effects:
-					 *     - May mutate internal state.
-					 *
-					 * Code Paths:
-					 *     1. If preconditions met → executes normally.
-					 *     2. On error → logs and returns default.
+					 * Args:
+					 *     dialog: Dialog that was clicked.
+					 *     whichButton: ID of the button that was clicked.
 					 */
-/**
- * Onclick.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 					public void onClick(final DialogInterface dialog, final int whichButton) {
-						// 本当はここでパーミッション要求をしたいだけどこのダイアログがdismissしてしまって結果を受け取れないので
-						// 呼び出し側へ返してそこでパーミッション要求する。なのでこのダイアログは単にメッセージを表示するだけ
+					// 本当はここでパーミッション要求をしたいだけどこのダイアログがdismissしてしまって結果を受け取れないので
+					// 呼び出し側へ返してそこでパーミッション要求する。なのでこのダイアログは単にメッセージを表示するだけ
 						try {
 							mDialogListener.onMessageDialogResult(MessageDialogFragment.this, requestCode, permissions, true);
 						} catch (final Exception e) {
@@ -339,44 +217,12 @@ public class MessageDialogFragment extends DialogFragment {
 				new DialogInterface.OnClickListener() {
 					@Override
 					/**
-					 * Onclick.
+					 * Report the Cancel click to the listener.
 					 *
-					 * 
-					Args:
-					    dialog: Parameter dialog controls behavior.
-					    whichButton: Parameter whichButton controls behavior.
-					Returns:
-					 *     Description of the return value.
-					 *
-					 * Raises:
-					 *     Exception: When an error occurs.
-					 *
-					 * Side Effects:
-					 *     - May mutate internal state.
-					 *
-					 * Code Paths:
-					 *     1. If preconditions met → executes normally.
-					 *     2. On error → logs and returns default.
+					 * Args:
+					 *     dialog: Dialog that was clicked.
+					 *     whichButton: ID of the button that was clicked.
 					 */
-/**
- * Onclick.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 					public void onClick(final DialogInterface dialog, int whichButton) {

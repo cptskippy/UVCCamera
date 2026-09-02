@@ -37,46 +37,8 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 /**
- * Manages MediaMuxerWrapper functionality.
- *
- * Responsibility: Provides core MediaMuxerWrapper operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mOutputPath: Field mOutputPath
-    mIsStarted: Field mIsStarted
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MediaMuxerWrapper
+ * Wrap MediaMuxer for audio/video track management.
  */
-/**
- * Manages MediaMuxerWrapper functionality.
- *
- * Responsibility: Provides core MediaMuxerWrapper operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MediaMuxerWrapper
- */
-
-
-
 public class MediaMuxerWrapper {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MediaMuxerWrapper";
@@ -92,8 +54,12 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * Constructor
-	 * @param ext extension of output file
-	 * @throws IOException
+	 *
+	 * Args:
+	 *     ext: extension of output file.
+	 *
+	 * Raises:
+	 *     IOException: If an I/O error occurs.
 	 */
 	public MediaMuxerWrapper(String ext) throws IOException {
 		if (TextUtils.isEmpty(ext)) ext = ".mp4";
@@ -108,115 +74,18 @@ public class MediaMuxerWrapper {
 	}
 
 	/**
-
-	 * Getoutputpath.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Get output file path.
 	 */
-/**
- * Getoutputpath.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
-
 	public String getOutputPath() {
 		return mOutputPath;
 	}
 
 	/**
-
-	 * Prepare.
-
+	 * Prepare video and audio encoders.
 	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
 	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 *     IOException: If an I/O error occurs.
 	 */
-/**
- * Prepare.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
-
 	public void prepare() throws IOException {
 		if (mVideoEncoder != null)
 			mVideoEncoder.prepare();
@@ -225,58 +94,8 @@ public class MediaMuxerWrapper {
 	}
 
 	/**
-
-	 * Startrecording.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Start recording on video and audio encoders.
 	 */
-/**
- * Startrecording.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
-
 	public void startRecording() {
 		if (mVideoEncoder != null)
 			mVideoEncoder.startRecording();
@@ -285,58 +104,8 @@ public class MediaMuxerWrapper {
 	}
 
 	/**
-
-	 * Stoprecording.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
+	 * Stop recording on video and audio encoders.
 	 */
-/**
- * Stoprecording.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
-
 	public void stopRecording() {
 		if (mVideoEncoder != null)
 			mVideoEncoder.stopRecording();
@@ -345,36 +114,21 @@ public class MediaMuxerWrapper {
 			mAudioEncoder.stopRecording();
 		mAudioEncoder = null;
 	}
-/**
- * Isstarted.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
-
+	/**
+	 * Check whether recording has started.
+	 */
 	public synchronized boolean isStarted() {
 		return mIsStarted;
 	}
 
-//**********************************************************************
-//**********************************************************************
+	//**********************************************************************
+	//**********************************************************************
 	/**
 	 * assign encoder to this calss. this is called from encoder.
-	 * @param encoder instance of MediaVideoEncoder or MediaAudioEncoder
+	 *
+	 * Args:
+	 *     encoder: instance of MediaVideoEncoder or MediaAudioEncoder.
 	 */
 	/*package*/ void addEncoder(final MediaEncoder encoder) {
 		if (encoder instanceof MediaVideoEncoder) {
@@ -400,7 +154,9 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * request start recording from encoder
-	 * @return true when muxer is ready to write
+	 *
+	 * Returns:
+	 *     true when muxer is ready to write.
 	 */
 	/*package*/ synchronized boolean start() {
 		if (DEBUG) Log.v(TAG,  "start:");
@@ -416,7 +172,7 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * request stop recording from encoder when encoder received EOS
-	*/
+	 */
 	/*package*/ synchronized void stop() {
 		if (DEBUG) Log.v(TAG,  "stop:mStatredCount=" + mStatredCount);
 		mStatredCount--;
@@ -433,8 +189,12 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * assign encoder to muxer
-	 * @param format
-	 * @return minus value indicate error
+	 *
+	 * Args:
+	 *     format: The format value.
+	 *
+	 * Returns:
+	 *     minus value indicate error.
 	 */
 	/*package*/ synchronized int addTrack(final MediaFormat format) {
 		if (mIsStarted)
@@ -446,43 +206,29 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * write encoded data to muxer
-	 * @param trackIndex
-	 * @param byteBuf
-	 * @param bufferInfo
+	 *
+	 * Args:
+	 *     trackIndex: The track index value.
+	 *     byteBuf: The byte buf value.
+	 *     bufferInfo: The buffer info value.
 	 */
 	/*package*/ synchronized void writeSampleData(final int trackIndex, final ByteBuffer byteBuf, final MediaCodec.BufferInfo bufferInfo) {
 		if (mStatredCount > 0)
 			mMediaMuxer.writeSampleData(trackIndex, byteBuf, bufferInfo);
 	}
 
-//**********************************************************************
-//**********************************************************************
-    /**
-     * generate output file
-     * @param type Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM etc.
-     * @param ext .mp4(.m4a for audio) or .png
-     * @return return null when this app has no writing permission to external storage.
-     */
+	//**********************************************************************
+	//**********************************************************************
 /**
- * Getcapturefile.
+ * generate output file
  *
  * Args:
- *     param: Parameter controls behavior.
+ *     type: Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM etc.
+ *     ext: .mp4(.m4a for audio) or .png.
  *
  * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
+ *     return null when this app has no writing permission to external storage.
  */
-
     public static final File getCaptureFile(final String type, final String ext) {
 		final File dir = new File(Environment.getExternalStoragePublicDirectory(type), DIR_NAME);
 		Log.d(TAG, "path=" + dir.toString());
@@ -493,10 +239,12 @@ public class MediaMuxerWrapper {
     	return null;
     }
 
-    /**
-     * get current date and time as String
-     * @return
-     */
+/**
+ * get current date and time as String
+ *
+ * Returns:
+ *     The date time string.
+ */
     private static final String getDateTimeString() {
     	final GregorianCalendar now = new GregorianCalendar();
     	return mDateTimeFormat.format(now.getTime());

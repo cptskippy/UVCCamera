@@ -4,21 +4,8 @@
 
 #include "utilbase.h"
 
-/**
- * \brief Implements SimpleBufferedPipeline component for UVCCamera native library.
- *
- * Provides implementation details for SimpleBufferedPipeline within the UVCCamera native library.
- *
- * Exports:
- *     SimpleBufferedPipeline: Main component for SimpleBufferedPipeline
- *
- * Dependencies:
- *     - libuvc/libusb: USB camera access
- *     - Android NDK: Native build
- *
- * Architecture Note:
- *     Component participates in UVCCamera pipeline architecture.
- */
+// Implementation for SimpleBufferedPipeline.h; see the header for the public pipeline interface.
+
 
 #include "common_utils.h"
 
@@ -43,43 +30,16 @@ SimpleBufferedPipeline::~SimpleBufferedPipeline() {
 	EXIT();
 }
 
-/**
- * \brief Implements on_start.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void SimpleBufferedPipeline::on_start() {
 	ENTER();
 	EXIT();
 }
 
-/**
- * \brief Implements on_stop.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void SimpleBufferedPipeline::on_stop() {
 	ENTER();
 	EXIT();
 }
 
-/**
- * \brief Implements handle_frame.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 int SimpleBufferedPipeline::handle_frame(uvc_frame_t *frame) {
 	ENTER();
 

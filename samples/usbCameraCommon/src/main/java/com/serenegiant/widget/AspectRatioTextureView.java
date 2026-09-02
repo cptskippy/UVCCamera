@@ -33,44 +33,6 @@ import android.view.TextureView;
  * you can show this view in the center of screen and keep the aspect ratio of content
  * XXX it is better that can set the aspect ratio as xml property
  */
-/**
- * Manages AspectRatioTextureView functionality.
- *
- * Responsibility: Provides core AspectRatioTextureView operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mRequestedAspect: Field mRequestedAspect
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of AspectRatioTextureView
- */
-/**
- * Manages AspectRatioTextureView functionality.
- *
- * Responsibility: Provides core AspectRatioTextureView operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of AspectRatioTextureView
- */
-
 
 public class AspectRatioTextureView extends TextureView	// API >= 14
 	implements IAspectRatioView {
@@ -94,46 +56,16 @@ public class AspectRatioTextureView extends TextureView	// API >= 14
 	}
 
 	@Override
-    /**
-     * Setaspectratio.
-     *
-     * 
-    Args:
-        aspectRatio: Parameter aspectRatio controls behavior.
-    Returns:
-     *     Description of the return value.
-     *
-     * Raises:
-     *     Exception: When an error occurs.
-     *
-     * Side Effects:
-     *     - May mutate internal state.
-     *
-     * Code Paths:
-     *     1. If preconditions met → executes normally.
-     *     2. On error → logs and returns default.
-     */
-/**
- * Setaspectratio.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
+	/**
+	 * Set the requested aspect ratio (width / height) of this view.
+	 * Requests a relayout only when the value changes.
+	 *
+	 * Args:
+	 *     aspectRatio: requested aspect ratio; must be >= 0
+	 *
+	 * Raises:
+	 *     IllegalArgumentException: if aspectRatio is negative
+	 */
     public void setAspectRatio(final double aspectRatio) {
         if (aspectRatio < 0) {
             throw new IllegalArgumentException();
@@ -145,89 +77,27 @@ public class AspectRatioTextureView extends TextureView	// API >= 14
     }
 
 	@Override
-    /**
-     * Setaspectratio.
-     *
-     * 
-    Args:
-        width: Parameter width controls behavior.
-        height: Parameter height controls behavior.
-    Returns:
-     *     Description of the return value.
-     *
-     * Raises:
-     *     Exception: When an error occurs.
-     *
-     * Side Effects:
-     *     - May mutate internal state.
-     *
-     * Code Paths:
-     *     1. If preconditions met → executes normally.
-     *     2. On error → logs and returns default.
-     */
-/**
- * Setaspectratio.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
+	/**
+	 * Set the requested aspect ratio from explicit width and height values.
+	 *
+	 * Args:
+	 *     width: content width
+	 *     height: content height
+	 *
+	 * Raises:
+	 *     IllegalArgumentException: if the computed ratio is negative
+	 */
     public void setAspectRatio(final int width, final int height) {
 		setAspectRatio(width / (double)height);
     }
 
 	@Override
 	/**
-	 * Getaspectratio.
+	 * Get the currently requested aspect ratio.
 	 *
 	 * Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 *     the requested aspect ratio, or -1.0 if none has been set
 	 */
-/**
- * Getaspectratio.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
-
 	public double getAspectRatio() {
 		return mRequestedAspect;
 	}
@@ -249,10 +119,10 @@ public class AspectRatioTextureView extends TextureView	// API >= 14
 
 			if (Math.abs(aspectDiff) > 0.01) {
 				if (aspectDiff > 0) {
-					// width priority decision
+				// width priority decision
 					initialHeight = (int) (initialWidth / mRequestedAspect);
 				} else {
-					// height priority decision
+				// height priority decision
 					initialWidth = (int) (initialHeight * mRequestedAspect);
 				}
 				initialWidth += horizPadding;

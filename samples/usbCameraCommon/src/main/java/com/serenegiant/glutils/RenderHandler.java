@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -32,25 +32,6 @@ import android.view.SurfaceHolder;
  * this will deprecate soon because I don't use this now
  */
 @Deprecated
-/**
- * Manages RenderHandler functionality.
- *
- * Responsibility: Provides core RenderHandler operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of RenderHandler
- */
 
 public final class RenderHandler extends Handler {
 //	private static final boolean DEBUG = false;	// FIXME set false on release
@@ -63,82 +44,22 @@ public final class RenderHandler extends Handler {
 
 	private int mTexId = -1;
 	private final RenderThread mThread;
-/**
- * Createhandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public static RenderHandler createHandler() {
-//		if (DEBUG) Log.v(TAG, "createHandler:");
+	//		if (DEBUG) Log.v(TAG, "createHandler:");
 		return createHandler("RenderThread");
 	}
-/**
- * Createhandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public static final RenderHandler createHandler(final String name) {
-//		if (DEBUG) Log.v(TAG, "createHandler:name=" + name);
+	//		if (DEBUG) Log.v(TAG, "createHandler:name=" + name);
 		final RenderThread thread = new RenderThread(name);
 		thread.start();
 		return thread.getHandler();
 	}
-/**
- * Seteglcontext.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public final void setEglContext(final EGLBase.IContext sharedContext,
 		final int tex_id, final Object surface, final boolean isRecordable) {
-//		if (DEBUG) Log.i(TAG, "RenderHandler:setEglContext:");
+		//		if (DEBUG) Log.i(TAG, "RenderHandler:setEglContext:");
 		if (!(surface instanceof Surface)
 			&& !(surface instanceof SurfaceTexture)
 			&& !(surface instanceof SurfaceHolder))
@@ -147,153 +68,22 @@ public final class RenderHandler extends Handler {
 		sendMessage(obtainMessage(MSG_RENDER_SET_GLCONTEXT,
 			isRecordable ? 1 : 0, 0, new ContextParams(sharedContext, surface)));
 	}
-/**
- * Draw.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public final void draw() {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, mTexId, 0, null));
 	}
-/**
- * Draw.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public final void draw(final int tex_id) {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, tex_id, 0, null));
 	}
-/**
- * Draw.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public final void draw(final float[] tex_matrix) {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, mTexId, 0, tex_matrix));
 	}
-/**
- * Draw.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public final void draw(final int tex_id, final float[] tex_matrix) {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, tex_id, 0, tex_matrix));
 	}
-
-	/**
-
-	 * Isvalid.
-
-	 *
-
-	 * Returns:
-
-	 *     Description of the return value.
-
-	 *
-
-	 * Raises:
-
-	 *     Exception: When an error occurs.
-
-	 *
-
-	 * Side Effects:
-
-	 *     - May mutate internal state.
-
-	 *
-
-	 * Code Paths:
-
-	 *     1. If preconditions met → executes normally.
-
-	 *     2. On error → logs and returns default.
-
-	 */
-/**
- * Isvalid.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -307,54 +97,15 @@ public final class RenderHandler extends Handler {
 			return mThread.mSurface != null && mThread.mSurface.isValid();
 		}
 	}
-/**
- * Release.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public final void release() {
-//		if (DEBUG) Log.i(TAG, "release:");
+	//		if (DEBUG) Log.i(TAG, "release:");
 		removeMessages(MSG_RENDER_SET_GLCONTEXT);
 		removeMessages(MSG_RENDER_DRAW);
 		sendEmptyMessage(MSG_RENDER_QUIT);
 	}
 
 	@Override
-/**
- * Handlemessage.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public final void handleMessage(final Message msg) {
 		switch (msg.what) {
@@ -378,10 +129,10 @@ public final class RenderHandler extends Handler {
 		}
 	}
 
-//********************************************************************************
-//********************************************************************************
+	//********************************************************************************
+	//********************************************************************************
 	private RenderHandler(final RenderThread thread) {
-//		if (DEBUG) Log.i(TAG, "RenderHandler:");
+	//		if (DEBUG) Log.i(TAG, "RenderHandler:");
 		mThread = thread;
 	}
 
@@ -410,30 +161,10 @@ public final class RenderHandler extends Handler {
     	public RenderThread(final String name) {
     		super(name);
     	}
-/**
- * Gethandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
     	public final RenderHandler getHandler() {
             synchronized (mSync) {
-                // create rendering thread
+// create rendering thread
             	try {
             		mSync.wait();
             	} catch (final InterruptedException e) {
@@ -442,34 +173,17 @@ public final class RenderHandler extends Handler {
             return mHandler;
     	}
 
-    	/**
-    	 * Set shared context and Surface
-    	 * @param shardContext
-    	 * @param surface
-    	 */
-/**
- * Handleseteglcontext.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * Set shared context and Surface
+	 *
+	 * Args:
+	 *     shardContext: The shard context value.
+	 *     surface: The surface value.
+	 */
 
     	public final void handleSetEglContext(final EGLBase.IContext shardContext,
     		final Object surface, final boolean isRecordable) {
-//    		if (DEBUG) Log.i(TAG_THREAD, "setEglContext:");
+		//    		if (DEBUG) Log.i(TAG_THREAD, "setEglContext:");
     		release();
     		synchronized (mSync) {
     			mSurface = surface instanceof Surface ? (Surface)surface
@@ -493,33 +207,16 @@ public final class RenderHandler extends Handler {
     		}
     	}
 
-    	/**
-    	 * drawing
-    	 * @param tex_id
-    	 * @param tex_matrix
-    	 */
-/**
- * Handledraw.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * drawing
+	 *
+	 * Args:
+	 *     tex_id: The tex ID value.
+	 *     tex_matrix: The tex matrix value.
+	 */
 
     	public void handleDraw(final int tex_id, final float[] tex_matrix) {
-//    		if (DEBUG) Log.i(TAG_THREAD, "draw");
+	//    		if (DEBUG) Log.i(TAG_THREAD, "draw");
     		if (tex_id >= 0 && mTargetSurface != null) {
 	    		mTargetSurface.makeCurrent();
 	    		mDrawer.draw(tex_id, tex_matrix, 0);
@@ -528,28 +225,9 @@ public final class RenderHandler extends Handler {
     	}
 
     	@Override
-/**
- * Run.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
     	public final void run() {
-//			if (DEBUG) Log.v(TAG_THREAD, "started");
+	//			if (DEBUG) Log.v(TAG_THREAD, "started");
             Looper.prepare();
             synchronized (mSync) {
                 mHandler = new RenderHandler(this);
@@ -565,7 +243,7 @@ public final class RenderHandler extends Handler {
     	}
 
     	private final void release() {
-//    		if (DEBUG) Log.v(TAG_THREAD, "release:");
+	//    		if (DEBUG) Log.v(TAG_THREAD, "release:");
     		if (mDrawer != null) {
     			mDrawer.release();
     			mDrawer = null;
@@ -584,11 +262,11 @@ public final class RenderHandler extends Handler {
     		}
     	}
 
-    	/**
-    	 * Fill black on specific Surface
-    	 */
+	/**
+	 * Fill black on specific Surface
+	 */
     	private final void clear() {
-//    		if (DEBUG) Log.v(TAG_THREAD, "clear:");
+	//    		if (DEBUG) Log.v(TAG_THREAD, "clear:");
     		mTargetSurface.makeCurrent();
 			GLES20.glClearColor(0, 0, 0, 1);
 			GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);

@@ -32,21 +32,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/**
- * \brief Provide miscellaneous platform compatibility helpers.
- *
- * Supplies strndup implementation for macOS and other small utilities.
- *
- * Exports:
- *   strndup: Portable strndup for Apple platforms
- *
- * Dependencies:
- *   - string.h, stdlib.h: Standard C library
- *
- * Architecture Note:
- *   Misc utilities are intentionally minimal and have no side effects. They are
- *   compiled conditionally per platform to avoid conflicts with system implementations.
- */
+// Implementation for libuvc platform compatibility helpers; see libuvc/libuvc_internal.h for internal declarations.
+
 
 #include <string.h>
 #include <stdlib.h>

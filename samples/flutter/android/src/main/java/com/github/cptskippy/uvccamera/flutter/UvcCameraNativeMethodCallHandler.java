@@ -19,36 +19,38 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
 /**
- * "uvccamera/native" method channel call handler
- * <p>
- * It routes method calls from Flutter to {@link UvcCameraPlatform}.
+ * Route "uvccamera/native" method channel calls from Flutter to the UVC camera platform.
+ *
+ * Validates each call's arguments, dispatches to the matching {@link UvcCameraPlatform} method, and
+ * answers with a success or error result. Calls with asynchronous outcomes (permission requests,
+ * take-picture) are answered on the main looper.
  */
 /* package-private */ class UvcCameraNativeMethodCallHandler implements MethodChannel.MethodCallHandler {
 
-    /**
-     * Log tag
-     */
+/**
+ * Log tag
+ */
     private static final String TAG = UvcCameraNativeMethodCallHandler.class.getSimpleName();
 
-    /**
-     * libuvc's {@code uvc_frame_format} to {@code UvcCameraFrameFormat} enum mapping.
-     */
+/**
+ * libuvc's {@code uvc_frame_format} to {@code UvcCameraFrameFormat} enum mapping.
+ */
     private static final Map<Integer, String> FRAME_FORMAT_LIBUVC_VALUE_TO_ENUM_NAME = Map.of(
-            /* UVC_FRAME_FORMAT_YUYV */ 4, "yuyv",
-            /* UVC_FRAME_FORMAT_MJPEG */ 6, "mjpeg"
+/* UVC_FRAME_FORMAT_YUYV */ 4, "yuyv",
+/* UVC_FRAME_FORMAT_MJPEG */ 6, "mjpeg"
     );
 
-    /**
-     * {@code UvcCameraFrameFormat} enum to libuvc's {@code uvc_frame_format} mapping.
-     */
+/**
+ * {@code UvcCameraFrameFormat} enum to libuvc's {@code uvc_frame_format} mapping.
+ */
     private static final Map<String, Integer> FRAME_FORMAT_ENUM_NAME_TO_LIBUVC_VALUE = Map.of(
             "yuyv", /* UVC_FRAME_FORMAT_YUYV */ 4,
             "mjpeg", /* UVC_FRAME_FORMAT_MJPEG */ 6
     );
 
-    /**
-     * Resolution preset to frame area mapping.
-     */
+/**
+ * Resolution preset to frame area mapping.
+ */
     private static final Map<String, Integer> RESOLUTION_PRESET_TO_FRAME_AREA = Map.of(
             "min", Integer.MIN_VALUE,
             "low", 640 * 480,
@@ -57,23 +59,42 @@ import io.flutter.plugin.common.MethodChannel;
             "max", Integer.MAX_VALUE
     );
 
-    /**
-     * UvcCameraPlatform instance.
-     */
+/**
+ * UvcCameraPlatform instance.
+ */
     private final UvcCameraPlatform uvcCameraPlatform;
 
-    /**
-     * Main looper handler
-     */
+/**
+ * Main looper handler
+ */
     private final Handler mainLooperHandler = new Handler(Looper.getMainLooper());
 
-    /**
-     * Constructor
-     */
+/**
+ * Create the method call handler for the UVC camera platform.
+ *
+ * Args:
+ *     uvcCameraPlatform: the platform that receives the routed method calls
+ */
     public UvcCameraNativeMethodCallHandler(final UvcCameraPlatform uvcCameraPlatform) {
         this.uvcCameraPlatform = uvcCameraPlatform;
     }
 
+/**
+ * Route a "uvccamera/native" method channel call to the UVC camera platform.
+ *
+ * Args:
+ *     call: the method call received from Flutter
+ *     result: the channel result to answer with the call outcome
+ *
+ * Code Paths:
+ *     1. Validate the required arguments for the called method, answering with an "InvalidArgument"
+ *        error when an argument is missing or unknown
+ *     2. Dispatch to the matching {@link UvcCameraPlatform} method, answering with an error carrying
+ *        the exception name and message when it throws
+ *     3. "requestDevicePermission" and "takePicture" answer asynchronously on the main looper when
+ *        the platform completes the request
+ *     4. Unknown method → answer notImplemented
+ */
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
         Log.v(TAG, "onMethodCall"

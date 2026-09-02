@@ -16,48 +16,12 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.support.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-/**
- * Manages IRendererCommon functionality.
- *
- * Responsibility: Provides core IRendererCommon operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of IRendererCommon
- */
-/**
- * Manages IRendererCommon functionality.
- *
- * Responsibility: Provides core IRendererCommon operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of IRendererCommon
- */
-
-
 
 public interface IRendererCommon {
 	public static final int MIRROR_NORMAL = 0;
@@ -72,13 +36,17 @@ public interface IRendererCommon {
 
 	/**
 	 * 映像を上下左右反転させるかどうかをセット
-	 * @param mirror 0:通常, 1:左右反転, 2:上下反転, 3:上下左右反転
+	 *
+	 * Args:
+	 *     mirror: 0:通常, 1:左右反転, 2:上下反転, 3:上下左右反転.
 	 */
 	public void setMirror(@MirrorMode final int mirror);
-	
+
 	/**
 	 * 映像を上下左右反転させるかどうかを取得
-	 * @return 0:通常, 1:左右反転, 2:上下反転, 3:上下左右反転
+	 *
+	 * Returns:
+	 *     0:通常, 1:左右反転, 2:上下反転, 3:上下左右反転.
 	 */
 	public @MirrorMode int getMirror();
 }

@@ -124,7 +124,7 @@ public class UVCCamera {
     public static final int PU_AVIDEO_LOCK		= 0x80020000;	// D17: Analog Video Lock Status
     public static final int PU_CONTRAST_AUTO	= 0x80040000;	// D18: Contrast, Auto
 
-	// uvc_status_class from libuvc.h
+// uvc_status_class from libuvc.h
 	public static final int STATUS_CLASS_CONTROL = 0x10;
 	public static final int STATUS_CLASS_CONTROL_CAMERA = 0x11;
 	public static final int STATUS_CLASS_CONTROL_PROCESSING = 0x12;
@@ -154,7 +154,7 @@ public class UVCCamera {
 	protected float mCurrentBandwidthFactor = DEFAULT_BANDWIDTH;
     protected String mSupportedSize;
     protected List<Size> mCurrentSizeList;
-	// these fields from here are accessed from native code and do not change name and remove
+// these fields from here are accessed from native code and do not change name and remove
     protected long mNativePtr;
     protected int mScanningModeMin, mScanningModeMax, mScanningModeDef;
     protected int mExposureModeMin, mExposureModeMax, mExposureModeDef;
@@ -193,37 +193,43 @@ public class UVCCamera {
     protected int mMultiplierLimitMin, mMultiplierLimitMax, mMultiplierLimitDef;
     protected int mAnalogVideoStandardMin, mAnalogVideoStandardMax, mAnalogVideoStandardDef;
     protected int mAnalogVideoLockStateMin, mAnalogVideoLockStateMax, mAnalogVideoLockStateDef;
-    // until here
-    /**
-     * the sonctructor of this class should be call within the thread that has a looper
-     * (UI thread or a thread that called Looper.prepare)
-     */
+// until here
+/**
+ * Create a UVCCamera instance.
+ *
+ * Allocate the native camera handle before the USB device is opened. Call from a thread
+ * that has a Looper, such as the UI thread or a prepared HandlerThread, because native
+ * preview callbacks may post work to that thread.
+ *
+ * Side Effects:
+ *     - Calls nativeCreate and stores the returned handle in mNativePtr
+ */
     public UVCCamera() {
     	mNativePtr = nativeCreate();
     	mSupportedSize = null;
 	}
 
-    /**
-     * Open a UVC camera with the given control block.
-     *
-     * USB permission must be granted before calling. The method clones the control block,
-     * connects the native camera, fetches supported sizes and sets default preview parameters.
-     *
-     * Args:
-     *     ctrlBlock: UsbControlBlock containing device handle and file descriptor. Must be valid and permission granted.
-     *
-     * Raises:
-     *     UnsupportedOperationException: If nativeConnect returns non-zero.
-     *
-     * Side Effects:
-     *     - Stores cloned UsbControlBlock in mCtrlBlock
-     *     - Updates mSupportedSize from native
-     *     - Sets default preview size via nativeSetPreviewSize
-     *
-     * Code Paths:
-     *     1. If nativeConnect succeeds → stores control block, loads supported sizes, sets defaults.
-     *     2. If nativeConnect fails or exception → throws UnsupportedOperationException.
-     */
+/**
+ * Open a UVC camera with the given control block.
+ *
+ * USB permission must be granted before calling. The method clones the control block,
+ * connects the native camera, fetches supported sizes and sets default preview parameters.
+ *
+ * Args:
+ *     ctrlBlock: UsbControlBlock containing device handle and file descriptor. Must be valid and permission granted.
+ *
+ * Raises:
+ *     UnsupportedOperationException: If nativeConnect returns non-zero.
+ *
+ * Side Effects:
+ *     - Stores cloned UsbControlBlock in mCtrlBlock
+ *     - Updates mSupportedSize from native
+ *     - Sets default preview size via nativeSetPreviewSize
+ *
+ * Code Paths:
+ *     1. If nativeConnect succeeds → stores control block, loads supported sizes, sets defaults.
+ *     2. If nativeConnect fails or exception → throws UnsupportedOperationException.
+ */
     public synchronized void open(final UsbControlBlock ctrlBlock) {
     	int result;
     	try {
@@ -249,8 +255,17 @@ public class UVCCamera {
     }
 
 	/**
-	 * set status callback
-	 * @param callback
+	 * Register the UVC status callback.
+	 *
+	 * Args:
+	 *     callback: IStatusCallback that receives UVC status events, or null to unregister.
+	 *
+	 * Side Effects:
+	 *     - Replaces the native status callback when mNativePtr != 0
+	 *
+	 * Code Paths:
+	 *     1. If mNativePtr != 0 → forwards callback to nativeSetStatusCallback.
+	 *     2. If mNativePtr == 0 → no-op.
 	 */
 	public void setStatusCallback(final IStatusCallback callback) {
 		if (mNativePtr != 0) {
@@ -259,8 +274,17 @@ public class UVCCamera {
 	}
 
 	/**
-	 * set button callback
-	 * @param callback
+	 * Register the UVC button callback.
+	 *
+	 * Args:
+	 *     callback: IButtonCallback that receives camera button events, or null to unregister.
+	 *
+	 * Side Effects:
+	 *     - Replaces the native button callback when mNativePtr != 0
+	 *
+	 * Code Paths:
+	 *     1. If mNativePtr != 0 → forwards callback to nativeSetButtonCallback.
+	 *     2. If mNativePtr == 0 → no-op.
 	 */
 	public void setButtonCallback(final IButtonCallback callback) {
 		if (mNativePtr != 0) {
@@ -268,28 +292,28 @@ public class UVCCamera {
 		}
 	}
 
-    /**
-     * Close and release the UVC camera.
-     *
-     * Stops preview, releases native resources and closes the USB control block.
-     * Call before releasing the camera object to avoid resource leaks.
-     *
-     * Side Effects:
-     *     - Stops preview via stopPreview()
-     *     - Calls nativeRelease on native pointer
-     *     - Closes and nulls mCtrlBlock
-     *     - Resets support flags and size caches
-     *
-     * Code Paths:
-     *     1. If mNativePtr != 0 → nativeRelease is called.
-     *     2. If mCtrlBlock != null → control block is closed and nulled.
-     *     3. Always resets internal state to idle.
-     */
+/**
+ * Close and release the UVC camera.
+ *
+ * Stops preview, releases native resources and closes the USB control block.
+ * Call before releasing the camera object to avoid resource leaks.
+ *
+ * Side Effects:
+ *     - Stops preview via stopPreview()
+ *     - Calls nativeRelease on native pointer
+ *     - Closes and nulls mCtrlBlock
+ *     - Resets support flags and size caches
+ *
+ * Code Paths:
+ *     1. If mNativePtr != 0 → nativeRelease is called.
+ *     2. If mCtrlBlock != null → control block is closed and nulled.
+ *     3. Always resets internal state to idle.
+ */
     public synchronized void close() {
     	stopPreview();
     	if (mNativePtr != 0) {
     		nativeRelease(mNativePtr);
-//     mNativePtr = 0; // do not clear here because nativeDestroy will be called
+		//     mNativePtr = 0; // do not clear here because nativeDestroy will be called
     	}
     	if (mCtrlBlock != null) {
 			mCtrlBlock.close();
@@ -331,45 +355,64 @@ public class UVCCamera {
 		}
 		return result;
 	}
-	
+
 	/**
-	 * Set preview size and preview mode
-	 * @param width
-	   @param height
+	 * Set preview size using the current frame format and bandwidth factor.
+	 *
+	 * Args:
+	 *     width: Preview width in pixels.
+	 *     height: Preview height in pixels.
 	 */
 	public void setPreviewSize(final int width, final int height) {
 		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, mCurrentFrameFormat, mCurrentBandwidthFactor);
 	}
 
 	/**
-	 * Set preview size and preview mode
-	 * @param width
-	 * @param height
-	 * @param frameFormat either FRAME_FORMAT_YUYV(0) or FRAME_FORMAT_MJPEG(1)
+	 * Set preview size and frame format using default FPS limits and bandwidth.
+	 *
+	 * Args:
+	 *     width: Preview width in pixels.
+	 *     height: Preview height in pixels.
+	 *     frameFormat: FRAME_FORMAT_YUYV or FRAME_FORMAT_MJPEG.
 	 */
 	public void setPreviewSize(final int width, final int height, final int frameFormat) {
 		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, frameFormat, mCurrentBandwidthFactor);
 	}
-	
+
 	/**
-	 * Set preview size and preview mode
-	 * @param width
-	   @param height
-	   @param frameFormat either FRAME_FORMAT_YUYV(0) or FRAME_FORMAT_MJPEG(1)
-	   @param bandwidth [0.0f,1.0f]
+	 * Set preview size, frame format, and bandwidth using default FPS limits.
+	 *
+	 * Args:
+	 *     width: Preview width in pixels.
+	 *     height: Preview height in pixels.
+	 *     frameFormat: FRAME_FORMAT_YUYV or FRAME_FORMAT_MJPEG.
+	 *     bandwidth: Bandwidth factor in the range [0.0, 1.0].
 	 */
 	public void setPreviewSize(final int width, final int height, final int frameFormat, final float bandwidth) {
 		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, frameFormat, bandwidth);
 	}
 
 	/**
-	 * Set preview size and preview mode
-	 * @param width
-	 * @param height
-	 * @param min_fps
-	 * @param max_fps
-	 * @param frameFormat either FRAME_FORMAT_YUYV(0) or FRAME_FORMAT_MJPEG(1)
-	 * @param bandwidthFactor
+	 * Set preview size, FPS range, frame format, and bandwidth factor.
+	 *
+	 * Args:
+	 *     width: Preview width in pixels.
+	 *     height: Preview height in pixels.
+	 *     min_fps: Minimum acceptable frames per second.
+	 *     max_fps: Maximum acceptable frames per second.
+	 *     frameFormat: FRAME_FORMAT_YUYV or FRAME_FORMAT_MJPEG.
+	 *     bandwidthFactor: Bandwidth factor in the range [0.0, 1.0].
+	 *
+	 * Raises:
+	 *     IllegalArgumentException: If width or height is zero, or nativeSetPreviewSize fails.
+	 *
+	 * Side Effects:
+	 *     - Updates mCurrentWidth, mCurrentHeight, mCurrentFrameFormat, and mCurrentBandwidthFactor on success
+	 *
+	 * Code Paths:
+	 *     1. If width == 0 or height == 0 → throws IllegalArgumentException.
+	 *     2. If mNativePtr != 0 and nativeSetPreviewSize succeeds → stores the new preview parameters.
+	 *     3. If mNativePtr == 0 → no-op.
 	 */
 	public void setPreviewSize(final int width, final int height, final int min_fps, final int max_fps, final int frameFormat, final float bandwidthFactor) {
 		if ((width == 0) || (height == 0))
@@ -425,104 +468,116 @@ public class UVCCamera {
 		}
 	}
 
-    /**
-     * set preview surface with SurfaceHolder</br>
-     * you can use SurfaceHolder came from SurfaceView/GLSurfaceView
-     * @param holder
-     */
+/**
+ * Set the preview surface from a SurfaceHolder.
+ *
+ * Use a SurfaceHolder obtained from a SurfaceView or GLSurfaceView when the preview
+ * target is managed by an Android view.
+ *
+ * Args:
+ *     holder: SurfaceHolder that provides the preview Surface.
+ *
+ * Side Effects:
+ *     - Calls nativeSetPreviewDisplay with holder.getSurface()
+ *
+ * Code Paths:
+ *     1. Always forwards the holder surface to the native preview pipeline.
+ */
     public synchronized void setPreviewDisplay(final SurfaceHolder holder) {
    		nativeSetPreviewDisplay(mNativePtr, holder.getSurface());
     }
 
-    /**
-     * set preview surface with SurfaceTexture.
-     * this method require API >= 14
-     * @param texture
-     */
+/**
+ * set preview surface with SurfaceTexture.
+ * this method require API >= 14
+ *
+ * Args:
+ *     texture: SurfaceTexture used to create the preview Surface.
+ */
     public synchronized void setPreviewTexture(final SurfaceTexture texture) {	// API >= 11
     	final Surface surface = new Surface(texture);	// XXX API >= 14
     	nativeSetPreviewDisplay(mNativePtr, surface);
     }
 
-    /**
-     * Set preview surface with Surface.
-     *
-     * Assigns the ANativeWindow backing this Surface to the native preview pipeline.
-     * Must be called before startPreview.
-     *
-     * Args:
-     *     surface: Android Surface to render preview frames into.
-     *
-     * Side Effects:
-     *     - Calls nativeSetPreviewDisplay on native handle
-     *
-     * Code Paths:
-     *     1. Always forwards surface to nativeSetPreviewDisplay.
-     */
+/**
+ * Set preview surface with Surface.
+ *
+ * Assigns the ANativeWindow backing this Surface to the native preview pipeline.
+ * Must be called before startPreview.
+ *
+ * Args:
+ *     surface: Android Surface to render preview frames into.
+ *
+ * Side Effects:
+ *     - Calls nativeSetPreviewDisplay on native handle
+ *
+ * Code Paths:
+ *     1. Always forwards surface to nativeSetPreviewDisplay.
+ */
     public synchronized void setPreviewDisplay(final Surface surface) {
     	nativeSetPreviewDisplay(mNativePtr, surface);
     }
 
-    /**
-     * Set frame callback for raw frame delivery.
-     *
-     * Registers a callback to receive frames as ByteBuffer. Use this instead of preview surface
-     * when you need direct access to frame data for processing.
-     *
-     * Args:
-     *     callback: IFrameCallback to receive frames. Null to unregister.
-     *     pixelFormat: Pixel format constant, e.g., PIXEL_FORMAT_RGBX, PIXEL_FORMAT_RGB565.
-     *
-     * Side Effects:
-     *     - Calls nativeSetFrameCallback on native handle if mNativePtr != 0
-     *
-     * Code Paths:
-     *     1. If mNativePtr != 0 → native callback is registered.
-     *     2. If mNativePtr == 0 → no-op.
-     */
+/**
+ * Set frame callback for raw frame delivery.
+ *
+ * Registers a callback to receive frames as ByteBuffer. Use this instead of preview surface
+ * when you need direct access to frame data for processing.
+ *
+ * Args:
+ *     callback: IFrameCallback to receive frames. Null to unregister.
+ *     pixelFormat: Pixel format constant, e.g., PIXEL_FORMAT_RGBX, PIXEL_FORMAT_RGB565.
+ *
+ * Side Effects:
+ *     - Calls nativeSetFrameCallback on native handle if mNativePtr != 0
+ *
+ * Code Paths:
+ *     1. If mNativePtr != 0 → native callback is registered.
+ *     2. If mNativePtr == 0 → no-op.
+ */
     public void setFrameCallback(final IFrameCallback callback, final int pixelFormat) {
     	if (mNativePtr != 0) {
         	nativeSetFrameCallback(mNativePtr, callback, pixelFormat);
     	}
     }
 
-    /**
-     * Start preview streaming.
-     *
-     * Begins frame delivery to the previously set preview surface or frame callback.
-     * Must be called after open and setPreviewDisplay/setPreviewTexture.
-     *
-     * Prerequisites:
-     *     - Camera must be opened via open()
-     *     - Preview surface must be set
-     *
-     * Side Effects:
-     *     - Calls nativeStartPreview on the native camera handle
-     *     - Starts frame generation on the native pipeline thread
-     *
-     * Code Paths:
-     *     1. If mCtrlBlock != null → nativeStartPreview is invoked.
-     *     2. If mCtrlBlock is null → no-op, preview does not start.
-     */
+/**
+ * Start preview streaming.
+ *
+ * Begins frame delivery to the previously set preview surface or frame callback.
+ * Must be called after open and setPreviewDisplay/setPreviewTexture.
+ *
+ * Prerequisites:
+ *     - Camera must be opened via open()
+ *     - Preview surface must be set
+ *
+ * Side Effects:
+ *     - Calls nativeStartPreview on the native camera handle
+ *     - Starts frame generation on the native pipeline thread
+ *
+ * Code Paths:
+ *     1. If mCtrlBlock != null → nativeStartPreview is invoked.
+ *     2. If mCtrlBlock is null → no-op, preview does not start.
+ */
     public synchronized void startPreview() {
     	if (mCtrlBlock != null) {
     		nativeStartPreview(mNativePtr);
     	}
     }
 
-    /**
-     * Stop preview streaming.
-     *
-     * Halts frame delivery and clears any frame callback to free resources.
-     *
-     * Side Effects:
-     *     - Clears frame callback via setFrameCallback(null, 0)
-     *     - Calls nativeStopPreview on the native camera handle
-     *
-     * Code Paths:
-     *     1. Always clears frame callback.
-     *     2. If mCtrlBlock != null → nativeStopPreview is invoked.
-     */
+/**
+ * Stop preview streaming.
+ *
+ * Halts frame delivery and clears any frame callback to free resources.
+ *
+ * Side Effects:
+ *     - Clears frame callback via setFrameCallback(null, 0)
+ *     - Calls nativeStopPreview on the native camera handle
+ *
+ * Code Paths:
+ *     1. Always clears frame callback.
+ *     2. If mCtrlBlock != null → nativeStopPreview is invoked.
+ */
     public synchronized void stopPreview() {
     	setFrameCallback(null, 0);
     	if (mCtrlBlock != null) {
@@ -530,21 +585,21 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * Destroy the UVCCamera object and release all resources.
-     *
-     * Closes the camera and destroys the native handle. Call this when the camera
-     * is no longer needed to prevent native leaks.
-     *
-     * Side Effects:
-     *     - Calls close() to stop preview and release USB
-     *     - Calls nativeDestroy on native pointer
-     *     - Sets mNativePtr to 0
-     *
-     * Code Paths:
-     *     1. Always calls close().
-     *     2. If mNativePtr != 0 → nativeDestroy is called and pointer nulled.
-     */
+/**
+ * Destroy the UVCCamera object and release all resources.
+ *
+ * Closes the camera and destroys the native handle. Call this when the camera
+ * is no longer needed to prevent native leaks.
+ *
+ * Side Effects:
+ *     - Calls close() to stop preview and release USB
+ *     - Calls nativeDestroy on native pointer
+ *     - Sets mNativePtr to 0
+ *
+ * Code Paths:
+ *     1. Always calls close().
+ *     2. If mNativePtr != 0 → nativeDestroy is called and pointer nulled.
+ */
     public synchronized void destroy() {
     	close();
     	if (mNativePtr != 0) {
@@ -553,8 +608,17 @@ public class UVCCamera {
     	}
     }
 
-    // wrong result may return when you call this just after camera open.
-    // it is better to wait several hundreads millseconds.
+// wrong result may return when you call this just after camera open.
+// it is better to wait several hundreads millseconds.
+/**
+ * Check whether a control or processing feature flag is supported.
+ *
+ * Args:
+ *     flag: Feature flag to check
+ *
+ * Returns:
+ *     true if the flag is supported
+ */
 	public boolean checkSupportFlag(final long flag) {
     	updateCameraParams();
     	if ((flag & 0x80000000) == 0x80000000)
@@ -564,6 +628,12 @@ public class UVCCamera {
     }
 
 //================================================================================
+/**
+ * Enable or disable autofocus.
+ *
+ * Args:
+ *     autoFocus: true to enable autofocus
+ */
 	public synchronized void setAutoFocus(final boolean autoFocus) {
     	if (mNativePtr != 0) {
     		nativeSetAutoFocus(mNativePtr, autoFocus);
@@ -578,9 +648,11 @@ public class UVCCamera {
     	return result;
     }
 //================================================================================
-    /**
-     * @param focus [%]
-     */
+/**
+ *
+ * Args:
+ *     focus: [%]
+ */
 	public synchronized void setFocus(final int focus) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mFocusMax - mFocusMin);
@@ -589,10 +661,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param focus_abs
-     * @return focus[%]
-     */
+/**
+ *
+ * Args:
+ *     focus_abs: Focus abs value
+ *
+ * Returns:
+ *     focus[%]
+ */
 	public synchronized int getFocus(final int focus_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -605,9 +681,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return focus[%]
-     */
+/**
+ *
+ * Returns:
+ *     focus[%]
+ */
 	public synchronized int getFocus() {
     	return getFocus(nativeGetFocus(mNativePtr));
     }
@@ -619,6 +697,12 @@ public class UVCCamera {
     }
 
 //================================================================================
+/**
+ * Enable or disable auto white balance.
+ *
+ * Args:
+ *     autoWhiteBlance: true to enable auto white balance
+ */
 	public synchronized void setAutoWhiteBlance(final boolean autoWhiteBlance) {
     	if (mNativePtr != 0) {
     		nativeSetAutoWhiteBlance(mNativePtr, autoWhiteBlance);
@@ -634,9 +718,11 @@ public class UVCCamera {
     }
 
 //================================================================================
-    /**
-     * @param whiteBlance [%]
-     */
+/**
+ *
+ * Args:
+ *     whiteBlance: [%]
+ */
 	public synchronized void setWhiteBlance(final int whiteBlance) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mWhiteBlanceMax - mWhiteBlanceMin);
@@ -645,10 +731,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param whiteBlance_abs
-     * @return whiteBlance[%]
-     */
+/**
+ *
+ * Args:
+ *     whiteBlance_abs: White Blance abs value
+ *
+ * Returns:
+ *     whiteBlance[%]
+ */
 	public synchronized int getWhiteBlance(final int whiteBlance_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -661,9 +751,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return white blance[%]
-     */
+/**
+ *
+ * Returns:
+ *     white blance[%]
+ */
 	public synchronized int getWhiteBlance() {
     	return getFocus(nativeGetWhiteBlance(mNativePtr));
     }
@@ -674,9 +766,11 @@ public class UVCCamera {
     	}
     }
 //================================================================================
-    /**
-     * @param brightness [%]
-     */
+/**
+ *
+ * Args:
+ *     brightness: [%]
+ */
 	public synchronized void setBrightness(final int brightness) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mBrightnessMax - mBrightnessMin);
@@ -685,10 +779,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param brightness_abs
-     * @return brightness[%]
-     */
+/**
+ *
+ * Args:
+ *     brightness_abs: Brightness abs value
+ *
+ * Returns:
+ *     brightness[%]
+ */
 	public synchronized int getBrightness(final int brightness_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -701,9 +799,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return brightness[%]
-     */
+/**
+ *
+ * Returns:
+ *     brightness[%]
+ */
 	public synchronized int getBrightness() {
     	return getBrightness(nativeGetBrightness(mNativePtr));
     }
@@ -715,9 +815,11 @@ public class UVCCamera {
     }
 
 //================================================================================
-    /**
-     * @param contrast [%]
-     */
+/**
+ *
+ * Args:
+ *     contrast: [%]
+ */
 	public synchronized void setContrast(final int contrast) {
     	if (mNativePtr != 0) {
     		nativeUpdateContrastLimit(mNativePtr);
@@ -727,10 +829,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param contrast_abs
-     * @return contrast[%]
-     */
+/**
+ *
+ * Args:
+ *     contrast_abs: Contrast abs value
+ *
+ * Returns:
+ *     contrast[%]
+ */
 	public synchronized int getContrast(final int contrast_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -742,9 +848,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return contrast[%]
-     */
+/**
+ *
+ * Returns:
+ *     contrast[%]
+ */
 	public synchronized int getContrast() {
     	return getContrast(nativeGetContrast(mNativePtr));
     }
@@ -756,9 +864,11 @@ public class UVCCamera {
     }
 
 //================================================================================
-    /**
-     * @param sharpness [%]
-     */
+/**
+ *
+ * Args:
+ *     sharpness: [%]
+ */
 	public synchronized void setSharpness(final int sharpness) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mSharpnessMax - mSharpnessMin);
@@ -767,10 +877,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param sharpness_abs
-     * @return sharpness[%]
-     */
+/**
+ *
+ * Args:
+ *     sharpness_abs: Sharpness abs value
+ *
+ * Returns:
+ *     sharpness[%]
+ */
 	public synchronized int getSharpness(final int sharpness_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -783,9 +897,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return sharpness[%]
-     */
+/**
+ *
+ * Returns:
+ *     sharpness[%]
+ */
 	public synchronized int getSharpness() {
     	return getSharpness(nativeGetSharpness(mNativePtr));
     }
@@ -796,9 +912,11 @@ public class UVCCamera {
     	}
     }
 //================================================================================
-    /**
-     * @param gain [%]
-     */
+/**
+ *
+ * Args:
+ *     gain: [%]
+ */
 	public synchronized void setGain(final int gain) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mGainMax - mGainMin);
@@ -807,10 +925,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param gain_abs
-     * @return gain[%]
-     */
+/**
+ *
+ * Args:
+ *     gain_abs: Gain abs value
+ *
+ * Returns:
+ *     gain[%]
+ */
 	public synchronized int getGain(final int gain_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -823,9 +945,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return gain[%]
-     */
+/**
+ *
+ * Returns:
+ *     gain[%]
+ */
 	public synchronized int getGain() {
     	return getGain(nativeGetGain(mNativePtr));
     }
@@ -837,9 +961,11 @@ public class UVCCamera {
     }
 
 //================================================================================
-    /**
-     * @param gamma [%]
-     */
+/**
+ *
+ * Args:
+ *     gamma: [%]
+ */
 	public synchronized void setGamma(final int gamma) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mGammaMax - mGammaMin);
@@ -848,10 +974,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param gamma_abs
-     * @return gamma[%]
-     */
+/**
+ *
+ * Args:
+ *     gamma_abs: Gamma abs value
+ *
+ * Returns:
+ *     gamma[%]
+ */
 	public synchronized int getGamma(final int gamma_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -864,9 +994,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return gamma[%]
-     */
+/**
+ *
+ * Returns:
+ *     gamma[%]
+ */
 	public synchronized int getGamma() {
     	return getGamma(nativeGetGamma(mNativePtr));
     }
@@ -878,9 +1010,11 @@ public class UVCCamera {
     }
 
 //================================================================================
-    /**
-     * @param saturation [%]
-     */
+/**
+ *
+ * Args:
+ *     saturation: [%]
+ */
 	public synchronized void setSaturation(final int saturation) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mSaturationMax - mSaturationMin);
@@ -889,10 +1023,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param saturation_abs
-     * @return saturation[%]
-     */
+/**
+ *
+ * Args:
+ *     saturation_abs: Saturation abs value
+ *
+ * Returns:
+ *     saturation[%]
+ */
 	public synchronized int getSaturation(final int saturation_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -905,9 +1043,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return saturation[%]
-     */
+/**
+ *
+ * Returns:
+ *     saturation[%]
+ */
 	public synchronized int getSaturation() {
     	return getSaturation(nativeGetSaturation(mNativePtr));
     }
@@ -918,9 +1058,11 @@ public class UVCCamera {
     	}
     }
 //================================================================================
-    /**
-     * @param hue [%]
-     */
+/**
+ *
+ * Args:
+ *     hue: [%]
+ */
 	public synchronized void setHue(final int hue) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mHueMax - mHueMin);
@@ -929,10 +1071,14 @@ public class UVCCamera {
     	}
     }
 
-    /**
-     * @param hue_abs
-     * @return hue[%]
-     */
+/**
+ *
+ * Args:
+ *     hue_abs: Hue abs value
+ *
+ * Returns:
+ *     hue[%]
+ */
 	public synchronized int getHue(final int hue_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -945,9 +1091,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return hue[%]
-     */
+/**
+ *
+ * Returns:
+ *     hue[%]
+ */
 	public synchronized int getHue() {
     	return getHue(nativeGetHue(mNativePtr));
     }
@@ -959,6 +1107,12 @@ public class UVCCamera {
     }
 
 //================================================================================
+/**
+ * Set the power line frequency.
+ *
+ * Args:
+ *     frequency: Power line frequency in Hz (50 or 60)
+ */
 	public void setPowerlineFrequency(final int frequency) {
     	if (mNativePtr != 0)
     		nativeSetPowerlineFrequency(mNativePtr, frequency);
@@ -969,25 +1123,31 @@ public class UVCCamera {
     }
 
 //================================================================================
-    /**
-     * this may not work well with some combination of camera and device
-     * @param zoom [%]
-     */
+/**
+ * this may not work well with some combination of camera and device
+ *
+ * Args:
+ *     zoom: [%]
+ */
 	public synchronized void setZoom(final int zoom) {
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mZoomMax - mZoomMin);
  		   if (range > 0) {
  			   final int z = (int)(zoom / 100.f * range) + mZoomMin;
-// 			   Log.d(TAG, "setZoom:zoom=" + zoom + " ,value=" + z);
+			// 			   Log.d(TAG, "setZoom:zoom=" + zoom + " ,value=" + z);
  			   nativeSetZoom(mNativePtr, z);
  		   }
     	}
     }
 
-    /**
-     * @param zoom_abs
-     * @return zoom[%]
-     */
+/**
+ *
+ * Args:
+ *     zoom_abs: Zoom abs value
+ *
+ * Returns:
+ *     zoom[%]
+ */
 	public synchronized int getZoom(final int zoom_abs) {
 	   int result = 0;
 	   if (mNativePtr != 0) {
@@ -1000,9 +1160,11 @@ public class UVCCamera {
 	   return result;
 	}
 
-    /**
-     * @return zoom[%]
-     */
+/**
+ *
+ * Returns:
+ *     zoom[%]
+ */
 	public synchronized int getZoom() {
     	return getZoom(nativeGetZoom(mNativePtr));
     }
@@ -1014,15 +1176,18 @@ public class UVCCamera {
     }
 
 //================================================================================
+/**
+ * Update supported control and processing flags and their value limits.
+ */
 	public synchronized void updateCameraParams() {
     	if (mNativePtr != 0) {
     		if ((mControlSupports == 0) || (mProcSupports == 0)) {
-        	// Get supported feature flags
+		// Get supported feature flags
     			if (mControlSupports == 0)
     				mControlSupports = nativeGetCtrlSupports(mNativePtr);
     			if (mProcSupports == 0)
     				mProcSupports = nativeGetProcSupports(mNativePtr);
-    	    	// Get current control setting values
+				// Get current control setting values
     	    	if ((mControlSupports != 0) && (mProcSupports != 0)) {
 	    	    	nativeUpdateBrightnessLimit(mNativePtr);
 	    	    	nativeUpdateContrastLimit(mNativePtr);
@@ -1140,7 +1305,7 @@ public class UVCCamera {
 		return result;
 	}
 
-    // #nativeCreate and #nativeDestroy are not static methods.
+	// #nativeCreate and #nativeDestroy are not static methods.
     private final native long nativeCreate();
     private final native void nativeDestroy(final long id_camera);
 
@@ -1158,10 +1323,12 @@ public class UVCCamera {
     private static final native int nativeSetFrameCallback(final long mNativePtr, final IFrameCallback callback, final int pixelFormat);
 
 //**********************************************************************
-    /**
-     * start movie capturing(this should call while previewing)
-     * @param surface
-     */
+/**
+ * start movie capturing(this should call while previewing)
+ *
+ * Args:
+ *     surface: Android Surface used as the preview target.
+ */
     public void startCapture(final Surface surface) {
     	if (mCtrlBlock != null && surface != null) {
     		nativeSetCaptureDisplay(mNativePtr, surface);
@@ -1169,9 +1336,9 @@ public class UVCCamera {
     		throw new NullPointerException("startCapture");
     }
 
-    /**
-     * stop movie capturing
-     */
+/**
+ * stop movie capturing
+ */
     public void stopCapture() {
     	if (mCtrlBlock != null) {
     		nativeSetCaptureDisplay(mNativePtr, null);

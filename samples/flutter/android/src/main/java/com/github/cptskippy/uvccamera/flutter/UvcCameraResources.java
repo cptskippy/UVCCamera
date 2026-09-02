@@ -9,7 +9,11 @@ import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
 
 /**
- * UVC camera resources
+ * Bundle the resources opened for a single camera.
+ *
+ * Groups the camera, its preview surface, its per-camera event channels and stream handlers, and its
+ * callbacks under one immutable handle so the platform can look up and release everything for a camera
+ * in a single pass on close.
  */
 /* package-private */ record UvcCameraResources(
         int cameraId,

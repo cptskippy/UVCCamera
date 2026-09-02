@@ -19,6 +19,7 @@ import 'uvccamera_device_screen.dart';
 class UvcCameraDevicesScreen extends StatefulWidget {
   const UvcCameraDevicesScreen({super.key});
 
+  /// Create the state object for [UvcCameraDevicesScreen].
   @override
   State<UvcCameraDevicesScreen> createState() => _UvcCameraDevicesScreenState();
 }

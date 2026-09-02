@@ -7,46 +7,53 @@ import com.serenegiant.usb.IFrameCallback;
 import java.io.File;
 import java.nio.ByteBuffer;
 
+/**
+ * Capture a single preview frame for a take-picture request.
+ *
+ * Implements {@link IFrameCallback}. Only the first delivered frame is used; subsequent frames are
+ * ignored. The captured frame is handed to the platform for encoding to the output file.
+ */
 /* package-private */ class UvcCameraTakePictureFrameCallback implements IFrameCallback {
 
-    /**
-     * Log tag
-     */
+/**
+ * Log tag
+ */
     private static final String TAG = UvcCameraTakePictureFrameCallback.class.getCanonicalName();
 
-    /**
-     * The UVC camera platform
-     */
+/**
+ * The UVC camera platform
+ */
     private final UvcCameraPlatform uvcCameraPlatform;
 
-    /**
-     * The camera ID
-     */
+/**
+ * The camera ID
+ */
     private final int cameraId;
 
-    /**
-     * Output file to which the picture is saved.
-     */
+/**
+ * Output file to which the picture is saved.
+ */
     private final File outputFile;
 
-    /**
-     * The result handler
-     */
+/**
+ * The result handler
+ */
     private final UvcCameraTakePictureResultHandler resultHandler;
 
-    /**
-     * Whether the frame has been captured
-     */
+/**
+ * Whether the frame has been captured
+ */
     private boolean frameCaptured;
 
-    /**
-     * Creates a new instance of {@link UvcCameraTakePictureFrameCallback}.
-     *
-     * @param uvcCameraPlatform the UVC camera platform
-     * @param cameraId          the camera ID
-     * @param outputFile        the output file
-     * @param resultHandler     the result handler
-     */
+/**
+ * Create a new {@link UvcCameraTakePictureFrameCallback}.
+ *
+ * Args:
+ *     uvcCameraPlatform: the UVC camera platform
+ *     cameraId: the camera ID
+ *     outputFile: the output file
+ *     resultHandler: the result handler
+ */
     public UvcCameraTakePictureFrameCallback(
             final UvcCameraPlatform uvcCameraPlatform,
             final int cameraId,
@@ -59,6 +66,16 @@ import java.nio.ByteBuffer;
         this.resultHandler = resultHandler;
     }
 
+/**
+ * Capture the first preview frame and hand it to the platform for encoding.
+ *
+ * Args:
+ *     frame: the preview frame delivered by the camera
+ *
+ * Code Paths:
+ *     1. If a frame was already captured → log a warning and ignore the frame
+ *     2. Otherwise → mark the frame as captured and pass it to the platform's taken-picture handler
+ */
     @Override
     public void onFrame(ByteBuffer frame) {
         Log.v(TAG, "onFrame"

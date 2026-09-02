@@ -22,21 +22,8 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
-/**
- * \brief Implements serenegiant_usb_UVCCamera component for UVCCamera native library.
- *
- * Provides implementation details for serenegiant_usb_UVCCamera within the UVCCamera native library.
- *
- * Exports:
- *     serenegiant_usb_UVCCamera: Main component for serenegiant_usb_UVCCamera
- *
- * Dependencies:
- *     - libuvc/libusb: USB camera access
- *     - Android NDK: Native build
- *
- * Architecture Note:
- *     Component participates in UVCCamera pipeline architecture.
- */
+// JNI trampoline layer for the UVCCamera native library; see UVCCamera.h and libUVCCamera.h for the native API surface.
+
 
 
 #if 1	// Disable debug logging

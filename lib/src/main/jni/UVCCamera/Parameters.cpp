@@ -22,26 +22,8 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
-/**
- * \brief Serialize UVC device, format, and stream descriptors to JSON.
- *
- * Converts libuvc device and streaming-interface descriptors into JSON
- * documents for the Java layer, including device metadata, supported
- * formats, frame intervals, and the current stream configuration.
- *
- * Exports:
- *     UVCDiags::getDescriptions: Serialize full UVC device descriptions to JSON.
- *     UVCDiags::getCurrentStream: Serialize the active stream configuration to JSON.
- *     UVCDiags::getSupportedSize: Serialize supported frame sizes to JSON.
- *
- * Dependencies:
- *     - rapidjson: JSON writer
- *     - libuvc: UVC descriptor structures
- *
- * Architecture Note:
- *     The Java layer parses these JSON documents to expose camera format
- *     and descriptor information to callers.
- */
+// Implementation for Parameters.h; see the header for the public diagnostic API.
+
 
 #define LOG_TAG "Parameters"
 
@@ -270,27 +252,9 @@ static void writerFormatDescriptions(Writer<StringBuffer> &writer, uvc_streaming
 	writer.EndArray();	// end of FORMATS
 }
 
-/**
- * \brief Implements UVCDiags.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 UVCDiags::UVCDiags() {}
 UVCDiags::~UVCDiags() {};
 
-/**
- * \brief Implements getDescriptions.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 char *UVCDiags::getDescriptions(const uvc_device_handle_t *deviceHandle) {
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);
@@ -355,15 +319,6 @@ char *UVCDiags::getDescriptions(const uvc_device_handle_t *deviceHandle) {
 	RETURN(strdup(buffer.GetString()), char *);
 }
 
-/**
- * \brief Implements getCurrentStream.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 char *UVCDiags::getCurrentStream(const uvc_stream_ctrl_t *ctrl) {
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);
@@ -388,15 +343,6 @@ char *UVCDiags::getCurrentStream(const uvc_stream_ctrl_t *ctrl) {
 	RETURN(strdup(buffer.GetString()), char *);
 }
 
-/**
- * \brief Implements getSupportedSize.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 char *UVCDiags::getSupportedSize(const uvc_device_handle_t *deviceHandle) {
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);

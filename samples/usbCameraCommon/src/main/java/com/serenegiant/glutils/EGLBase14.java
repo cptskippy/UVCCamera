@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -64,44 +64,9 @@ import com.serenegiant.utils.BuildCheck;
 		private Context(final EGLContext context) {
 			eglContext = context;
 		}
-		
+
 		@Override
 		@SuppressLint("NewApi")
-		/**
-		 * Getnativehandle.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Getnativehandle.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public long getNativeHandle() {
@@ -109,43 +74,8 @@ import com.serenegiant.utils.BuildCheck;
 				(BuildCheck.isLollipop()
 					? eglContext.getNativeHandle() : eglContext.getHandle()) : 0L;
 		}
-	
+
 		@Override
-		/**
-		 * Geteglcontext.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Geteglcontext.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public Object getEGLContext() {
@@ -153,6 +83,9 @@ import com.serenegiant.utils.BuildCheck;
 		}
 	}
 
+	/**
+	 * Holds the selected EGL configuration for an EGLBase14 instance.
+	 */
 	public static class Config extends IConfig {
 		public final EGLConfig eglConfig;
 
@@ -171,7 +104,7 @@ import com.serenegiant.utils.BuildCheck;
 		private EglSurface(final EGLBase14 eglBase, final Object surface)
 			throws IllegalArgumentException {
 
-//			if (DEBUG) Log.v(TAG, "EglSurface:");
+			//			if (DEBUG) Log.v(TAG, "EglSurface:");
 			mEglBase = eglBase;
 			if ((surface instanceof Surface)
 				|| (surface instanceof SurfaceHolder)
@@ -185,14 +118,16 @@ import com.serenegiant.utils.BuildCheck;
 
 		/**
 		 * 指定した大きさを持つオフスクリーンEglSurface(PBuffer)
-		 * @param eglBase
-		 * @param width
-		 * @param height
+		 *
+		 * Args:
+		 *     eglBase: The EGL base value.
+		 *     width: The width value in pixels.
+		 *     height: The height value in pixels.
 		 */
 		private EglSurface(final EGLBase14 eglBase,
 			final int width, final int height) {
 
-//			if (DEBUG) Log.v(TAG, "EglSurface:");
+			//			if (DEBUG) Log.v(TAG, "EglSurface:");
 			mEglBase = eglBase;
 			if ((width <= 0) || (height <= 0)) {
 				mEglSurface = mEglBase.createOffscreenSurface(1, 1);
@@ -202,41 +137,6 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
-		/**
-		 * Makecurrent.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Makecurrent.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public void makeCurrent() {
@@ -253,41 +153,6 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
-		/**
-		 * Swap.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Swap.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public void swap() {
@@ -295,106 +160,11 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
-		/**
-		 * Swap.
-		 *
-		 * 
-		Args:
-		    presentationTimeNs: Parameter presentationTimeNs controls behavior.
-		Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Swap.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public void swap(final long presentationTimeNs) {
 			mEglBase.swap(mEglSurface, presentationTimeNs);
 		}
-
-		/**
-
-		 * Setpresentationtime.
-
-		 *
-
-		 * 
-
-		Args:
-
-		    presentationTimeNs: Parameter presentationTimeNs controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
-		 */
-/**
- * Setpresentationtime.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -404,41 +174,6 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
-		/**
-		 * Getcontext.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Getcontext.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public IContext getContext() {
@@ -446,41 +181,6 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
-		/**
-		 * Isvalid.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Isvalid.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public boolean isValid() {
@@ -491,45 +191,10 @@ import com.serenegiant.utils.BuildCheck;
 		}
 
 		@Override
-		/**
-		 * Release.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Release.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public void release() {
-//			if (DEBUG) Log.v(TAG, "EglSurface:release:");
+		//			if (DEBUG) Log.v(TAG, "EglSurface:release:");
 			mEglBase.makeDefault();
 			mEglBase.destroyWindowSurface(mEglSurface);
 	        mEglSurface = EGL14.EGL_NO_SURFACE;
@@ -538,16 +203,18 @@ import com.serenegiant.utils.BuildCheck;
 
 	/**
 	 * コンストラクタ
-	 * @param maxClientVersion
-	 * @param sharedContext
-	 * @param withDepthBuffer
-	 * @param isRecordable
+	 *
+	 * Args:
+	 *     maxClientVersion: The max client version value.
+	 *     sharedContext: The shared context value.
+	 *     withDepthBuffer: The with depth buffer value.
+	 *     isRecordable: The is recordable value.
 	 */
 	public EGLBase14(final int maxClientVersion,
 		final Context sharedContext, final boolean withDepthBuffer,
 		final int stencilBits, final boolean isRecordable) {
 
-//		if (DEBUG) Log.v(TAG, "Constructor:");
+		//		if (DEBUG) Log.v(TAG, "Constructor:");
 		init(maxClientVersion, sharedContext, withDepthBuffer, stencilBits, isRecordable);
 	}
 
@@ -555,25 +222,6 @@ import com.serenegiant.utils.BuildCheck;
 	 * 関連するリソースを破棄する
 	 */
 	@Override
-/**
- * Release.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
     public void release() {
 //		if (DEBUG) Log.v(TAG, "release:");
@@ -589,32 +237,17 @@ import com.serenegiant.utils.BuildCheck;
 	/**
 	 * 指定したSurfaceからEglSurfaceを生成する
 	 * 生成したEglSurfaceをmakeCurrentした状態で戻る
-	 * @param nativeWindow Surface/SurfaceTexture/SurfaceHolder
-	 * @return
+	 *
+	 * Args:
+	 *     nativeWindow: Surface/SurfaceTexture/SurfaceHolder.
+	 *
+	 * Returns:
+	 *     The created from surface.
 	 */
 	@Override
-/**
- * Createfromsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public EglSurface createFromSurface(final Object nativeWindow) {
-//		if (DEBUG) Log.v(TAG, "createFromSurface:");
+	//		if (DEBUG) Log.v(TAG, "createFromSurface:");
 		final EglSurface eglSurface = new EglSurface(this, nativeWindow);
 		eglSurface.makeCurrent();
 		return eglSurface;
@@ -623,33 +256,18 @@ import com.serenegiant.utils.BuildCheck;
 	/**
 	 * 指定した大きさのオフスクリーンEglSurfaceを生成する
 	 * 生成したEglSurfaceをmakeCurrentした状態で戻る
-	 * @param width PBufferオフスクリーンのサイズ(0以下はだめ)
-	 * @param height
-	 * @return
+	 *
+	 * Args:
+	 *     width: PBufferオフスクリーンのサイズ(0以下はだめ).
+	 *     height: The height value in pixels.
+	 *
+	 * Returns:
+	 *     The created offscreen.
 	 */
 	@Override
-/**
- * Createoffscreen.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public EglSurface createOffscreen(final int width, final int height) {
-//		if (DEBUG) Log.v(TAG, "createOffscreen:");
+	//		if (DEBUG) Log.v(TAG, "createOffscreen:");
 		final EglSurface eglSurface = new EglSurface(this, width, height);
 		eglSurface.makeCurrent();
 		return eglSurface;
@@ -657,28 +275,13 @@ import com.serenegiant.utils.BuildCheck;
 
 	/**
 	 * GLESに文字列を問い合わせる
-	 * @param what
-	 * @return
+	 *
+	 * Args:
+	 *     what: The what value.
+	 *
+	 * Returns:
+	 *     The query string.
 	 */
-/**
- * Querystring.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
  	public String queryString(final int what) {
 		return EGL14.eglQueryString(mEglDisplay, what);
@@ -686,28 +289,11 @@ import com.serenegiant.utils.BuildCheck;
 
 	/**
 	 * GLESバージョンを取得する
-	 * @return 1, 2または3
+	 *
+	 * Returns:
+	 *     1, 2または3.
 	 */
 	@Override
-/**
- * Getglversion.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public int getGlVersion() {
 		return mGlVersion;
@@ -717,28 +303,11 @@ import com.serenegiant.utils.BuildCheck;
 	 * EGLレンダリングコンテキストを取得する
 	 * このEGLBaseインスタンスを使って生成したEglSurfaceをmakeCurrentした状態で
 	 * eglGetCurrentContextを呼び出すのと一緒
-	 * @return
+	 *
+	 * Returns:
+	 *     The context.
 	 */
 	@Override
-/**
- * Getcontext.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public Context getContext() {
 		return mContext;
@@ -746,28 +315,11 @@ import com.serenegiant.utils.BuildCheck;
 
 	/**
 	 * EGLコンフィグを取得する
-	 * @return
+	 *
+	 * Returns:
+	 *     The config.
 	 */
 	@Override
-/**
- * Getconfig.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public Config getConfig() {
 		return mEglConfig;
@@ -777,28 +329,9 @@ import com.serenegiant.utils.BuildCheck;
 	 * EGLレンダリングコンテキストとスレッドの紐付けを解除する
 	 */
 	@Override
-/**
- * Makedefault.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void makeDefault() {
-//		if (DEBUG) Log.v(TAG, "makeDefault:");
+	//		if (DEBUG) Log.v(TAG, "makeDefault:");
         if (!EGL14.eglMakeCurrent(mEglDisplay,
         	EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)) {
 
@@ -813,25 +346,6 @@ import com.serenegiant.utils.BuildCheck;
 	 * eglWaitNative: GPU側の描画処理が終了するまで実行をブロックする
 	 */
 	@Override
-/**
- * Sync.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void sync() {
 		EGL14.eglWaitGL();	// GLES20.glFinish()と同様の効果
@@ -841,7 +355,7 @@ import com.serenegiant.utils.BuildCheck;
 	private void init(final int maxClientVersion, Context sharedContext,
 		final boolean withDepthBuffer, final int stencilBits, final boolean isRecordable) {
 
-//		if (DEBUG) Log.v(TAG, "init:");
+		//		if (DEBUG) Log.v(TAG, "init:");
         if (mEglDisplay != EGL14.EGL_NO_DISPLAY) {
             throw new RuntimeException("EGL already set up");
         }
@@ -850,7 +364,7 @@ import com.serenegiant.utils.BuildCheck;
         if (mEglDisplay == EGL14.EGL_NO_DISPLAY) {
             throw new RuntimeException("eglGetDisplay failed");
         }
-		// EGLのバージョンを取得
+// EGLのバージョンを取得
 		final int[] version = new int[2];
         if (!EGL14.eglInitialize(mEglDisplay, version, 0, version, 1)) {
         	mEglDisplay = null;
@@ -861,12 +375,12 @@ import com.serenegiant.utils.BuildCheck;
 
 		EGLConfig config;
 		if (maxClientVersion >= 3) {
-			// GLES3で取得できるかどうか試してみる
+		// GLES3で取得できるかどうか試してみる
 			config = getConfig(3, withDepthBuffer, stencilBits, isRecordable);
 			if (config != null) {
 				final EGLContext context = createContext(sharedContext, config, 3);
 				if (EGL14.eglGetError() == EGL14.EGL_SUCCESS) {
-					// ここは例外生成したくないのでcheckEglErrorの代わりに自前でチェック
+				// ここは例外生成したくないのでcheckEglErrorの代わりに自前でチェック
 					mEglConfig = new Config(config);
 					mContext = new Context(context);
 					mGlVersion = 3;
@@ -882,7 +396,7 @@ import com.serenegiant.utils.BuildCheck;
 				throw new RuntimeException("chooseConfig failed");
 			}
 			try {
-				// create EGL rendering context
+			// create EGL rendering context
 				final EGLContext context = createContext(sharedContext, config, 2);
 				checkEglError("eglCreateContext");
 				mEglConfig = new Config(config);
@@ -915,7 +429,7 @@ import com.serenegiant.utils.BuildCheck;
 			mContext = new Context(context);
 			mGlVersion = 1;
 		}
-        // confirm whether the EGL rendering context is successfully created
+		// confirm whether the EGL rendering context is successfully created
         final int[] values = new int[1];
         EGL14.eglQueryContext(mEglDisplay,
         	mContext.eglContext, EGL14.EGL_CONTEXT_CLIENT_VERSION, values, 0);
@@ -925,13 +439,15 @@ import com.serenegiant.utils.BuildCheck;
 
 	/**
 	 * change context to draw this window surface
-	 * @return
+	 *
+	 * Returns:
+	 *     Whether the make current condition is true.
 	 */
 	private boolean makeCurrent(final EGLSurface surface) {
-//		if (DEBUG) Log.v(TAG, "makeCurrent:");
+	//		if (DEBUG) Log.v(TAG, "makeCurrent:");
 /*        if (mEglDisplay == null) {
-			if (DEBUG) Log.d(TAG, "makeCurrent:eglDisplay not initialized");
-        } */
+if (DEBUG) Log.d(TAG, "makeCurrent:eglDisplay not initialized");
+ */
         if (surface == null || surface == EGL14.EGL_NO_SURFACE) {
             final int error = EGL14.eglGetError();
             if (error == EGL14.EGL_BAD_NATIVE_WINDOW) {
@@ -939,7 +455,7 @@ import com.serenegiant.utils.BuildCheck;
             }
             return false;
         }
-        // attach EGL rendering context to specific EGL window surface
+// attach EGL rendering context to specific EGL window surface
         if (!EGL14.eglMakeCurrent(mEglDisplay, surface, surface, mContext.eglContext)) {
             Log.w("TAG", "eglMakeCurrent" + EGL14.eglGetError());
             return false;
@@ -948,10 +464,10 @@ import com.serenegiant.utils.BuildCheck;
 	}
 
 	private int swap(final EGLSurface surface) {
-//		if (DEBUG) Log.v(TAG, "swap:");
+	//		if (DEBUG) Log.v(TAG, "swap:");
         if (!EGL14.eglSwapBuffers(mEglDisplay, surface)) {
         	final int err = EGL14.eglGetError();
-//        	if (DEBUG) Log.w(TAG, "swap:err=" + err);
+	//        	if (DEBUG) Log.w(TAG, "swap:err=" + err);
             return err;
         }
         return EGL14.EGL_SUCCESS;
@@ -962,7 +478,7 @@ import com.serenegiant.utils.BuildCheck;
 		EGLExt.eglPresentationTimeANDROID(mEglDisplay, surface, presentationTimeNs);
         if (!EGL14.eglSwapBuffers(mEglDisplay, surface)) {
         	final int err = EGL14.eglGetError();
-//        	if (DEBUG) Log.w(TAG, "swap:err=" + err);
+	//        	if (DEBUG) Log.w(TAG, "swap:err=" + err);
             return err;
         }
         return EGL14.EGL_SUCCESS;
@@ -971,7 +487,7 @@ import com.serenegiant.utils.BuildCheck;
     private EGLContext createContext(final Context sharedContext,
     	final EGLConfig config, final int version) {
 
-//		if (DEBUG) Log.v(TAG, "createContext:");
+	//		if (DEBUG) Log.v(TAG, "createContext:");
 
         final int[] attrib_list = {
         	EGL14.EGL_CONTEXT_CLIENT_VERSION, version,
@@ -979,7 +495,7 @@ import com.serenegiant.utils.BuildCheck;
         };
 		final EGLContext context = EGL14.eglCreateContext(mEglDisplay,
 			config, sharedContext.eglContext, attrib_list, 0);
-//		checkEglError("eglCreateContext");
+			//		checkEglError("eglCreateContext");
         return context;
     }
 
@@ -1019,8 +535,12 @@ import com.serenegiant.utils.BuildCheck;
 
 	/**
 	 * nativeWindow should be one of the Surface, SurfaceHolder and SurfaceTexture
-	 * @param nativeWindow
-	 * @return
+	 *
+	 * Args:
+	 *     nativeWindow: The native window value.
+	 *
+	 * Returns:
+	 *     The created window surface.
 	 */
     private final EGLSurface createWindowSurface(final Object nativeWindow) {
 //		if (DEBUG) Log.v(TAG, "createWindowSurface:nativeWindow=" + nativeWindow);
@@ -1048,9 +568,9 @@ import com.serenegiant.utils.BuildCheck;
 		return result;
 	}
 
-    /**
-     * Creates an EGL surface associated with an offscreen buffer.
-     */
+/**
+ * Create an EGL surface associated with an offscreen buffer.
+ */
     private final EGLSurface createOffscreenSurface(final int width, final int height) {
 //		if (DEBUG) Log.v(TAG, "createOffscreenSurface:");
         final int[] surfaceAttribs = {
@@ -1075,7 +595,7 @@ import com.serenegiant.utils.BuildCheck;
     }
 
 	private void destroyWindowSurface(EGLSurface surface) {
-//		if (DEBUG) Log.v(TAG, "destroySurface:");
+	//		if (DEBUG) Log.v(TAG, "destroySurface:");
 
         if (surface != EGL14.EGL_NO_SURFACE) {
         	EGL14.eglMakeCurrent(mEglDisplay,
@@ -1106,12 +626,12 @@ import com.serenegiant.utils.BuildCheck;
 			EGL14.EGL_GREEN_SIZE, 8,
 			EGL14.EGL_BLUE_SIZE, 8,
 			EGL14.EGL_ALPHA_SIZE, 8,
-//        	EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT | swapBehavior,
+			//        	EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT | swapBehavior,
 			EGL14.EGL_NONE, EGL14.EGL_NONE,	//EGL14.EGL_STENCIL_SIZE, 8,
 			// this flag need to recording of MediaCodec
 			EGL14.EGL_NONE, EGL14.EGL_NONE,	//EGL_RECORDABLE_ANDROID, 1,
 			EGL14.EGL_NONE,	EGL14.EGL_NONE,	//	with_depth_buffer ? EGL14.EGL_DEPTH_SIZE : EGL14.EGL_NONE,
-											// with_depth_buffer ? 16 : 0,
+			// with_depth_buffer ? 16 : 0,
 			EGL14.EGL_NONE
         };
         int offset = 10;
@@ -1133,7 +653,7 @@ import com.serenegiant.utils.BuildCheck;
         EGLConfig config = internalGetConfig(attribList);
 		if ((config == null) && (version == 2)) {
 			if (isRecordable) {
-				// EGL_RECORDABLE_ANDROIDをつけると失敗する機種もあるので取り除く
+			// EGL_RECORDABLE_ANDROIDをつけると失敗する機種もあるので取り除く
 				final int n = attribList.length;
 				for (int i = 10; i < n - 1; i += 2) {
 					if (attribList[i] == EGL_RECORDABLE_ANDROID) {

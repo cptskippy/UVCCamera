@@ -23,41 +23,12 @@
 
 package com.serenegiant.encoder;
 /**
- * Manages IAudioEncoder functionality.
+ * Marker interface for audio encoders in the USB camera recording stack.
  *
- * Responsibility: Provides core IAudioEncoder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of IAudioEncoder
+ * Implemented by MediaAudioEncoder. Video encoders implement IVideoEncoder
+ * instead; both register themselves with a shared MediaMuxerWrapper through
+ * the MediaEncoder constructor and feed encoded frames into the same file.
  */
-/**
- * Manages IAudioEncoder functionality.
- *
- * Responsibility: Provides core IAudioEncoder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of IAudioEncoder
- */
-
-
 
 public interface IAudioEncoder {
 }

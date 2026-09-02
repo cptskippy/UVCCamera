@@ -44,27 +44,8 @@
  * with the device's input, processing and output units.
  */
 
-/**
- * \brief Provide UVC control transfer helpers for camera and processing units.
- *
- * Implements generic and specific get/set controls for UVC camera terminal and
- * processing unit controls via control transfers.
- *
- * Exports:
- *   uvc_get_ctrl/uvc_set_ctrl: Generic control access
- *   uvc_get_* / uvc_set_* for camera controls (exposure, focus, zoom, etc.)
- *   uvc_get_* / uvc_set_* for processing controls (brightness, contrast, etc.)
- *   uvc_get_power_mode / uvc_set_power_mode: Power mode control
- *
- * Dependencies:
- *   - libusb: Control transfers
- *   - libuvc/libuvc_internal.h: Internal helpers
- *
- * Architecture Note:
- *   Controls are sent via libusb control transfers to the VideoControl interface.
- *   Request codes and selectors map to UVC spec. Some devices require specific
- *   request timing; the module serializes transfers per device handle.
- */
+// Implementation for libuvc control transfer helpers; see libuvc/libuvc.h for the public API.
+
 
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"

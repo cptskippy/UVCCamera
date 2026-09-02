@@ -30,73 +30,25 @@ import com.serenegiant.glutils.RendererHolder;
 import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.widget.CameraViewInterface;
 /**
- * Manages UVCCameraHandlerMultiSurface functionality.
+ * Manage a UVCCamera handler for multi-surface preview and recording.
  *
- * Responsibility: Provides core UVCCameraHandlerMultiSurface operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mRendererHolder: Field mRendererHolder
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of UVCCameraHandlerMultiSurface
- */
-/**
- * Manages UVCCameraHandlerMultiSurface functionality.
- *
- * Responsibility: Provides core UVCCameraHandlerMultiSurface operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of UVCCameraHandlerMultiSurface
+ * Preview frames are rendered by a RendererHolder that draws to the primary
+ * surface plus any extra surfaces added with addSurface.
  */
 
 
 
 public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	/**
-	 * create UVCCameraHandlerMultiSurface, use MediaVideoEncoder, try MJPEG, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param width
-	 * @param height
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface using MediaVideoEncoder,
+	 * trying MJPEG preview with the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
 	 */
-/**
- * Createhandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -106,33 +58,16 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandlerMultiSurface, use MediaVideoEncoder, try MJPEG
-	 * @param parent
-	 * @param cameraView
-	 * @param width
-	 * @param height
-	 * @param bandwidthFactor
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface using MediaVideoEncoder,
+	 * trying MJPEG preview with the given bandwidth factor.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     bandwidthFactor: the bandwidth factor passed to the camera.
 	 */
-/**
- * Createhandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -142,33 +77,16 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandlerMultiSurface, try MJPEG, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType
-	 * @param width
-	 * @param height
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface with the given encoder,
+	 * trying MJPEG preview with the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
 	 */
-/**
- * Createhandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -178,34 +96,17 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandlerMultiSurface, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType
-	 * @param width
-	 * @param height
-	 * @param format
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface with the given encoder and
+	 * frame format, using the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     format: either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1).
 	 */
-/**
- * Createhandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -215,35 +116,18 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandlerMultiSurface
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder
-	 * @param width
-	 * @param height
-	 * @param format either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1)
-	 * @param bandwidthFactor
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface with the given encoder,
+	 * frame format, and bandwidth factor.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     format: either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1).
+	 *     bandwidthFactor: the bandwidth factor passed to the camera.
 	 */
-/**
- * Createhandler.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -259,26 +143,9 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 		super(thread);
 		mRendererHolder = new RendererHolder(thread.getWidth(), thread.getHeight(), null);
 	}
-/**
- * Release.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Release the renderer, then release the camera and the camera thread.
+	 */
 
 	public synchronized void release() {
 		if (mRendererHolder != null) {
@@ -287,26 +154,13 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 		}
 		super.release();
 	}
-/**
- * Resize.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Resize the preview and the renderer to the given size.
+	 *
+	 * Args:
+	 *     width: the new preview width in pixels.
+	 *     height: the new preview height in pixels.
+	 */
 
 	public synchronized void resize(final int width, final int height) {
 		super.resize(width, height);
@@ -314,26 +168,9 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 			mRendererHolder.resize(width, height);
 		}
 	}
-/**
- * Startpreview.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Start the preview on the renderer's primary surface.
+	 */
 
 	public synchronized void startPreview() {
 		checkReleased();
@@ -343,51 +180,25 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 			throw new IllegalStateException();
 		}
 	}
-/**
- * Addsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Add an extra surface to render the preview on.
+	 *
+	 * Args:
+	 *     surfaceId: the unique id of the surface.
+	 *     surface: the surface to add.
+	 *     isRecordable: true if the surface is used for recording.
+	 */
 
 	public synchronized void addSurface(final int surfaceId, final Surface surface, final boolean isRecordable) {
 		checkReleased();
 		mRendererHolder.addSurface(surfaceId, surface, isRecordable);
 	}
-/**
- * Removesurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	/**
+	 * Remove a previously added extra rendering surface.
+	 *
+	 * Args:
+	 *     surfaceId: the id of the surface to remove.
+	 */
 
 	public synchronized void removeSurface(final int surfaceId) {
 		if (mRendererHolder != null) {
@@ -397,41 +208,8 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 
 	@Override
 	/**
-	 * Capturestill.
-	 *
-	 * Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 * Capture a still image and save it as a PNG in the DCIM directory.
 	 */
-/**
- * Capturestill.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public void captureStill() {
 		checkReleased();
@@ -440,85 +218,19 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 
 	@Override
 	/**
-	 * Capturestill.
+	 * Capture a still image and save it to the given file path.
 	 *
-	 * 
-	Args:
-	    path: Parameter path controls behavior.
-	Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
+	 * Args:
+	 *     path: the output file path of the captured still image.
 	 */
-/**
- * Capturestill.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public void captureStill(final String path) {
 		checkReleased();
 		post(new Runnable() {
 			@Override
 			/**
-			 * Run.
-			 *
-			 * Returns:
-			 *     Description of the return value.
-			 *
-			 * Raises:
-			 *     Exception: When an error occurs.
-			 *
-			 * Side Effects:
-			 *     - May mutate internal state.
-			 *
-			 * Code Paths:
-			 *     1. If preconditions met → executes normally.
-			 *     2. On error → logs and returns default.
+			 * Capture the still image on the renderer and update the media store.
 			 */
-/**
- * Run.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 			public void run() {
 				synchronized (UVCCameraHandlerMultiSurface.this) {

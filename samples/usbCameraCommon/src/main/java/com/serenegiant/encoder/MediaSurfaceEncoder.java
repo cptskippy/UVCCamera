@@ -32,44 +32,8 @@ import android.media.MediaFormat;
 import android.util.Log;
 import android.view.Surface;
 /**
- * Manages MediaSurfaceEncoder functionality.
- *
- * Responsibility: Provides core MediaSurfaceEncoder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mSurface: Field mSurface
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MediaSurfaceEncoder
+ * Encode video frames from a SurfaceTexture into a muxer.
  */
-/**
- * Manages MediaSurfaceEncoder functionality.
- *
- * Responsibility: Provides core MediaSurfaceEncoder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of MediaSurfaceEncoder
- */
-
-
 
 public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 	private static final boolean DEBUG = true;	// TODO set false on release
@@ -91,28 +55,8 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 	}
 
 	/**
-	* Returns the encoder's input surface.
-	*/
-/**
- * Getinputsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
+	 * Get the encoder input surface.
+	 */
 	public Surface getInputSurface() {
 		return mSurface;
 	}
@@ -139,8 +83,8 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 
         mMediaCodec = MediaCodec.createEncoderByType(MIME_TYPE);
         mMediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        // get Surface for encoder input
-        // this method only can call between #configure and #start
+// get Surface for encoder input
+// this method only can call between #configure and #start
         mSurface = mMediaCodec.createInputSurface();	// API >= 18
         mMediaCodec.start();
         if (DEBUG) Log.i(TAG, "prepare finishing");
@@ -169,15 +113,19 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 		return bitrate;
 	}
 
-    /**
-     * select the first codec that match a specific MIME type
-     * @param mimeType
-     * @return null if no codec matched
-     */
+/**
+ * Select the first encoder codec that matches a specific MIME type.
+ *
+ * Args:
+ *     mimeType: MIME type to match, e.g. video/avc.
+ *
+ * Returns:
+ *     null if no codec matched.
+ */
     protected static final MediaCodecInfo selectVideoCodec(final String mimeType) {
     	if (DEBUG) Log.v(TAG, "selectVideoCodec:");
 
-    	// get the list of available codecs
+	// get the list of available codecs
         final int numCodecs = MediaCodecList.getCodecCount();
         for (int i = 0; i < numCodecs; i++) {
         	final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
@@ -185,7 +133,7 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
             if (!codecInfo.isEncoder()) {	// skipp decoder
                 continue;
             }
-            // select first codec that match a specific MIME type and color format
+// select first codec that match a specific MIME type and color format
             final String[] types = codecInfo.getSupportedTypes();
             for (int j = 0; j < types.length; j++) {
                 if (types[j].equalsIgnoreCase(mimeType)) {
@@ -200,10 +148,12 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
         return null;
     }
 
-    /**
-     * select color format available on specific codec and we can use.
-     * @return 0 if no colorFormat is matched
-     */
+/**
+ * select color format available on specific codec and we can use.
+ *
+ * Returns:
+ *     0 if no colorFormat is matched.
+ */
     protected static final int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
 		if (DEBUG) Log.i(TAG, "selectColorFormat: ");
     	int result = 0;
@@ -234,9 +184,9 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
     protected static int[] recognizedFormats;
 	static {
 		recognizedFormats = new int[] {
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
-//        	MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
         	MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
 		};
 	}

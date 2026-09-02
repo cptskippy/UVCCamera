@@ -16,32 +16,13 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
  * Hold shared texture that has camera frame and draw them to registered surface if needs<br>
- */
-/**
- * Manages RendererHolder functionality.
- *
- * Responsibility: Provides core RendererHolder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of RendererHolder
  */
 
 public class RendererHolder extends AbstractRendererHolder {
@@ -72,10 +53,10 @@ public class RendererHolder extends AbstractRendererHolder {
 		return new MyRendererTask(this, width, height,
 			maxClientVersion, sharedContext, flags);
 	}
-	
-//================================================================================
-// 実装
-//================================================================================
+
+	//================================================================================
+	// 実装
+	//================================================================================
 	/**
 	 * ワーカースレッド上でOpenGL|ESを用いてマスター映像を分配描画するためのインナークラス
 	 */

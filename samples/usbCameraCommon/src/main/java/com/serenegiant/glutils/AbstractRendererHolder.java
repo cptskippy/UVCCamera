@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import static com.serenegiant.glutils.ShaderConst.GL_TEXTURE_EXTERNAL_OES;
 
@@ -41,51 +41,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-/**
- * Manages AbstractRendererHolder functionality.
- *
- * Responsibility: Provides core AbstractRendererHolder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * 
-Properties:
-    mCaptureFile: Field mCaptureFile
-    mCaptureCompression: Field mCaptureCompression
-    mMasterTexture: Field mMasterTexture
-    mMasterSurface: Field mMasterSurface
-    mMirror: Field mMirror
-    mRotation: Field mRotation
-    mDrawer: Field mDrawer
-State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of AbstractRendererHolder
- */
-/**
- * Manages AbstractRendererHolder functionality.
- *
- * Responsibility: Provides core AbstractRendererHolder operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of AbstractRendererHolder
- */
-
-
 
 public abstract class AbstractRendererHolder implements IRendererHolder {
 	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
@@ -131,50 +86,15 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			maxClientVersion, sharedContext, flags);
 		new Thread(mRendererTask, RENDERER_THREAD_NAME).start();
 		if (!mRendererTask.waitReady()) {
-			// 初期化に失敗した時
+		// 初期化に失敗した時
 			throw new RuntimeException("failed to start renderer thread");
 		}
 		startCaptureTask();
 	}
 
-//--------------------------------------------------------------------------------
-// IRendererHolderの実装
+	//--------------------------------------------------------------------------------
+	// IRendererHolderの実装
 	@Override
-	/**
-	 * Isrunning.
-	 *
-	 * Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
-	 */
-/**
- * Isrunning.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 	public boolean isRunning() {
@@ -185,34 +105,15 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	 * 関係するすべてのリソースを開放する。再利用できない
 	 */
 	@Override
-/**
- * Release.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void release() {
-//		if (DEBUG) Log.v(TAG, "release:");
+	//		if (DEBUG) Log.v(TAG, "release:");
 		mRendererTask.release();
 		synchronized (mSync) {
 			isRunning = false;
 			mSync.notifyAll();
 		}
-//		if (DEBUG) Log.v(TAG, "release:finished");
+		//		if (DEBUG) Log.v(TAG, "release:finished");
 	}
 
 	@Nullable
@@ -222,28 +123,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * マスター用の映像を受け取るためのSurfaceを取得
-	 * @return
+	 *
+	 * Returns:
+	 *     The surface.
 	 */
 	@Override
-/**
- * Getsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public Surface getSurface() {
 		return mRendererTask.getSurface();
@@ -251,28 +135,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * マスター用の映像を受け取るためのSurfaceTextureを取得
-	 * @return
+	 *
+	 * Returns:
+	 *     The surface texture.
 	 */
 	@Override
-/**
- * Getsurfacetexture.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public SurfaceTexture getSurfaceTexture() {
 		return mRendererTask.getSurfaceTexture();
@@ -282,25 +149,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	 * マスター用の映像を受け取るためのマスターをチェックして無効なら再生成要求する
 	 */
 	@Override
-/**
- * Reset.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void reset() {
 		mRendererTask.checkMasterSurface();
@@ -308,29 +156,12 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * マスター映像サイズをサイズ変更要求
-	 * @param width
-	 * @param height
+	 *
+	 * Args:
+	 *     width: The width value in pixels.
+	 *     height: The height value in pixels.
 	 */
 	@Override
-/**
- * Resize.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void resize(final int width, final int height)
 		throws IllegalStateException {
@@ -340,28 +171,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * ミラーモードをセット
-	 * @param mirror
+	 *
+	 * Args:
+	 *     mirror: The mirror value.
 	 */
 	@Override
-/**
- * Setmirror.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void setMirror(@MirrorMode final int mirror) {
 		mRendererTask.mirror(mirror % MIRROR_NUM);
@@ -369,29 +183,12 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * 現在のミラーモードを取得
-	 * @return
+	 *
+	 * Returns:
+	 *     The mirror.
 	 */
 	@Override
 	@MirrorMode
-/**
- * Getmirror.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public int getMirror() {
 		return mRendererTask.mirror();
@@ -401,36 +198,19 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	 * 分配描画用のSurfaceを追加
 	 * このメソッドは指定したSurfaceが追加されるか
 	 * interruptされるまでカレントスレッドをブロックする。
-	 * @param id 普通はSurface#hashCodeを使う
-	 * @param surface
-	 * @param isRecordable
+	 *
+	 * Args:
+	 *     id: 普通はSurface#hashCodeを使う.
+	 *     surface: The surface value.
+	 *     isRecordable: The is recordable value.
 	 */
 	@Override
-/**
- * Addsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void addSurface(final int id,
 		final Object surface, final boolean isRecordable)
 			throws IllegalStateException, IllegalArgumentException {
 
-//		if (DEBUG) Log.v(TAG, "addSurface:id=" + id + ",surface=" + surface);
+			//		if (DEBUG) Log.v(TAG, "addSurface:id=" + id + ",surface=" + surface);
 		mRendererTask.addSurface(id, surface);
 	}
 
@@ -438,60 +218,21 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	 * 分配描画用のSurfaceを追加
 	 * このメソッドは指定したSurfaceが追加されるか
 	 * interruptされるまでカレントスレッドをブロックする。
-	 * @param id 普通はSurface#hashCodeを使う
-	 * @param surface
-	 * @param isRecordable
-	 * @param maxFps
+	 *
+	 * Args:
+	 *     id: 普通はSurface#hashCodeを使う.
+	 *     surface: The surface value.
+	 *     isRecordable: The is recordable value.
+	 *     maxFps: The max FPS value.
 	 */
 	@Override
-	/**
-	 * Addsurface.
-	 *
-	 * 
-	Args:
-	    id: Parameter id controls behavior.
-	    surface: Parameter surface controls behavior.
-	    isRecordable: Parameter isRecordable controls behavior.
-	    maxFps: Parameter maxFps controls behavior.
-	Returns:
-	 *     Description of the return value.
-	 *
-	 * Raises:
-	 *     Exception: When an error occurs.
-	 *
-	 * Side Effects:
-	 *     - May mutate internal state.
-	 *
-	 * Code Paths:
-	 *     1. If preconditions met → executes normally.
-	 *     2. On error → logs and returns default.
-	 */
-/**
- * Addsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 	public void addSurface(final int id,
 		final Object surface, final boolean isRecordable, final int maxFps)
 			throws IllegalStateException, IllegalArgumentException {
 
-//		if (DEBUG) Log.v(TAG, "addSurface:id=" + id + ",surface=" + surface);
+			//		if (DEBUG) Log.v(TAG, "addSurface:id=" + id + ",surface=" + surface);
 		mRendererTask.addSurface(id, surface, maxFps);
 	}
 
@@ -499,31 +240,14 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	 * 分配描画用のSurfaceを削除要求する。
 	 * このメソッドは指定したSurfaceが削除されるか
 	 * interruptされるまでカレントスレッドをブロックする。
-	 * @param id
+	 *
+	 * Args:
+	 *     id: The ID value.
 	 */
 	@Override
-/**
- * Removesurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void removeSurface(final int id) {
-//		if (DEBUG) Log.v(TAG, "removeSurface:id=" + id);
+	//		if (DEBUG) Log.v(TAG, "removeSurface:id=" + id);
 		mRendererTask.removeSurface(id);
 	}
 
@@ -533,56 +257,20 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	 * interruptされるまでカレントスレッドをブロックする。
 	 */
 	@Override
-/**
- * Removesurfaceall.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void removeSurfaceAll() {
-//		if (DEBUG) Log.v(TAG, "removeSurfaceAll:id=" + id);
+	//		if (DEBUG) Log.v(TAG, "removeSurfaceAll:id=" + id);
 		mRendererTask.removeSurfaceAll();
 	}
 
 	/**
 	 * 分配描画用のSurfaceを指定した色で塗りつぶす
-	 * @param id
-	 * @param color
+	 *
+	 * Args:
+	 *     id: The ID value.
+	 *     color: The color value.
 	 */
 	@Override
-/**
- * Clearsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void clearSurface(final int id, final int color) {
 		mRendererTask.clearSurface(id, color);
@@ -590,51 +278,14 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * 分配描画用のSurfaceを指定した色で塗りつぶす
-	 * @param color
+	 *
+	 * Args:
+	 *     color: The color value.
 	 */
-/**
- * Clearsurfaceall.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void clearSurfaceAll(final int color) {
 		mRendererTask.clearSurfaceAll(color);
 	}
-/**
- * Setmvpmatrix.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 	public void setMvpMatrix(final int id,
 		final int offset, @NonNull final float[] matrix) {
@@ -643,29 +294,14 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * 分配描画用のSurfaceへの描画が有効かどうかを取得
-	 * @param id
-	 * @return
+	 *
+	 * Args:
+	 *     id: The ID value.
+	 *
+	 * Returns:
+	 *     Whether the enabled condition is true.
 	 */
 	@Override
-/**
- * Isenabled.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public boolean isEnabled(final int id) {
 		return mRendererTask.isEnabled(id);
@@ -673,29 +309,12 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * 分配描画用のSurfaceへの描画の有効・無効を切替
-	 * @param id
-	 * @param enable
+	 *
+	 * Args:
+	 *     id: The ID value.
+	 *     enable: Whether the feature is enabled.
 	 */
 	@Override
-/**
- * Setenabled.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void setEnabled(final int id, final boolean enable) {
 		mRendererTask.setEnabled(id, enable);
@@ -706,25 +325,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	 * 分配描画用Surface全てが更新されるので注意
 	 */
 	@Override
-/**
- * Requestframe.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void requestFrame() {
 		mRendererTask.removeRequest(REQUEST_DRAW);
@@ -733,28 +333,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * 追加されている分配描画用のSurfaceの数を取得
-	 * @return
+	 *
+	 * Returns:
+	 *     The count.
 	 */
 	@Override
-/**
- * Getcount.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public int getCount() {
 		return mRendererTask.getCount();
@@ -763,28 +346,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	/**
 	 * 静止画を撮影する
 	 * 撮影完了を待機しない
-	 * @param path
+	 *
+	 * Args:
+	 *     path: The path value.
 	 */
 	@Override
-/**
- * Capturestillasync.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void captureStillAsync(final String path) {
 		if (DEBUG) Log.v(TAG, "captureStillAsync:" + path);
@@ -794,29 +360,12 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	/**
 	 * 静止画を撮影する
 	 * 撮影完了を待機しない
-	 * @param path
-	 * @param captureCompression
+	 *
+	 * Args:
+	 *     path: The path value.
+	 *     captureCompression: The capture compression value.
 	 */
 	@Override
-/**
- * Capturestillasync.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void captureStillAsync(final String path, final int captureCompression) {
 		if (DEBUG) Log.v(TAG, "captureStillAsync:" + path + ",captureCompression=" + captureCompression);
@@ -832,28 +381,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	/**
 	 * 静止画を撮影する
 	 * 撮影完了を待機する
-	 * @param path
+	 *
+	 * Args:
+	 *     path: The path value.
 	 */
 	@Override
-/**
- * Capturestill.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void captureStill(final String path) {
 		if (DEBUG) Log.v(TAG, "captureStill:" + path);
@@ -863,28 +395,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	/**
 	 * 静止画を撮影する
 	 * 撮影完了を待機する
-	 * @param path
+	 *
+	 * Args:
+	 *     path: The path value.
 	 */
 	@Override
-/**
- * Capturestill.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 	public void captureStill(final String path, final int captureCompression) {
 		if (DEBUG) Log.v(TAG, "captureStill:" + path + ",captureCompression=" + captureCompression);
@@ -898,14 +413,14 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 					if (DEBUG) Log.v(TAG, "静止画撮影待ち");
 					mSync.wait(1000);
 				} catch (final InterruptedException e) {
-					// ignore
+				// ignore
 				}
 			}
 		}
 		if (DEBUG) Log.v(TAG, "captureStill:終了");
 	}
 
-//--------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 	@NonNull
 	protected abstract RendererTask createRendererTask(final int width, final int height,
 		final int maxClientVersion, final EGLBase.IContext sharedContext, final int flags);
@@ -923,14 +438,14 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 	}
 
 	protected void notifyCapture() {
-//		if (DEBUG) Log.v(TAG, "notifyCapture:");
+	//		if (DEBUG) Log.v(TAG, "notifyCapture:");
 		synchronized (mCaptureTask) {
-			// キャプチャタスクに映像が更新されたことを通知
+		// キャプチャタスクに映像が更新されたことを通知
 			mCaptureTask.notify();
 		}
 	}
 
-//--------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 	protected void callOnCreate(Surface surface) {
 		if (mCallback != null) {
 			try {
@@ -961,7 +476,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		}
 	}
 
-//--------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 	protected abstract static class BaseRendererTask extends EglTask {
 		private final SparseArray<RendererSurfaceRec> mClients
 			= new SparseArray<RendererSurfaceRec>();
@@ -998,14 +513,14 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		 */
 		@Override
 		protected final void onStart() {
-//			if (DEBUG) Log.v(TAG, "onStart:");
+		//			if (DEBUG) Log.v(TAG, "onStart:");
 			handleReCreateMasterSurface();
 			internalOnStart();
 			synchronized (mParent.mSync) {
 				mParent.isRunning = true;
 				mParent.mSync.notifyAll();
 			}
-//			if (DEBUG) Log.v(TAG, "onStart:finished");
+			//			if (DEBUG) Log.v(TAG, "onStart:finished");
 		}
 
 		/**
@@ -1013,7 +528,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		 */
 		@Override
 		protected void onStop() {
-//			if (DEBUG) Log.v(TAG, "onStop");
+		//			if (DEBUG) Log.v(TAG, "onStop");
 			synchronized (mParent.mSync) {
 				mParent.isRunning = false;
 				mParent.mSync.notifyAll();
@@ -1022,12 +537,12 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			internalOnStop();
 			handleReleaseMasterSurface();
 			handleRemoveAll();
-//			if (DEBUG) Log.v(TAG, "onStop:finished");
+			//			if (DEBUG) Log.v(TAG, "onStop:finished");
 		}
 
 		@Override
 		protected boolean onError(final Exception e) {
-//			if (DEBUG) Log.w(TAG, e);
+		//			if (DEBUG) Log.w(TAG, e);
 			return false;
 		}
 
@@ -1078,60 +593,26 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * マスター映像取得用のSurfaceを取得
-		 * @return
+		 *
+		 * Returns:
+		 *     The surface.
 		 */
-/**
- * Getsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public Surface getSurface() {
-//			if (DEBUG) Log.v(TAG, "getSurface:" + mMasterSurface);
+		//			if (DEBUG) Log.v(TAG, "getSurface:" + mMasterSurface);
 			checkMasterSurface();
 			return mMasterSurface;
 		}
 
 		/**
 		 * マスター映像受け取り用のSurfaceTextureを取得
-		 * @return
+		 *
+		 * Returns:
+		 *     The surface texture.
 		 */
-/**
- * Getsurfacetexture.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public SurfaceTexture getSurfaceTexture() {
-//		if (DEBUG) Log.v(TAG, "getSurfaceTexture:" + mMasterTexture);
+		//		if (DEBUG) Log.v(TAG, "getSurfaceTexture:" + mMasterTexture);
 			checkMasterSurface();
 			return mMasterTexture;
 		}
@@ -1140,28 +621,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		 * 分配描画用のSurfaceを追加
 		 * このメソッドは指定したSurfaceが追加されるか
 		 * interruptされるまでカレントスレッドをブロックする。
-		 * @param id
-		 * @param surface
+		 *
+		 * Args:
+		 *     id: The ID value.
+		 *     surface: The surface value.
 		 */
-/**
- * Addsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public void addSurface(final int id, final Object surface)
 			throws IllegalStateException, IllegalArgumentException {
@@ -1173,28 +637,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		 * 分配描画用のSurfaceを追加
 		 * このメソッドは指定したSurfaceが追加されるか
 		 * interruptされるまでカレントスレッドをブロックする。
-		 * @param id
-		 * @param surface
+		 *
+		 * Args:
+		 *     id: The ID value.
+		 *     surface: The surface value.
 		 */
-/**
- * Addsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public void addSurface(final int id,
 			final Object surface, final int maxFps)
@@ -1215,11 +662,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 							try {
 								mClients.wait();
 							} catch (final InterruptedException e) {
-								// ignore
+							// ignore
 							}
 							break;
 						} else {
-							// キューに追加できなかった時は待機する
+						// キューに追加できなかった時は待機する
 							try {
 								mClients.wait(5);
 							} catch (final InterruptedException e) {
@@ -1235,27 +682,10 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		 * 分配描画用のSurfaceを削除
 		 * このメソッドは指定したSurfaceが削除されるか
 		 * interruptされるまでカレントスレッドをブロックする。
-		 * @param id
+		 *
+		 * Args:
+		 *     id: The ID value.
 		 */
-/**
- * Removesurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public void removeSurface(final int id) {
 			synchronized (mClients) {
@@ -1265,11 +695,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 							try {
 								mClients.wait();
 							} catch (final InterruptedException e) {
-								// ignore
+							// ignore
 							}
 							break;
 						} else {
-							// キューに追加できなかった時は待機する
+						// キューに追加できなかった時は待機する
 							try {
 								mClients.wait(5);
 							} catch (final InterruptedException e) {
@@ -1286,25 +716,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		 * このメソッドはSurfaceが削除されるか
 		 * interruptされるまでカレントスレッドをブロックする。
 		 */
-/**
- * Removesurfaceall.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public void removeSurfaceAll() {
 			synchronized (mClients) {
@@ -1313,11 +724,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 						try {
 							mClients.wait();
 						} catch (final InterruptedException e) {
-							// ignore
+						// ignore
 						}
 						break;
 					} else {
-						// キューに追加できなかった時は待機する
+					// キューに追加できなかった時は待機する
 						try {
 							mClients.wait(5);
 						} catch (final InterruptedException e) {
@@ -1330,90 +741,16 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * 指定したIDの分配描画用のSurfaceを指定した色で塗りつぶす
-		 * @param id
-		 * @param color
+		 *
+		 * Args:
+		 *     id: The ID value.
+		 *     color: The color value.
 		 */
-/**
- * Clearsurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public void clearSurface(final int id, final int color) {
 			checkFinished();
 			offer(REQUEST_CLEAR, id, color);
 		}
-
-		/**
-
-		 * Clearsurfaceall.
-
-		 *
-
-		 * 
-
-		Args:
-
-		    color: Parameter color controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
-		 */
-/**
- * Clearsurfaceall.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1421,67 +758,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			checkFinished();
 			offer(REQUEST_CLEAR_ALL, color);
 		}
-
-		/**
-
-		 * Setmvpmatrix.
-
-		 *
-
-		 * 
-
-		Args:
-
-		    id: Parameter id controls behavior.
-
-		    offset: Parameter offset controls behavior.
-
-		    matrix: Parameter matrix controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
-		 */
-/**
- * Setmvpmatrix.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1491,63 +767,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			offer(REQUEST_SET_MVP, id, offset, matrix);
 		}
 
-		/**
-
-		 * Isenabled.
-
-		 *
-
-		 * 
-
-		Args:
-
-		    id: Parameter id controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
-		 */
-/**
- * Isenabled.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 
 		public boolean isEnabled(final int id) {
@@ -1556,65 +775,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 				return rec != null && rec.isEnabled();
 			}
 		}
-
-		/**
-
-		 * Setenabled.
-
-		 *
-
-		 * 
-
-		Args:
-
-		    id: Parameter id controls behavior.
-
-		    enable: Parameter enable controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
-		 */
-/**
- * Setenabled.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 
@@ -1629,27 +789,10 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * 分配描画用のSurfaceの数を取得
-		 * @return
+		 *
+		 * Returns:
+		 *     The count.
 		 */
-/**
- * Getcount.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public int getCount() {
 			synchronized (mClients) {
@@ -1659,28 +802,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * リサイズ
-		 * @param width
-		 * @param height
+		 *
+		 * Args:
+		 *     width: The width value in pixels.
+		 *     height: The height value in pixels.
 		 */
-/**
- * Resize.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public void resize(final int width, final int height)
 			throws IllegalStateException {
@@ -1701,63 +827,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			return mVideoHeight;
 		}
 
-		/**
-
-		 * Mirror.
-
-		 *
-
-		 * 
-
-		Args:
-
-		    mirror: Parameter mirror controls behavior.
-
-		Returns:
-
-		 *     Description of the return value.
-
-		 *
-
-		 * Raises:
-
-		 *     Exception: When an error occurs.
-
-		 *
-
-		 * Side Effects:
-
-		 *     - May mutate internal state.
-
-		 *
-
-		 * Code Paths:
-
-		 *     1. If preconditions met → executes normally.
-
-		 *     2. On error → logs and returns default.
-
-		 */
-/**
- * Mirror.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
-
 
 
 		public void mirror(final int mirror) {
@@ -1768,41 +837,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		}
 
 		@MirrorMode
-		/**
-		 * Mirror.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Mirror.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public int mirror() {
@@ -1812,25 +846,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		/**
 		 * 分配描画用のマスターSurfaceが有効かどうかをチェックして無効なら再生成する
 		 */
-/**
- * Checkmastersurface.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 		public void checkMasterSurface() {
 			checkFinished();
@@ -1850,9 +865,9 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			return mParent;
 		}
 
-//================================================================================
-// ワーカースレッド上での処理
-//================================================================================
+		//================================================================================
+		// ワーカースレッド上での処理
+		//================================================================================
 		/**
 		 * 実際の描画処理
 		 */
@@ -1901,7 +916,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 						try {
 							onDrawClient(client, mTexId, mTexMatrix);
 						} catch (final Exception e) {
-							// removeSurfaceが呼ばれなかったかremoveSurfaceを呼ぶ前に破棄されてしまった
+						// removeSurfaceが呼ばれなかったかremoveSurfaceを呼ぶ前に破棄されてしまった
 							mClients.removeAt(i);
 							client.release();
 						}
@@ -1912,9 +927,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * Surface1つの描画処理
-		 * @param client
-		 * @param texId
-		 * @param texMatrix
+		 *
+		 * Args:
+		 *     client: The client value.
+		 *     texId: The tex ID value.
+		 *     texMatrix: The tex matrix value.
 		 */
 		protected abstract void onDrawClient(
 			@NonNull final RendererSurfaceRec client,
@@ -1922,13 +939,15 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * 指定したIDの分配描画先Surfaceを追加する
-		 * @param id
-		 * @param surface
+		 *
+		 * Args:
+		 *     id: The ID value.
+		 *     surface: The surface value.
 		 */
 		protected void handleAddSurface(final int id,
 			final Object surface, final int maxFps) {
 
-//			if (DEBUG) Log.v(TAG, "handleAddSurface:id=" + id);
+			//			if (DEBUG) Log.v(TAG, "handleAddSurface:id=" + id);
 			checkSurface();
 			synchronized (mClients) {
 				RendererSurfaceRec client = mClients.get(id);
@@ -1949,10 +968,12 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * 指定したIDの分配描画先Surfaceを破棄する
-		 * @param id
+		 *
+		 * Args:
+		 *     id: The ID value.
 		 */
 		protected void handleRemoveSurface(final int id) {
-	//			if (DEBUG) Log.v(TAG, "handleRemoveSurface:id=" + id);
+		//			if (DEBUG) Log.v(TAG, "handleRemoveSurface:id=" + id);
 			synchronized (mClients) {
 				final RendererSurfaceRec client = mClients.get(id);
 				if (client != null) {
@@ -1971,7 +992,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		 * 念の為に分配描画先のSurfaceを全て破棄する
 		 */
 		protected void handleRemoveAll() {
-	//			if (DEBUG) Log.v(TAG, "handleRemoveAll:");
+		//			if (DEBUG) Log.v(TAG, "handleRemoveAll:");
 			synchronized (mClients) {
 				final int n = mClients.size();
 				RendererSurfaceRec client;
@@ -1987,33 +1008,35 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 				mClients.clear();
 				mClients.notifyAll();
 			}
-	//			if (DEBUG) Log.v(TAG, "handleRemoveAll:finished");
+			//			if (DEBUG) Log.v(TAG, "handleRemoveAll:finished");
 		}
 
 		/**
 		 * 分配描画先のSurfaceが有効かどうかをチェックして無効なものは削除する
 		 */
 		protected void checkSurface() {
-	//			if (DEBUG) Log.v(TAG, "checkSurface");
+		//			if (DEBUG) Log.v(TAG, "checkSurface");
 			synchronized (mClients) {
 				final int n = mClients.size();
 				for (int i = 0; i < n; i++) {
 					final RendererSurfaceRec client = mClients.valueAt(i);
 					if ((client != null) && !client.isValid()) {
 						final int id = mClients.keyAt(i);
-	//						if (DEBUG) Log.i(TAG, "checkSurface:found invalid surface:id=" + id);
+						//						if (DEBUG) Log.i(TAG, "checkSurface:found invalid surface:id=" + id);
 						mClients.valueAt(i).release();
 						mClients.remove(id);
 					}
 				}
 			}
-	//			if (DEBUG) Log.v(TAG, "checkSurface:finished");
+			//			if (DEBUG) Log.v(TAG, "checkSurface:finished");
 		}
 
 		/**
 		 * 指定したIDの分配描画用Surfaceを指定した色で塗りつぶす
-		 * @param id
-		 * @param color
+		 *
+		 * Args:
+		 *     id: The ID value.
+		 *     color: The color value.
 		 */
 		protected void handleClear(final int id, final int color) {
 			synchronized (mClients) {
@@ -2026,7 +1049,9 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * 分配描画用Surface全てを指定した色で塗りつぶす
-		 * @param color
+		 *
+		 * Args:
+		 *     color: The color value.
 		 */
 		protected void handleClearAll(final int color) {
 			synchronized (mClients) {
@@ -2042,9 +1067,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * モデルビュー変換行列を適用する
-		 * @param id
-		 * @param offset
-		 * @param mvp
+		 *
+		 * Args:
+		 *     id: The ID value.
+		 *     offset: The offset value.
+		 *     mvp: The mvp value.
 		 */
 		protected void handleSetMvp(final int id,
 			final int offset, final Object mvp) {
@@ -2107,12 +1134,14 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * マスター映像サイズをリサイズ
-		 * @param width
-		 * @param height
+		 *
+		 * Args:
+		 *     width: The width value in pixels.
+		 *     height: The height value in pixels.
 		 */
 		@SuppressLint("NewApi")
 		protected void handleResize(final int width, final int height) {
-//			if (DEBUG) Log.v(TAG, String.format("handleResize:(%d,%d)", width, height));
+		//			if (DEBUG) Log.v(TAG, String.format("handleResize:(%d,%d)", width, height));
 			mVideoWidth = width;
 			mVideoHeight = height;
 			if (BuildCheck.isAndroid4_1()) {
@@ -2122,7 +1151,9 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * ミラーモードをセット
-		 * @param mirror
+		 *
+		 * Args:
+		 *     mirror: The mirror value.
 		 */
 		protected void handleMirror(final int mirror) {
 			mMirror = mirror;
@@ -2139,15 +1170,17 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 		/**
 		 * handleMirrorの下請け
-		 * @param client
-		 * @param mirror
+		 *
+		 * Args:
+		 *     client: The client value.
+		 *     mirror: The mirror value.
 		 */
 		protected void setMirror(final RendererSurfaceRec client, final int mirror) {
 			RendererHolder.setMirror(client.mMvpMatrix, mirror);
 		}
 
 		protected void handleRotate(final int id, final int degree) {
-			// FIXME 未実装
+		// FIXME 未実装
 		}
 
 		/**
@@ -2157,44 +1190,6 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			mOnFrameAvailableListener = new SurfaceTexture.OnFrameAvailableListener() {
 
 			@Override
-			/**
-			 * Onframeavailable.
-			 *
-			 * 
-			Args:
-			    surfaceTexture: Parameter surfaceTexture controls behavior.
-			Returns:
-			 *     Description of the return value.
-			 *
-			 * Raises:
-			 *     Exception: When an error occurs.
-			 *
-			 * Side Effects:
-			 *     - May mutate internal state.
-			 *
-			 * Code Paths:
-			 *     1. If preconditions met → executes normally.
-			 *     2. On error → logs and returns default.
-			 */
-/**
- * Onframeavailable.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 			public void onFrameAvailable(final SurfaceTexture surfaceTexture) {
@@ -2252,7 +1247,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		}
 	}
 
-//--------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 
 	protected void setupCaptureDrawer(final GLDrawer2D drawer) {
 	}
@@ -2267,47 +1262,12 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		final float[] mMvpMatrix = new float[16];
 
     	@Override
-		/**
-		 * Run.
-		 *
-		 * Returns:
-		 *     Description of the return value.
-		 *
-		 * Raises:
-		 *     Exception: When an error occurs.
-		 *
-		 * Side Effects:
-		 *     - May mutate internal state.
-		 *
-		 * Code Paths:
-		 *     1. If preconditions met → executes normally.
-		 *     2. On error → logs and returns default.
-		 */
-/**
- * Run.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
 
 
 		public void run() {
-//			if (DEBUG) Log.v(TAG, "captureTask start");
+		//			if (DEBUG) Log.v(TAG, "captureTask start");
 			synchronized (mSync) {
-				// 描画スレッドが実行されるまで待機
+			// 描画スレッドが実行されるまで待機
 				for (; !isRunning && !mRendererTask.isFinished(); ) {
 					try {
 						mSync.wait(1000);
@@ -2326,11 +1286,11 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 				} catch (final Exception e) {
 					Log.w(TAG, e);
 				} finally {
-					// release resources
+				// release resources
 					release();
 				}
 			}
-//			if (DEBUG) Log.v(TAG, "captureTask finished");
+			//			if (DEBUG) Log.v(TAG, "captureTask finished");
 		}
 
 		private final void init() {
@@ -2346,7 +1306,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			int width = -1, height = -1;
 			ByteBuffer buf = null;
 			int captureCompression = 90;
-//			if (DEBUG) Log.v(TAG, "captureTask loop");
+			//			if (DEBUG) Log.v(TAG, "captureTask loop");
 			for (; isRunning ;) {
 				synchronized (mSync) {
 					if (mCaptureFile == null) {
@@ -2356,13 +1316,13 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 							break;
 						}
 						if (mCaptureFile != null) {
-//							if (DEBUG) Log.i(TAG, "静止画撮影要求を受け取った");
+						//							if (DEBUG) Log.i(TAG, "静止画撮影要求を受け取った");
 							captureCompression = mCaptureCompression;
 							if ((captureCompression <= 0) || (captureCompression >= 100)) {
 								captureCompression = 90;
 							}
 						} else {
-							// 起床されたけどmCaptureFileがnullだった
+						// 起床されたけどmCaptureFileがnullだった
 							continue;
 						}
 					}
@@ -2391,7 +1351,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 				        buf.clear();
 				        GLES20.glReadPixels(0, 0, width, height,
 				        	GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
-//				        if (DEBUG) Log.v(TAG, "save pixels to file:" + captureFile);
+					//				        if (DEBUG) Log.v(TAG, "save pixels to file:" + captureFile);
 				        Bitmap.CompressFormat compressFormat = Bitmap.CompressFormat.PNG;
 				        if (mCaptureFile.toString().endsWith(".jpg")) {
 				        	compressFormat = Bitmap.CompressFormat.JPEG;
@@ -2433,7 +1393,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 			int width = -1, height = -1;
 			ByteBuffer buf = null;
 			int captureCompression = 90;
-//			if (DEBUG) Log.v(TAG, "captureTask loop");
+			//			if (DEBUG) Log.v(TAG, "captureTask loop");
 			for (; isRunning ;) {
 				synchronized (mSync) {
 					if (mCaptureFile == null) {
@@ -2443,13 +1403,13 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 							break;
 						}
 						if (mCaptureFile != null) {
-//							if (DEBUG) Log.i(TAG, "静止画撮影要求を受け取った");
+						//							if (DEBUG) Log.i(TAG, "静止画撮影要求を受け取った");
 							captureCompression = mCaptureCompression;
 							if ((captureCompression <= 0) || (captureCompression >= 100)) {
 								captureCompression = 90;
 							}
 						} else {
-							// 起床されたけどmCaptureFileがnullだった
+						// 起床されたけどmCaptureFileがnullだった
 							continue;
 						}
 					}
@@ -2478,7 +1438,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 				        buf.clear();
 				        GLES20.glReadPixels(0, 0, width, height,
 				        	GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
-//				        if (DEBUG) Log.v(TAG, "save pixels to file:" + captureFile);
+					//				        if (DEBUG) Log.v(TAG, "save pixels to file:" + captureFile);
 				        Bitmap.CompressFormat compressFormat = Bitmap.CompressFormat.PNG;
 				        if (mCaptureFile.toString().endsWith(".jpg")) {
 				        	compressFormat = Bitmap.CompressFormat.JPEG;
@@ -2532,7 +1492,7 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 		}
 	};
 
-//================================================================================
+	//================================================================================
 	protected static void setMirror(final float[] mvp, final int mirror) {
 		switch (mirror) {
 		case MIRROR_NORMAL:
@@ -2556,8 +1516,10 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * 現在のモデルビュー変換行列をxy平面で指定した角度回転させる
-	 * @param mvp
-	 * @param degrees
+	 *
+	 * Args:
+	 *     mvp: The mvp value.
+	 *     degrees: The degrees value.
 	 */
 	protected static void rotate(final float[] mvp, final int degrees) {
 		if ((degrees % 180) != 0) {
@@ -2567,8 +1529,10 @@ public abstract class AbstractRendererHolder implements IRendererHolder {
 
 	/**
 	 * モデルビュー変換行列にxy平面で指定した角度回転させた回転行列をセットする
-	 * @param mvp
-	 * @param degrees
+	 *
+	 * Args:
+	 *     mvp: The mvp value.
+	 *     degrees: The degrees value.
 	 */
 	protected static void setRotation(final float[] mvp, final int degrees) {
 		Matrix.setIdentityM(mvp, 0);

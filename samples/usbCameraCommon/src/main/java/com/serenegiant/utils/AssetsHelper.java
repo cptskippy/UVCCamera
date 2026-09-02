@@ -16,7 +16,7 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.content.res.AssetManager;
 
@@ -24,62 +24,29 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 /**
- * Manages AssetsHelper functionality.
+ * Load bundled asset files into memory.
  *
- * Responsibility: Provides core AssetsHelper operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of AssetsHelper
- */
-/**
- * Manages AssetsHelper functionality.
- *
- * Responsibility: Provides core AssetsHelper operations for the USB camera stack.
- *
- * Lifecycle: Instantiated → configured → used → released.
- *
- * Thread Safety: Methods are synchronized where applicable; otherwise not thread-safe.
- *
- * Properties:
- *   Fields are managed internally.
- *
- * State Machine:
- *   Initialized → Active → Released
- *   Error (from any active state)
- *
- * Example:
- *     // Example usage of AssetsHelper
+ * Convenience helper for the camera sample apps, which keep configuration
+ * data (button layouts, test images) in the Android assets directory rather
+ * than in external storage.
  */
 
 
 
 public class AssetsHelper {
-/**
- * Loadstring.
- *
- * Args:
- *     param: Parameter controls behavior.
- *
- * Returns:
- *     Description of the return value.
- *
- * Raises:
- *     Exception: When an error occurs.
- *
- * Side Effects:
- *     - May mutate internal state.
- *
- * Code Paths:
- *     1. If preconditions met → executes normally.
- *     2. On error → logs and returns default.
- */
+	/**
+	 * Load an asset file and return its full contents as a String.
+	 *
+	 * Args:
+	 *     assets: AssetManager to read from (typically context.getAssets()).
+	 *     name: Path of the asset relative to the assets root.
+	 *
+	 * Returns:
+	 *     The complete text content of the asset.
+	 *
+	 * Raises:
+	 *     IOException: If the asset cannot be opened or read.
+	 */
 
 
 	public static String loadString(final AssetManager assets, final String name) throws IOException {

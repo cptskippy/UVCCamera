@@ -138,31 +138,9 @@ int AbstractBufferedPipeline::queueFrame(uvc_frame_t *frame) {
  * and you may need to confirm the size
  */
 
-/**
- * \brief Implements AbstractBufferedPipeline component for UVCCamera native library.
- *
- * Provides implementation details for AbstractBufferedPipeline within the UVCCamera native library.
- *
- * Exports:
- *     AbstractBufferedPipeline: Main component for AbstractBufferedPipeline
- *
- * Dependencies:
- *     - libuvc/libusb: USB camera access
- *     - Android NDK: Native build
- *
- * Architecture Note:
- *     Component participates in UVCCamera pipeline architecture.
- */
+// Implementation for AbstractBufferedPipeline.h; see the header for the public pipeline interface.
 
-/**
- * \brief Implements get_frame.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
+
 uvc_frame_t *AbstractBufferedPipeline::get_frame(const size_t &data_bytes) {
 	uvc_frame_t *frame = NULL;
 	Mutex::Autolock lock(pool_mutex);
@@ -197,15 +175,6 @@ uvc_frame_t *AbstractBufferedPipeline::get_frame(const size_t &data_bytes) {
 	return frame;
 }
 
-/**
- * \brief Implements recycle_frame.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void AbstractBufferedPipeline::recycle_frame(uvc_frame_t *frame) {
 	ENTER();
 
@@ -226,15 +195,6 @@ void AbstractBufferedPipeline::recycle_frame(uvc_frame_t *frame) {
 	EXIT();
 }
 
-/**
- * \brief Implements init_pool.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void AbstractBufferedPipeline::init_pool(const size_t &data_bytes) {
 	ENTER();
 
@@ -264,15 +224,6 @@ void AbstractBufferedPipeline::init_pool(const size_t &data_bytes) {
 	EXIT();
 }
 
-/**
- * \brief Implements clear_pool.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void AbstractBufferedPipeline::clear_pool() {
 	ENTER();
 
@@ -290,15 +241,6 @@ void AbstractBufferedPipeline::clear_pool() {
 //
 //********************************************************************************
 
-/**
- * \brief Implements clear_frames.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void AbstractBufferedPipeline::clear_frames() {
 	Mutex::Autolock lock(buffer_mutex);
 
@@ -308,15 +250,6 @@ void AbstractBufferedPipeline::clear_frames() {
 	frame_buffers.clear();
 }
 
-/**
- * \brief Implements add_frame.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 int AbstractBufferedPipeline::add_frame(uvc_frame_t *frame) {
 	ENTER();
 
@@ -347,15 +280,6 @@ int AbstractBufferedPipeline::add_frame(uvc_frame_t *frame) {
 	RETURN(0, int);
 }
 
-/**
- * \brief Implements wait_frame.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 uvc_frame_t *AbstractBufferedPipeline::wait_frame() {
 	uvc_frame_t *frame = NULL;
 
@@ -371,15 +295,6 @@ uvc_frame_t *AbstractBufferedPipeline::wait_frame() {
 	return frame;
 }
 
-/**
- * \brief Implements get_frame_count.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 uint32_t AbstractBufferedPipeline::get_frame_count() {
 	ENTER();
 
@@ -403,15 +318,6 @@ void *AbstractBufferedPipeline::handler_thread_func(void *vptr_args) {
 	pthread_exit(NULL);
 }
 
-/**
- * \brief Implements do_loop.
- *
- * \param[in] ...
- * \return ...
- *
- * Code Paths:
- *   1. Normal path
- */
 void AbstractBufferedPipeline::do_loop() {
 	ENTER();
 

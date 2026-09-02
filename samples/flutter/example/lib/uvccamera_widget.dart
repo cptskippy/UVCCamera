@@ -12,13 +12,14 @@ import 'package:uvccamera/uvccamera.dart';
 /// error/status/button event streams, and renders the live preview with picture
 /// and video-recording controls.
 ///
-/// Args:
+/// Parameters:
 ///   device: The [UvcCameraDevice] this widget controls.
 class UvcCameraWidget extends StatefulWidget {
   final UvcCameraDevice device;
 
   const UvcCameraWidget({super.key, required this.device});
 
+  /// Create the state object for [UvcCameraWidget].
   @override
   State<UvcCameraWidget> createState() => _UvcCameraWidgetState();
 }

@@ -70,18 +70,76 @@ abstract class AbstractUVCCameraHandler extends Handler {
 	private static final boolean DEBUG = true;  // TODO set false on release
 	private static final String TAG = "AbsUVCCameraHandler";
 	/**
-	 * Receive camera open, close, preview, and recording events.
+	 * Callback interface for camera lifecycle events dispatched by CameraThread.
+	 *
+	 * Register with addCallback(CameraCallback) and remove with removeCallback(CameraCallback).
+	 * All callbacks are invoked sequentially on the handler's private CameraThread, not on
+	 * the UI thread; implementers must marshal any UI work to the main thread themselves.
+	 * A callback that throws Exception is removed from the callback set and logged.
 	 */
 
 
 
 	public interface CameraCallback {
+		/**
+		 * Called after UVCCamera.open succeeds for the requested USB control block.
+		 *
+		 * If another camera was already open, handleClose() runs first and may invoke
+		 * onClose() before this callback. The camera is open but preview has not started.
+		 * Invoked on CameraThread; return promptly so the camera message loop can continue.
+		 */
 		public void onOpen();
+		/**
+		 * Called after a previously opened UVCCamera has been closed or released.
+		 *
+		 * This can occur from close(), release(), or handleClose() when switching to a
+		 * different camera. After this callback the camera is no longer open and preview
+		 * or recording cannot be active. Invoked on CameraThread; return promptly.
+		 */
 		public void onClose();
+		/**
+		 * Called after UVCCamera.startPreview succeeds and preview state is active.
+		 *
+		 * This is only invoked when the camera is open and preview was not already running.
+		 * If preview setup fails, onError(Exception) is invoked instead. Invoked on
+		 * CameraThread; return promptly so preview frame processing can continue.
+		 */
 		public void onStartPreview();
+		/**
+		 * Called after UVCCamera.stopPreview succeeds and preview state is inactive.
+		 *
+		 * This is only invoked when preview was active. If the camera was open while
+		 * previewing, it remains open after this callback unless a close or release path
+		 * continues. Invoked on CameraThread; return promptly.
+		 */
 		public void onStopPreview();
+		/**
+		 * Called after the MediaMuxer and configured MediaCodec encoders are prepared
+		 * and recording has started.
+		 *
+		 * This is only invoked when the camera is open and no recording muxer was already
+		 * active. If encoder or muxer setup fails, onError(Exception) is invoked instead.
+		 * Invoked on CameraThread; return promptly so recording can continue.
+		 */
 		public void onStartRecording();
+		/**
+		 * Called after an active MediaMuxer recording has stopped and the camera frame
+		 * callback has been cleared.
+		 *
+		 * This may be invoked directly from stopRecording() or indirectly from
+		 * handleClose() when an open camera with active recording is closed or released.
+		 * Invoked on CameraThread; return promptly.
+		 */
 		public void onStopRecording();
+		/**
+		 * Called when an unrecoverable camera operation fails on CameraThread.
+		 *
+		 * Args:
+		 *     e: The non-null exception describing the failed operation. Failures may
+		 *        occur while opening the camera, starting preview, capturing a still
+		 *        image, or starting recording. Camera state after the error is not
+		 *        uniform; inspect the handler state before attempting recovery.
+		 */
 		public void onError(final Exception e);
 	}
 

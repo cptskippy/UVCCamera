@@ -249,9 +249,10 @@ public final class USBMonitor {
 	/**
 	 * Register BroadcastReceiver to monitor USB device attach/detach events.
 	 *
-	 * Creates a PendingIntent for permission requests and registers the receiver
-	 * with appropriate flags for the Android API level. Starts periodic device
-	 * polling via mDeviceCheckRunnable at 1-second intervals.
+	 * On first registration, creates a PendingIntent for permission requests and registers
+	 * the receiver with appropriate flags for the Android API level. It also resets
+	 * mDeviceCounts and starts periodic device polling via mDeviceCheckRunnable at 1-second
+	 * intervals. A second call before unregister() is an idempotent no-op.
 	 *
 	 * Raises:
 	 *     IllegalStateException: If monitor has been destroyed.
@@ -259,6 +260,15 @@ public final class USBMonitor {
 	 * Side Effects:
 	 *     - Registers BroadcastReceiver for ACTION_USB_PERMISSION and ACTION_USB_DEVICE_DETACHED
 	 *     - Starts periodic device check runnable on async handler
+	 *
+	 * Code Paths:
+	 *     1. If destroyed → throw IllegalStateException
+	 *     2. If mPermissionIntent != null → already registered; return without re-creating
+	 *        the PendingIntent, re-registering the receiver, rescheduling polling, or throwing
+	 *     3. If the weak Context is still available → create the PendingIntent, register
+	 *        mUsbReceiver, reset mDeviceCounts, and post mDeviceCheckRunnable after 1 second
+	 *     4. If the weak Context is unavailable → skip receiver registration but still reset
+	 *        mDeviceCounts and post mDeviceCheckRunnable after 1 second
 	 */
 	public synchronized void register() throws IllegalStateException {
 		if (destroyed) throw new IllegalStateException("already destroyed");

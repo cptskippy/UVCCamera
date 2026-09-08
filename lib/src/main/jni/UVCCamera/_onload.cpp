@@ -33,6 +33,20 @@
 
 extern int register_uvccamera(JNIEnv *env);
 
+/**
+ * \brief JNI library entry point for the UVCCamera native library.
+ *
+ * \pre The Android runtime loads the native library and provides a valid `JavaVM`.
+ *
+ * \param[in] vm (JavaVM *) Java virtual machine used to acquire the JNI environment.
+ * \param[in] reserved (void *) Reserved JNI argument; unused.
+ *
+ * \return `JNI_VERSION_1_6` when the environment is acquired, otherwise `JNI_ERR`. Native-method registration is attempted after environment acquisition, but its failure is not propagated through the return value.
+ *
+ * Code Paths:
+ * 1. `vm->GetEnv(...)` fails → return `JNI_ERR`.
+ * 2. Environment acquired → call `register_uvccamera(env)`, store the VM with `setVM(vm)`, and return `JNI_VERSION_1_6`.
+ */
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 #if LOCAL_DEBUG
     LOGD("JNI_OnLoad");

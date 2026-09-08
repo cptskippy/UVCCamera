@@ -115,6 +115,22 @@ static int copyToSurface(uvc_frame_t *frame, ANativeWindow **window) {
 //********************************************************************************
 //
 //********************************************************************************
+/**
+ * \brief Set (or clear) the ANativeWindow used to display capture frames.
+ *
+ * Ensures the capture thread is quiesced before swapping the window
+ * reference. Releases the previous ANativeWindow if it differs.
+ *
+ * \param[in] capture_window New ANativeWindow, or NULL to clear.
+ * \return 0 on success.
+ *
+ * Code Paths:
+ *   1. Acquire capture_mutex.
+ *   2. If running and capturing → set mIsCapturing=false, broadcast and wait
+ *      for the capture thread to finish its current frame.
+ *   3. If mCaptureWindow != capture_window → release the old window (if any),
+ *      store the new pointer.
+ */
 int PreviewPipeline::setCaptureDisplay(ANativeWindow *capture_window) {
 	ENTER();
 	LOGI("setCaptureDisplay:%p", capture_window);
@@ -142,12 +158,24 @@ int PreviewPipeline::setCaptureDisplay(ANativeWindow *capture_window) {
 }
 
 /**
- * the actual function for capturing
+ * \brief Capture loop: convert frames to RGB565 and render to the ANativeWindow.
+ *
+ * Runs on the capture thread. Allocates a conversion buffer, then repeatedly
+ * waits for capture frames, converts them to RGB565, and copies the result
+ * to the surface via ANativeWindow_lock/unlockAndPost.
+ *
+ * Code Paths:
+ *   1. get_frame() for an RGB565 conversion buffer; if null, release window
+ *      and exit.
+ *   2. Loop while running and capturing: waitCaptureFrame() blocks.
+ *   3. Geometry changed → ANativeWindow_setBuffersGeometry; if window format
+ *      is not RGB_565, release the window and abort capture.
+ *   4. uvc_any2rgb565 conversion → copyToSurface (row-by-row memcpy with
+ *      stride handling).
+ *   5. Conversion or copy failure → log, continue.
+ *   6. Recycle the capture frame.
+ *   7. Exit loop → recycle conversion buffer, release ANativeWindow.
  */
-
-// Implementation for PreviewPipeline.h; see the header for the public pipeline interface.
-
-
 void PreviewPipeline::do_capture(JNIEnv *env) {
 
 //	ENTER();

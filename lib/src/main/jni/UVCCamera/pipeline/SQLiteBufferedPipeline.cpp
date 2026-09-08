@@ -156,6 +156,22 @@ int SQLiteBufferedPipeline::stop() {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Insert a frame's metadata and raw data into the SQLite database.
+ *
+ * Binds capture timestamp, format, dimensions, sequence number, byte count,
+ * and the frame blob to the prepared INSERT statement.
+ *
+ * \param[in] frame Frame to persist, or null (no-op).
+ * \return UVC_SUCCESS on insert, UVC_ERROR_OTHER otherwise.
+ *
+ * Code Paths:
+ *   1. Acquire handler_mutex.
+ *   2. frame is null or not running → return UVC_ERROR_OTHER.
+ *   3. Bind all 7 fields, execute INSERT.
+ *   4. Exception during insert → log, return UVC_ERROR_OTHER.
+ *   5. Success → broadcast handler_sync to wake the handler thread.
+ */
 /*public*/
 int SQLiteBufferedPipeline::queueFrame(uvc_frame_t *frame) {
 	ENTER();
@@ -229,6 +245,18 @@ int SQLiteBufferedPipeline::delete_older(const nsecs_t &dtime) {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Delete records older than a relative time limit.
+ *
+ * \param[in] limit_rel_nsec Relative age in nanoseconds; records older than
+ *             (now - limit_rel_nsec) are deleted. Zero means no-op.
+ * \return 0 on success, -1 on failure or zero limit.
+ *
+ * Code Paths:
+ *   1. limit_rel_nsec is zero → return -1.
+ *   2. Compute cutoff = systemTime() - limit_rel_nsec.
+ *   3. Call delete_older(cutoff) which executes DELETE WHERE dtime < cutoff.
+ */
 /*protected*/
 int SQLiteBufferedPipeline::purge_older(const nsecs_t &limit_rel_nsec) {
 	ENTER();
@@ -269,6 +297,27 @@ void *SQLiteBufferedPipeline::handler_thread_func(void *vptr_args) {
 	pthread_exit(NULL);
 }
 
+/**
+ * \brief Main handler loop: poll SQLite, forward queued frames downstream, purge old records.
+ *
+ * Runs on the handler thread. Waits up to 3ms for new frames, then queries
+ * the 10 oldest records, reconstructs uvc_frame_t objects, chains them to
+ * the next pipeline, and deletes successfully forwarded records in a
+ * transaction. Periodically purges records older than the configured limit.
+ *
+ * Code Paths:
+ *   1. Allocate a working frame buffer; if null, log and exit.
+ *   2. Transition to RUNNING.
+ *   3. Loop while isRunning(): waitRelative 3ms on handler_sync.
+ *   4. If next_pipeline set: query oldest 10 records, reconstruct each frame,
+ *      chain_frame(). On success, queue the record ID for deletion.
+ *   5. Between records (except last), wait 5ms to avoid overwhelming the
+ *      downstream buffer.
+ *   6. Delete all queued record IDs in a single transaction; rollback on failure.
+ *   7. Every 5 seconds, call purge_older() to delete expired records.
+ *   8. Exit loop: transition to STOPPING, free working frame, transition to
+ *      INITIALIZED, clear mIsRunning.
+ */
 /*private*/
 void SQLiteBufferedPipeline::do_loop() {
 	ENTER();

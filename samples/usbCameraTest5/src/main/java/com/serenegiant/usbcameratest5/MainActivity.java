@@ -47,20 +47,33 @@ import com.serenegiant.usbcameracommon.UVCCameraHandler;
 import com.serenegiant.widget.CameraViewInterface;
 
 /**
- * Demonstrate USB UVC camera preview with multiple surfaces.
+ * Demonstrate single-surface USB UVC preview with MediaVideoBufferEncoder recording.
  *
- * Manages camera preview and multi-surface output.
- * Follows Activity lifecycle with synchronized camera access.
+ * This Activity creates UVCCameraHandler with encoderType 2 (MediaVideoBufferEncoder)
+ * and UVCCamera.FRAME_FORMAT_MJPEG. It does not use UVCCameraHandlerMultiSurface and
+ * does not open two cameras; the multi-surface sibling is usbCameraTest6.
+ *
+ * Audit note: the remediation task labels this sample as multi-surface/two-camera, but
+ * the source uses a single UVCCameraHandler and one preview surface.
  *
  * Properties:
- *     mUVCCamera: Current UVCCamera instance.
- *     mUVCCameraView: TextureView for preview.
+ *     mUSBMonitor: USBMonitor that watches for UVC device attach/connect events.
+ *     mCameraHandler: UVCCameraHandler that owns the camera on its private Handler thread.
+ *     mUVCCameraView: CameraViewInterface preview target from activity_main.
+ *     mCameraButton: ToggleButton that requests camera open/close through CameraDialog.
+ *     mCaptureButton: ImageButton that toggles video recording while the camera is open.
+ *     mSurface: Preview Surface retained across startPreview calls and released before replacement.
  *
  * State Machine:
- *     Idle → Previewing → Released
+ *     Created → Monitoring (onStart) → CameraDialog → Previewing → Recording (optional)
+ *     Previewing → Monitoring (device disconnect or user turn-off)
+ *     Monitoring/Previewing → Stopped (onStop: close queued, USBMonitor unregistered)
+ *     Stopped → Released (onDestroy: handler and USBMonitor released)
  *
  * Thread Safety:
- *     Camera operations guarded by mSync; UI updates on main thread.
+ *     The Activity has no explicit lock. Camera open/close/preview/capture calls are
+ *     queued on UVCCameraHandler's private Handler thread; UI mutations are marshalled
+ *     with runOnUiThread, and onStop queues handler.close() via queueEvent.
  */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// TODO set false on release

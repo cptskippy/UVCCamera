@@ -14,7 +14,10 @@ import 'uvccamera_controller_state.dart';
 ///   child: Optional overlay widget drawn on top of preview. Defaults to empty.
 ///
 /// State Machine:
-///   Uninitialized → Initialized → Previewing
+///   Uninitialized → Initialized
+///   The widget tracks only [UvcCameraControllerState.isInitialized] in [build].
+///   "Previewing", recording, and picture-capture stages are owned by [UvcCameraController],
+///   not by a separate state tracked by this widget.
 ///
 /// Thread Safety:
 ///   Must be used on the main UI thread.

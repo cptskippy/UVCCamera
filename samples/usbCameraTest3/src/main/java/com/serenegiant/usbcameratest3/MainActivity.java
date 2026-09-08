@@ -47,20 +47,31 @@ import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.widget.CameraViewInterface;
 
 /**
- * Demonstrate USB UVC camera preview with custom texture view.
+ * Demonstrate USB UVC preview with selectable texture-view and encoder backends.
  *
- * Manages camera preview and lifecycle using UVCCameraTextureView2.
- * Follows Activity lifecycle with synchronized camera access.
+ * USE_SURFACE_ENCODER selects both the preview view and the recording encoder:
+ * false (default) inflates activity_main, uses UVCCameraTextureView, and creates
+ * UVCCameraHandler with encoderType 1 (MediaVideoEncoder). true inflates
+ * activity_main2, uses the local UVCCameraTextureView2, and creates
+ * UVCCameraHandler with encoderType 0 (MediaSurfaceEncoder).
  *
  * Properties:
- *     mUVCCamera: Current UVCCamera instance.
- *     mUVCCameraView: Custom TextureView for preview.
+ *     mUSBMonitor: USBMonitor that watches for UVC device attach/connect events.
+ *     mCameraHandler: UVCCameraHandler that owns the camera on its private Handler thread.
+ *     mUVCCameraView: CameraViewInterface preview target from activity_main or activity_main2.
+ *     mCameraButton: ToggleButton that requests camera open/close through CameraDialog.
+ *     mCaptureButton: ImageButton that toggles video recording while the camera is open.
  *
  * State Machine:
- *     Idle → Previewing → Released
+ *     Created → Monitoring (onStart) → CameraDialog → Previewing → Recording (optional)
+ *     Previewing → Monitoring (device disconnect or user turn-off)
+ *     Monitoring/Previewing → Stopped (onStop: camera closed, USBMonitor still registered)
+ *     Stopped → Released (onDestroy: handler and USBMonitor released)
  *
  * Thread Safety:
- *     Camera operations guarded by mSync; UI updates on main thread.
+ *     The Activity has no explicit lock. Camera open/close/preview/capture calls are
+ *     queued on UVCCameraHandler's private Handler thread; UI mutations are marshalled
+ *     with runOnUiThread, and onDisconnect queues handler.close() via queueEvent.
  */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// TODO set false on release

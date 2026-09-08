@@ -135,7 +135,31 @@ void UVCCamera::clearCameraParams() {
 
 //======================================================================
 /**
- * Connect to the camera device
+ * \brief Connect to a UVC camera device.
+ *
+ * Opens the device for streaming using an already-open USB file descriptor.
+ * The method stores a duplicate of `fd` in `mFd`; the caller keeps ownership
+ * of the original descriptor.
+ *
+ * \param[in] vid Vendor ID of the target UVC device.
+ * \param[in] pid Product ID of the target UVC device.
+ * \param[in] fd An open file descriptor for the USB device, or 0 to reject the connection.
+ * \param[in] busnum USB bus number used to locate the device.
+ * \param[in] devaddr USB device address used to locate the device.
+ * \param[in] usbfs Path to the USB filesystem. Replaces any stored path.
+ *
+ * \return 0 on success.
+ * \return UVC_ERROR_BUSY if the camera is already open or `fd` is 0.
+ * \return A negative libuvc error if libuvc initialization, device lookup, or device open fails.
+ *
+ * Code Paths:
+ *   1. `mDeviceHandle` is already non-null or `fd == 0` → log and return `UVC_ERROR_BUSY`.
+ *   2. Replace `mUsbFs` with a copy of `usbfs`.
+ *   3. If `mContext` is null, initialize libuvc with `uvc_init2`; return the negative error immediately if initialization fails.
+ *   4. Clear supported camera parameter ranges, duplicate `fd`, and locate the device by VID/PID/fd/bus/address.
+ *   5. Device lookup failure → close the duplicated fd and return the libuvc error.
+ *   6. `uvc_open` failure → unref the device, clear device state, close the duplicated fd, and return the libuvc error.
+ *   7. Success → store the duplicated fd in `mFd` and allocate the status, button, and preview objects.
  */
 int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const char *usbfs) {
 	ENTER();
@@ -190,7 +214,21 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 	RETURN(result, int);
 }
 
-// Release the camera device
+/**
+ * \brief Release the camera device and native resources.
+ *
+ * \return 0 after the release sequence completes.
+ *
+ * \post `mDeviceHandle`, `mDevice`, and `mUsbFs` are null, `mFd` is 0, and cached control support flags are cleared.
+ *
+ * Code Paths:
+ *   1. Call `stopPreview()` first so the capture thread is stopped before the preview object is deleted.
+ *   2. If `mDeviceHandle` is non-null, delete the status and button callback objects, delete `mPreview`, close the device with `uvc_close`, and null the handle.
+ *   3. If `mDevice` is non-null, unref the device with `uvc_unref_device` and null the pointer.
+ *   4. Clear all cached control support flags and parameter ranges with `clearCameraParams()`.
+ *   5. If `mUsbFs` is non-null, close `mFd`, zero the descriptor, free the stored USB filesystem path, and null the pointer.
+ *   6. Return 0.
+ */
 int UVCCamera::release() {
 	ENTER();
 	stopPreview();
@@ -304,7 +342,21 @@ int UVCCamera::setCaptureDisplay(ANativeWindow *capture_window) {
 }
 
 //======================================================================
-// Get the controls supported by the camera
+/**
+ * \brief Return the camera's input-terminal control support flags.
+ *
+ * \param[out] supports Receives the cached `mCtrlSupports` value; may be null to skip the write.
+ *
+ * \return 0 when the device handle is present and a cached or queried support value is available.
+ * \return UVC_ERROR_NOT_FOUND when no device handle is present or no usable input terminal is found.
+ *
+ * Code Paths:
+ *   1. `mDeviceHandle` is null → skip the query and keep `UVC_ERROR_NOT_FOUND`.
+ *   2. `mCtrlSupports` is non-zero → use the cached value and return success.
+ *   3. Cache is empty → query `uvc_get_input_terminals` and store the first non-null terminal's `bmControls` in `mCtrlSupports`.
+ *   4. If `supports` is non-null, write the current `mCtrlSupports` value.
+ *   5. Return the libuvc status from the query or `UVC_ERROR_NOT_FOUND`.
+ */
 int UVCCamera::getCtrlSupports(uint64_t *supports) {
 	ENTER();
 	uvc_error_t ret = UVC_ERROR_NOT_FOUND;
@@ -330,6 +382,21 @@ int UVCCamera::getCtrlSupports(uint64_t *supports) {
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Return the camera's processing-unit control support flags.
+ *
+ * \param[out] supports Receives the cached `mPUSupports` value; may be null to skip the write.
+ *
+ * \return 0 when the device handle is present and a cached or queried support value is available.
+ * \return UVC_ERROR_NOT_FOUND when no device handle is present or no usable processing unit is found.
+ *
+ * Code Paths:
+ *   1. `mDeviceHandle` is null → skip the query and keep `UVC_ERROR_NOT_FOUND`.
+ *   2. `mPUSupports` is non-zero → use the cached value and return success.
+ *   3. Cache is empty → query `uvc_get_processing_units` and store the first non-null unit's `bmControls` in `mPUSupports`.
+ *   4. If `supports` is non-null, write the current `mPUSupports` value.
+ *   5. Return the libuvc status from the query or `UVC_ERROR_NOT_FOUND`.
+ */
 int UVCCamera::getProcSupports(uint64_t *supports) {
 	ENTER();
 	uvc_error_t ret = UVC_ERROR_NOT_FOUND;
@@ -363,6 +430,21 @@ int UVCCamera::getProcSupports(uint64_t *supports) {
 #define CTRL_WHITEBLANCE	4
 #define CTRL_FOCUS			5
 
+/**
+ * \brief Populate cached limits for a signed 16-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i16 get_func) {
 
@@ -393,6 +475,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for an unsigned 16-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_u16 get_func) {
 
@@ -423,6 +520,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a signed 8-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i8 get_func) {
 
@@ -453,6 +565,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for an unsigned 8-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_u8 get_func) {
 
@@ -483,6 +610,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a packed two-byte unsigned UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query the high and low bytes for min, max, and default.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query the two-byte minimum, then maximum, then default.
+ *   3. Pack each queried pair as `(high_byte << 8) + low_byte` before storing it in `values`.
+ *   4. Any getter failure stops the query chain and returns that error.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_u8u8 get_func) {
 
@@ -513,6 +655,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a packed two-byte signed/unsigned UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query the signed high byte and unsigned low byte.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query the two-byte minimum, then maximum, then default.
+ *   3. Pack each queried pair using the signed high byte and unsigned low byte before storing it in `values`.
+ *   4. Any getter failure stops the query chain and returns that error.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i8u8 get_func) {
 
@@ -544,6 +701,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a packed three-byte signed/unsigned UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query the signed high byte and two unsigned bytes.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query the three-byte minimum, then maximum, then default.
+ *   3. Pack each queried triple using the signed high byte and two unsigned bytes before storing it in `values`.
+ *   4. Any getter failure stops the query chain and returns that error.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i8u8u8 get_func) {
 
@@ -576,6 +748,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a signed 32-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i32 get_func) {
 
@@ -606,6 +793,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for an unsigned 32-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_u32 get_func) {
 
@@ -636,6 +838,22 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a paired 32-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values1 Cached limits for the first paired value.
+ * \param[out] values2 Cached limits for the second paired value.
+ * \param[in] get_func libuvc getter used to query paired min, max, and default values.
+ *
+ * \return 0 when the relevant cached limits are present or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. Either `values1` or `values2` has non-zero `min` and `max` → return success without querying the device.
+ *   2. Cached limits are incomplete → query the paired minimum, then maximum, then default.
+ *   3. Store each queried pair in the matching `values1` and `values2` fields.
+ *   4. Any getter failure stops the query chain and returns that error.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values1, control_value_t &values2,
 	paramget_func_i32i32 get_func) {
 
@@ -680,7 +898,19 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	} \
 
 /**
- * Helper to set camera control values
+ * \brief Update cached limits and write a signed 8-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value,
 		paramget_func_i8 get_func, paramset_func_i8 set_func) {
@@ -694,6 +924,21 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value,
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Update cached limits and write an unsigned 8-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
+ */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value,
 		paramget_func_u8 get_func, paramset_func_u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
@@ -706,6 +951,23 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value,
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Update cached limits and write a packed two-byte unsigned UVC control.
+ *
+ * \param[in,out] values Cached packed control limits; updated when both `min` and `max` are zero.
+ * \param[in] value1 Requested high byte; clamped independently to the cached high-byte range.
+ * \param[in] value2 Requested low byte; clamped independently to the cached low-byte range.
+ * \param[in] get_func libuvc getter used to refresh the cached packed limits.
+ * \param[in] set_func libuvc setter used to write the clamped bytes.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → split the packed min/max into high and low byte ranges.
+ *   3. Clamp `value1` and `value2` independently to their byte ranges.
+ *   4. Call `set_func` with the clamped bytes and return the limit-query status.
+ */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value1, uint8_t value2,
 		paramget_func_u8u8 get_func, paramset_func_u8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
@@ -725,6 +987,23 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value1, uin
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Update cached limits and write a packed two-byte signed/unsigned UVC control.
+ *
+ * \param[in,out] values Cached packed control limits; updated when both `min` and `max` are zero.
+ * \param[in] value1 Requested signed high byte; clamped independently to the cached signed high-byte range.
+ * \param[in] value2 Requested unsigned low byte; clamped independently to the cached low-byte range.
+ * \param[in] get_func libuvc getter used to refresh the cached packed limits.
+ * \param[in] set_func libuvc setter used to write the clamped bytes.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → split the packed min/max into signed high-byte and unsigned low-byte ranges.
+ *   3. Clamp `value1` and `value2` independently to their byte ranges.
+ *   4. Call `set_func` with the clamped bytes and return the limit-query status.
+ */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint8_t value2,
 		paramget_func_i8u8 get_func, paramset_func_i8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
@@ -744,6 +1023,24 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Update cached limits and write a packed three-byte signed/unsigned UVC control.
+ *
+ * \param[in,out] values Cached packed control limits; updated when both `min` and `max` are zero.
+ * \param[in] value1 Requested signed high byte; clamped independently to the cached signed high-byte range.
+ * \param[in] value2 Requested middle byte; clamped independently to the cached middle-byte range.
+ * \param[in] value3 Requested low byte; clamped independently to the cached low-byte range.
+ * \param[in] get_func libuvc getter used to refresh the cached packed limits.
+ * \param[in] set_func libuvc setter used to write the clamped bytes.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → split the packed min/max into signed high, middle, and low byte ranges.
+ *   3. Clamp each requested byte independently to its cached range.
+ *   4. Call `set_func` with the clamped bytes and return the limit-query status.
+ */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint8_t value2, uint8_t value3,
 		paramget_func_i8u8u8 get_func, paramset_func_i8u8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
@@ -769,7 +1066,19 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint
 }
 
 /**
- * Helper to set camera control values
+ * \brief Update cached limits and write a signed 16-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int16_t value,
 		paramget_func_i16 get_func, paramset_func_i16 set_func) {
@@ -784,7 +1093,19 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int16_t value,
 }
 
 /**
- * Helper to set camera control values
+ * \brief Update cached limits and write an unsigned 16-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint16_t value,
 		paramget_func_u16 get_func, paramset_func_u16 set_func) {
@@ -799,7 +1120,19 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint16_t value,
 }
 
 /**
- * Helper to set camera control values
+ * \brief Update cached limits and write a signed 32-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int32_t value,
 		paramget_func_i32 get_func, paramset_func_i32 set_func) {
@@ -814,7 +1147,19 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int32_t value,
 }
 
 /**
- * Helper to set camera control values
+ * \brief Update cached limits and write an unsigned 32-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint32_t value,
 		paramget_func_u32 get_func, paramset_func_u32 set_func) {
@@ -1237,7 +1582,20 @@ int UVCCamera::getIrisRel() {
 }
 
 //======================================================================
-// Adjust absolute pan
+/**
+ * \brief Refresh cached absolute pan and tilt limits.
+ *
+ * \param[out] min Intended minimum pan; not assigned by the current implementation.
+ * \param[out] max Intended maximum pan; not assigned by the current implementation.
+ * \param[out] def Intended default pan; not assigned by the current implementation.
+ *
+ * \return UVC_ERROR_ACCESS whether or not the cached limits are refreshed.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → skip the query and return `UVC_ERROR_ACCESS`.
+ *   2. Absolute pan/tilt is supported → refresh `mPan` and `mTilt` through the two-value `update_ctrl_values` helper.
+ *   3. Leave `min`, `max`, and `def` unchanged and return the original `UVC_ERROR_ACCESS` status.
+ */
 int UVCCamera::updatePanLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1247,7 +1605,21 @@ int UVCCamera::updatePanLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Set absolute pan
+/**
+ * \brief Set absolute pan while preserving the current or default tilt.
+ *
+ * \param[in] pan Requested absolute pan; clamped to the cached pan range before writing.
+ *
+ * \return 0 on success; negative libuvc error if limits cannot be queried or the device write fails.
+ * \return UVC_ERROR_ACCESS when absolute pan/tilt is not supported.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → return `UVC_ERROR_ACCESS`.
+ *   2. Refresh `mPan` and `mTilt` limits; if this fails, return the limit-query error.
+ *   3. Clamp `pan` to `[mPan.min, mPan.max]`.
+ *   4. Select `mTilt.current` when it is non-negative, otherwise select `mTilt.def`.
+ *   5. Write both values with `uvc_set_pantilt_abs`; on success store the written pan and tilt as current.
+ */
 int UVCCamera::setPan(int pan) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1268,7 +1640,19 @@ int UVCCamera::setPan(int pan) {
 	RETURN(ret, int);
 }
 
-// Get current absolute pan
+/**
+ * \brief Get the current absolute pan value.
+ *
+ * \return Current pan on success.
+ * \return 0 when absolute pan/tilt is unsupported, limits cannot be queried, or the current-value query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → return 0.
+ *   2. Refresh `mPan` and `mTilt` limits; if this fails, return 0.
+ *   3. Query the current pan/tilt pair with `uvc_get_pantilt_abs`.
+ *   4. Current-value query success → store both current values and return `pan`.
+ *   5. Current-value query failure → return 0.
+ */
 int UVCCamera::getPan() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PANTILT_ABS) {
@@ -1287,7 +1671,20 @@ int UVCCamera::getPan() {
 }
 
 //======================================================================
-// Adjust absolute tilt
+/**
+ * \brief Refresh cached absolute tilt and pan limits.
+ *
+ * \param[out] min Intended minimum tilt; not assigned by the current implementation.
+ * \param[out] max Intended maximum tilt; not assigned by the current implementation.
+ * \param[out] def Intended default tilt; not assigned by the current implementation.
+ *
+ * \return UVC_ERROR_ACCESS whether or not the cached limits are refreshed.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → skip the query and return `UVC_ERROR_ACCESS`.
+ *   2. Absolute pan/tilt is supported → refresh `mPan` and `mTilt` through the two-value `update_ctrl_values` helper.
+ *   3. Leave `min`, `max`, and `def` unchanged and return the original `UVC_ERROR_ACCESS` status.
+ */
 int UVCCamera::updateTiltLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1297,7 +1694,21 @@ int UVCCamera::updateTiltLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Set absolute tilt
+/**
+ * \brief Set absolute tilt while preserving the current or default pan.
+ *
+ * \param[in] tilt Requested absolute tilt; clamped to the cached tilt range before writing.
+ *
+ * \return 0 on success; negative libuvc error if limits cannot be queried or the device write fails.
+ * \return UVC_ERROR_ACCESS when absolute pan/tilt is not supported.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → return `UVC_ERROR_ACCESS`.
+ *   2. Refresh `mPan` and `mTilt` limits; if this fails, return the limit-query error.
+ *   3. Clamp `tilt` to `[mTilt.min, mTilt.max]`.
+ *   4. Select `mPan.current` when it is non-negative, otherwise select `mPan.def`.
+ *   5. Write both values with `uvc_set_pantilt_abs`; on success store the written pan and tilt as current.
+ */
 int UVCCamera::setTilt(int tilt) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1318,7 +1729,19 @@ int UVCCamera::setTilt(int tilt) {
 	RETURN(ret, int);
 }
 
-// Get current absolute tilt
+/**
+ * \brief Get the current absolute tilt value.
+ *
+ * \return Current tilt on success.
+ * \return 0 when absolute pan/tilt is unsupported, limits cannot be queried, or the current-value query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → return 0.
+ *   2. Refresh `mPan` and `mTilt` limits; if this fails, return 0.
+ *   3. Query the current pan/tilt pair with `uvc_get_pantilt_abs`.
+ *   4. Current-value query success → store both current values and return `tilt`.
+ *   5. Current-value query failure → return 0.
+ */
 int UVCCamera::getTilt() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PANTILT_ABS) {
@@ -2020,7 +2443,22 @@ bool UVCCamera::getAutoHue() {
 }
 
 //======================================================================
-// Power line frequency flicker correction
+/**
+ * \brief Query powerline-frequency limits and assign them to the output references.
+ *
+ * \param[out] min Receives the cached minimum on successful limit refresh.
+ * \param[out] max Receives the cached maximum on successful limit refresh.
+ * \param[out] def Receives the cached default on successful limit refresh.
+ *
+ * \return 0 on successful limit refresh.
+ * \return UVC_ERROR_IO when `mCtrlSupports` lacks `PU_POWER_LF` or the limit query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `PU_POWER_LF` → skip the query and return `UVC_ERROR_IO`.
+ *   2. Supported → call `update_ctrl_values` for `mPowerlineFrequency` with `uvc_get_powerline_freqency`.
+ *   3. Query success → assign `min`, `max`, and `def` from `mPowerlineFrequency`.
+ *   4. Query failure → leave the outputs unchanged and return the libuvc error.
+ */
 int UVCCamera::updatePowerlineFrequencyLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2030,7 +2468,22 @@ int UVCCamera::updatePowerlineFrequencyLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Set power line frequency flicker correction
+/**
+ * \brief Set powerline-frequency flicker correction.
+ *
+ * \param[in] frequency Frequency to set; negative values trigger a default-value query.
+ *
+ * \return The setter status on the normal write path.
+ * \return UVC_ERROR_IO when `mPUSupports` lacks `PU_POWER_LF`.
+ * \return UVC_SUCCESS when a negative-frequency default query returns zero.
+ *
+ * Code Paths:
+ *   1. `mPUSupports` lacks `PU_POWER_LF` → return `UVC_ERROR_IO`.
+ *   2. `frequency < 0` → query `UVC_GET_DEF` with `uvc_get_powerline_freqency`.
+ *   3. If that query returns nonzero, continue using the getter's `value`; if it returns zero, return `UVC_SUCCESS` immediately.
+ *   4. Write the selected frequency with `uvc_set_powerline_freqency`.
+ *   5. Return the setter status.
+ */
 int UVCCamera::setPowerlineFrequency(int frequency) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2050,7 +2503,18 @@ int UVCCamera::setPowerlineFrequency(int frequency) {
 	RETURN(ret, int);
 }
 
-// Get power line frequency flicker correction value
+/**
+ * \brief Get the current powerline-frequency flicker correction value.
+ *
+ * \return Current frequency on successful query.
+ * \return 0 when `mPUSupports` lacks `PU_POWER_LF` or the current-value query fails.
+ *
+ * Code Paths:
+ *   1. `mPUSupports` lacks `PU_POWER_LF` → return 0.
+ *   2. Query the current value with `uvc_get_powerline_freqency`.
+ *   3. Query success → return the queried `value`.
+ *   4. Query failure → return 0.
+ */
 int UVCCamera::getPowerlineFrequency() {
 	ENTER();
 	if (mPUSupports & PU_POWER_LF) {
@@ -2064,7 +2528,22 @@ int UVCCamera::getPowerlineFrequency() {
 }
 
 //======================================================================
-// Adjust absolute zoom
+/**
+ * \brief Query absolute-zoom limits and assign them to the output references.
+ *
+ * \param[out] min Receives the cached minimum on successful limit refresh.
+ * \param[out] max Receives the cached maximum on successful limit refresh.
+ * \param[out] def Receives the cached default on successful limit refresh.
+ *
+ * \return 0 on successful limit refresh.
+ * \return UVC_ERROR_IO when `mCtrlSupports` lacks `CTRL_ZOOM_ABS` or the limit query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_ZOOM_ABS` → skip the query and return `UVC_ERROR_IO`.
+ *   2. Supported → call `update_ctrl_values` for `mZoom` with `uvc_get_zoom_abs`.
+ *   3. Query success → assign `min`, `max`, and `def` from `mZoom`.
+ *   4. Query failure → leave the outputs unchanged and return the libuvc error.
+ */
 int UVCCamera::updateZoomLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2074,7 +2553,19 @@ int UVCCamera::updateZoomLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Set absolute zoom
+/**
+ * \brief Set absolute zoom.
+ *
+ * \param[in] zoom Requested zoom value; clamped to the cached zoom range before writing.
+ *
+ * \return The `internalSetCtrlValue` status when absolute zoom is supported.
+ * \return UVC_ERROR_IO when `mCtrlSupports` lacks `CTRL_ZOOM_ABS`.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_ZOOM_ABS` → return `UVC_ERROR_IO`.
+ *   2. Supported → refresh `mZoom` limits, clamp `zoom`, and write it through `internalSetCtrlValue`.
+ *   3. Return the limit-query status from `internalSetCtrlValue`.
+ */
 int UVCCamera::setZoom(int zoom) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2084,7 +2575,19 @@ int UVCCamera::setZoom(int zoom) {
 	RETURN(ret, int);
 }
 
-// Get current absolute zoom
+/**
+ * \brief Get the current absolute zoom value.
+ *
+ * \return Current zoom on successful query.
+ * \return 0 when absolute zoom is unsupported, limits cannot be queried, or the current-value query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_ZOOM_ABS` → return 0.
+ *   2. Refresh `mZoom` limits with `update_ctrl_values`; if this fails, return 0.
+ *   3. Query the current value with `uvc_get_zoom_abs`.
+ *   4. Current-value query success → return the queried `value`.
+ *   5. Current-value query failure → return 0.
+ */
 int UVCCamera::getZoom() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ZOOM_ABS) {

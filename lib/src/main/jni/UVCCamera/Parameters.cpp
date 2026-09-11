@@ -21,6 +21,10 @@
  * All files in the folder are under this Apache License, Version 2.0.
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
+
+// Implementation for Parameters.h; see the header for the public diagnostic API.
+
+
 #define LOG_TAG "Parameters"
 
 #include "Parameters.h"
@@ -182,7 +186,7 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 					}
 					writer.EndArray();
 				} else {
-					// 最小fps
+					// Minimum fps
 					writer.String(FRAME_INTERVAL_MIN);
 					writer.StartObject();
 					{
@@ -191,7 +195,7 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 						write(writer, FRAME_INTERVAL_FPS, 10000000 / frame_desc->dwMinFrameInterval);
 					}
 					writer.EndObject();
-					// 最大fps
+					// Maximum fps
 					writer.String(FRAME_INTERVAL_MAX);
 					writer.StartObject();
 					{
@@ -201,7 +205,7 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 					}
 					writer.EndObject();
 					if (frame_desc->dwFrameIntervalStep) {
-						// fpsステップ
+						// fps step
 						writer.String(FRAME_INTERVAL_STEP);
 						writer.StartObject();
 						{

@@ -15,6 +15,35 @@
  * and perhaps jerror.h if they want to know the exact error codes.
  */
 
+/**
+ * \brief Defines the application interface for the JPEG library.
+ *
+ * Provides data structures and public API for JPEG compression and decompression.
+ *
+ * Exports:
+ *     jpeg_create_compress: Create a JPEG compression object
+ *     jpeg_create_decompress: Create a JPEG decompression object
+ *     jpeg_destroy_compress: Destroy a JPEG compression object
+ *     jpeg_destroy_decompress: Destroy a JPEG decompression object
+ *     jpeg_stdio_src: Initialize source from FILE*
+ *     jpeg_stdio_dest: Initialize destination to FILE*
+ *     jpeg_read_header: Read JPEG header
+ *     jpeg_start_decompress: Start decompression
+ *     jpeg_finish_decompress: Finish decompression
+ *     jpeg_write_scanlines: Write scanlines during compression
+ *     jpeg_finish_compress: Finish compression
+ *
+ * Dependencies:
+ *     - jconfig.h: Configuration options
+ *     - jmorecfg.h: Manual configuration options
+ *     - jerror.h: Error handling
+ *
+ * Architecture Note:
+ *     This header defines the public API surface for libjpeg-turbo. Internal headers
+ *     are not exposed. The library uses a modular compressor/decompressor with
+ *     separate memory manager and error manager subsystems.
+ */
+
 #ifndef JPEGLIB_H
 #define JPEGLIB_H
 

@@ -26,6 +26,11 @@ package com.serenegiant.serviceclient;
 import android.hardware.usb.UsbDevice;
 import android.view.Surface;
 
+/**
+ * Contract for camera clients.
+ *
+ * Defines methods for service interaction.
+ */
 public interface ICameraClient {
 	public void select(UsbDevice device);
 	public void release();

@@ -3,6 +3,10 @@
 //
 
 #include "utilbase.h"
+
+// Pipeline helper implementation; see pipeline_helper.h for the public helper declarations.
+
+
 #include "Timers.h"
 #include "SimpleBufferedPipeline.h"
 #include "SQLiteBufferedPipeline.h"
@@ -14,6 +18,26 @@
 #include "DistributePipeline.h"
 #include "pipeline_helper.h"
 
+/**
+ * \brief Resolve a Java IPipeline object to its native pipeline pointer.
+ *
+ * Reads the `mNativePtr` and `mType` fields from the Java object and casts
+ * the stored pointer to the concrete pipeline type.
+ *
+ * \param[in] env JNI environment.
+ * \param[in] pipeline_obj Java object implementing IPipeline, or null.
+ *
+ * \return The native pipeline pointer, or NULL if the object is null or the
+ *         type is unrecognised.
+ *
+ * Code Paths:
+ *   1. `pipeline_obj` is null → return NULL immediately.
+ *   2. Read `mNativePtr` and `mType` from the Java object; clear any pending JNI exception.
+ *   3. Switch on `mType` and cast `mNativePtr` to the matching concrete type
+ *      (SimpleBuffered, SQLiteBuffered, UVCCameraControl, Callback, Convert,
+ *      Preview, Publisher, or Distribute).
+ *   4. Unrecognised type → return NULL.
+ */
 IPipeline *getPipeline(JNIEnv *env, jobject pipeline_obj) {
 	ENTER();
 

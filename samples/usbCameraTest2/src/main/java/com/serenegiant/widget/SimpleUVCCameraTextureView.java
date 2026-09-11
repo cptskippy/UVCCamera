@@ -28,10 +28,18 @@ import android.util.AttributeSet;
 import android.view.TextureView;
 
 /**
- * change the view size with keeping the specified aspect ratio.
- * if you set this view with in a FrameLayout and set property "android:layout_gravity="center",
- * you can show this view in the center of screen and keep the aspect ratio of content
- * XXX it is better that can set the aspect ratio as a xml property
+ * Display camera preview in TextureView while maintaining aspect ratio.
+ *
+ * Extends TextureView to provide aspect-ratio-aware measurement.
+ *
+ * Properties:
+ *     mRequestedAspect: Desired width/height ratio; -1.0 means no constraint.
+ *
+ * Thread Safety:
+ *     Must be used on UI thread.
+ *
+ * State Machine:
+ *     Uninitialized → Measured → LaidOut
  */
 public class SimpleUVCCameraTextureView extends TextureView	// API >= 14
 	implements AspectRatioViewInterface {

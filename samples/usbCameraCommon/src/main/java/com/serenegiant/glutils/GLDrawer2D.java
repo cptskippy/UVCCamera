@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import static com.serenegiant.glutils.ShaderConst.FRAGMENT_SHADER_SIMPLE;
 import static com.serenegiant.glutils.ShaderConst.FRAGMENT_SHADER_SIMPLE_OES;
@@ -34,6 +34,7 @@ import java.nio.FloatBuffer;
 /**
  * 描画領域全面にテクスチャを2D描画するためのヘルパークラス
  */
+
 public class GLDrawer2D implements IDrawer2dES2 {
 //	private static final boolean DEBUG = false; // FIXME set false on release
 //	private static final String TAG = "GLDrawer2D";
@@ -57,8 +58,10 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * コンストラクタ
 	 * GLコンテキスト/EGLレンダリングコンテキストが有効な状態で呼ばないとダメ
-	 * @param isOES 外部テクスチャ(GL_TEXTURE_EXTERNAL_OES)を使う場合はtrue。
 	 * 				通常の2Dテキスチャならfalse
+	 *
+	 * Args:
+	 *     isOES: 外部テクスチャ(GL_TEXTURE_EXTERNAL_OES)を使う場合はtrue。.
 	 */
 	public GLDrawer2D(final boolean isOES) {
 		this(VERTICES, TEXCOORD, isOES);
@@ -67,10 +70,12 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * コンストラクタ
 	 * GLコンテキスト/EGLレンダリングコンテキストが有効な状態で呼ばないとダメ
-	 * @param vertices 頂点座標, floatを8個 = (x,y) x 4ペア
-	 * @param texcoord テクスチャ座標, floatを8個 = (s,t) x 4ペア
-	 * @param isOES 外部テクスチャ(GL_TEXTURE_EXTERNAL_OES)を使う場合はtrue。
 	 * 				通常の2Dテキスチャならfalse
+	 *
+	 * Args:
+	 *     vertices: 頂点座標, floatを8個 = (x,y) x 4ペア.
+	 *     texcoord: テクスチャ座標, floatを8個 = (s,t) x 4ペア.
+	 *     isOES: 外部テクスチャ(GL_TEXTURE_EXTERNAL_OES)を使う場合はtrue。.
 	 */
 	public GLDrawer2D(final float[] vertices,
 		final float[] texcoord, final boolean isOES) {
@@ -104,6 +109,7 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * 破棄処理。GLコンテキスト/EGLレンダリングコンテキスト内で呼び出さないとダメ
 	 */
 	@Override
+
 	public void release() {
 		if (hProgram >= 0) {
 			GLES20.glDeleteProgram(hProgram);
@@ -113,28 +119,39 @@ public class GLDrawer2D implements IDrawer2dES2 {
 
 	/**
 	 * 外部テクスチャを使うかどうか
-	 * @return
+	 *
+	 * Returns:
+	 *     Whether the oes condition is true.
 	 */
+
 	public boolean isOES() {
 		return mTexTarget == GL_TEXTURE_EXTERNAL_OES;
 	}
 
 	/**
 	 * モデルビュー変換行列を取得(内部配列を直接返すので変更時は要注意)
-	 * @return
+	 *
+	 * Returns:
+	 *     The mvp matrix.
 	 */
 	@Override
+
 	public float[] getMvpMatrix() {
 		return mMvpMatrix;
 	}
 
 	/**
 	 * モデルビュー変換行列に行列を割り当てる
-	 * @param matrix 領域チェックしていないのでoffsetから16個以上必須
-	 * @param offset
-	 * @return
+	 *
+	 * Args:
+	 *     matrix: 領域チェックしていないのでoffsetから16個以上必須.
+	 *     offset: The offset value.
+	 *
+	 * Returns:
+	 *     The set mvp matrix.
 	 */
 	@Override
+
 	public IDrawer2D setMvpMatrix(final float[] matrix, final int offset) {
 		System.arraycopy(matrix, offset, mMvpMatrix, 0, 16);
 		return this;
@@ -142,10 +159,13 @@ public class GLDrawer2D implements IDrawer2dES2 {
 
 	/**
 	 * モデルビュー変換行列のコピーを取得
-	 * @param matrix 領域チェックしていないのでoffsetから16個以上必須
-	 * @param offset
+	 *
+	 * Args:
+	 *     matrix: 領域チェックしていないのでoffsetから16個以上必須.
+	 *     offset: The offset value.
 	 */
 	@Override
+
 	public void getMvpMatrix(final float[] matrix, final int offset) {
 		System.arraycopy(mMvpMatrix, 0, matrix, offset, 16);
 	}
@@ -153,19 +173,22 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * 指定したテクスチャを指定したテクスチャ変換行列を使って描画領域全面に描画するためのヘルパーメソッド
 	 * このクラスインスタンスのモデルビュー変換行列が設定されていればそれも適用された状態で描画する
-	 * @param texId texture ID
-	 * @param tex_matrix テクスチャ変換行列、nullならば以前に適用したものが再利用される。
 	 * 					領域チェックしていないのでoffsetから16個以上確保しておくこと
+	 *
+	 * Args:
+	 *     texId: texture ID.
+	 *     tex_matrix: テクスチャ変換行列、nullならば以前に適用したものが再利用される。.
 	 */
 	@Override
+
 	public synchronized void draw(final int texId,
 		final float[] tex_matrix, final int offset) {
 
-//		if (DEBUG) Log.v(TAG, "draw");
+		//		if (DEBUG) Log.v(TAG, "draw");
 		if (hProgram < 0) return;
 		GLES20.glUseProgram(hProgram);
 		if (tex_matrix != null) {
-			// テクスチャ変換行列が指定されている時
+		// テクスチャ変換行列が指定されている時
 			GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, tex_matrix, offset);
 		}
 		// モデルビュー変換行列をセット
@@ -180,18 +203,24 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * Textureオブジェクトを描画するためのヘルパーメソッド
 	 * Textureオブジェクトで管理しているテクスチャ名とテクスチャ座標変換行列を使って描画する
-	 * @param texture
+	 *
+	 * Args:
+	 *     texture: The texture value.
 	 */
 	@Override
+
 	public void draw(final ITexture texture) {
 		draw(texture.getTexture(), texture.getTexMatrix(), 0);
 	}
 
 	/**
 	 * TextureOffscreenオブジェクトを描画するためのヘルパーメソッド
-	 * @param offscreen
+	 *
+	 * Args:
+	 *     offscreen: The offscreen value.
 	 */
 	@Override
+
 	public void draw(final TextureOffscreen offscreen) {
 		draw(offscreen.getTexture(), offscreen.getTexMatrix(), 0);
 	}
@@ -199,8 +228,11 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * テクスチャ名生成のヘルパーメソッド
 	 * GLHelper#initTexを呼び出すだけ
-	 * @return texture ID
+	 *
+	 * Returns:
+	 *     texture ID.
 	 */
+
 	public int initTex() {
 		return GLHelper.initTex(mTexTarget, GLES20.GL_NEAREST);
 	}
@@ -208,8 +240,11 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * テクスチャ名破棄のヘルパーメソッド
 	 * GLHelper.deleteTexを呼び出すだけ
-	 * @param hTex
+	 *
+	 * Args:
+	 *     hTex: The h tex value.
 	 */
+
 	public void deleteTex(final int hTex) {
 		GLHelper.deleteTex(hTex);
 	}
@@ -218,9 +253,12 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * 頂点シェーダー・フラグメントシェーダーを変更する
 	 * GLコンテキスト/EGLレンダリングコンテキスト内で呼び出さないとダメ
 	 * glUseProgramが呼ばれた状態で返る
-	 * @param vs 頂点シェーダー文字列
-	 * @param fs フラグメントシェーダー文字列
+	 *
+	 * Args:
+	 *     vs: 頂点シェーダー文字列.
+	 *     fs: フラグメントシェーダー文字列.
 	 */
+
 	public synchronized void updateShader(final String vs, final String fs) {
 		release();
 		hProgram = GLHelper.loadShader(vs, fs);
@@ -231,8 +269,11 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * フラグメントシェーダーを変更する
 	 * GLコンテキスト/EGLレンダリングコンテキスト内で呼び出さないとダメ
 	 * glUseProgramが呼ばれた状態で返る
-	 * @param fs フラグメントシェーダー文字列
+	 *
+	 * Args:
+	 *     fs: フラグメントシェーダー文字列.
 	 */
+
 	public void updateShader(final String fs) {
 		updateShader(VERTEX_SHADER, fs);
 	}
@@ -240,6 +281,7 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * 頂点シェーダー・フラグメントシェーダーをデフォルトに戻す
 	 */
+
 	public void resetShader() {
 		release();
 		if (isOES()) {
@@ -253,10 +295,15 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * アトリビュート変数のロケーションを取得
 	 * glUseProgramが呼ばれた状態で返る
-	 * @param name
-	 * @return
+	 *
+	 * Args:
+	 *     name: The name value.
+	 *
+	 * Returns:
+	 *     The GL get attrib location.
 	 */
 	@Override
+
 	public int glGetAttribLocation(final String name) {
 		GLES20.glUseProgram(hProgram);
 		return GLES20.glGetAttribLocation(hProgram, name);
@@ -265,10 +312,15 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	/**
 	 * ユニフォーム変数のロケーションを取得
 	 * glUseProgramが呼ばれた状態で返る
-	 * @param name
-	 * @return
+	 *
+	 * Args:
+	 *     name: The name value.
+	 *
+	 * Returns:
+	 *     The GL get uniform location.
 	 */
 	@Override
+
 	public int glGetUniformLocation(final String name) {
 		GLES20.glUseProgram(hProgram);
 		return GLES20.glGetUniformLocation(hProgram, name);
@@ -278,6 +330,7 @@ public class GLDrawer2D implements IDrawer2dES2 {
 	 * glUseProgramが呼ばれた状態で返る
 	 */
 	@Override
+
 	public void glUseProgram() {
 		GLES20.glUseProgram(hProgram);
 	}

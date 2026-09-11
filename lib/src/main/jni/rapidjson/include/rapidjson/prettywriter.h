@@ -18,6 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief Pretty printing JSON writer for RapidJSON.
+ *
+ * Provides a writer that outputs human-readable JSON with indentation and newlines.
+ *
+ * Exports:
+ *     PrettyWriter: Pretty-printing JSON writer
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - writer.h: Base writer implementation
+ *
+ * Architecture Note:
+ *     PrettyWriter is a subclass of Writer and adds formatting. It is not thread-safe.
+ */
+
 #ifndef RAPIDJSON_PRETTYWRITER_H_
 #define RAPIDJSON_PRETTYWRITER_H_
 

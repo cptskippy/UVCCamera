@@ -22,6 +22,10 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
+// Implementation for UVCPreview.h; see the header for the preview and capture API.
+
+
+
 #include <stdlib.h>
 #include <linux/time.h>
 #include <unistd.h>
@@ -167,6 +171,25 @@ void UVCPreview::clear_pool() {
 
 inline const bool UVCPreview::isRunning() const {return mIsRunning; }
 
+/**
+ * \brief Update requested preview parameters and validate them against the device.
+ *
+ * Re-queries the device stream control only when the requested width,
+ * height, or mode changes.
+ *
+ * \param[in] width Requested preview width.
+ * \param[in] height Requested preview height.
+ * \param[in] min_fps Minimum acceptable frame rate.
+ * \param[in] max_fps Maximum acceptable frame rate.
+ * \param[in] mode Frame format selector: 0 for YUYV, non-zero for MJPEG.
+ * \param[in] bandwidth Requested bandwidth multiplier.
+ * \return 0 when no re-query is needed, otherwise the libuvc result from stream control negotiation.
+ *
+ * Code Paths:
+ *   1. Width, height, and mode are unchanged → return 0 without updating fps/bandwidth or querying the device.
+ *   2. Width, height, or mode changed → store all request fields and query a matching stream control.
+ *   3. Device query returns an error → propagate the libuvc error.
+ */
 int UVCPreview::setPreviewSize(int width, int height, int min_fps, int max_fps, int mode, float bandwidth) {
 	ENTER();
 	
@@ -188,6 +211,20 @@ int UVCPreview::setPreviewSize(int width, int height, int min_fps, int max_fps, 
 	RETURN(result, int);
 }
 
+/**
+ * \brief Set or clear the preview output window.
+ *
+ * Holds `preview_mutex` while replacing the preview surface so the preview
+ * thread sees a consistent window pointer.
+ *
+ * \param[in] preview_window Target preview `ANativeWindow`, or NULL to clear preview output.
+ * \return 0.
+ *
+ * Code Paths:
+ *   1. Window pointer unchanged → return without releasing or configuring a surface.
+ *   2. Window pointer changed → release the previous window if present and assign the new pointer.
+ *   3. New window present → set buffer geometry using the current frame size and `previewFormat`.
+ */
 int UVCPreview::setPreviewDisplay(ANativeWindow *preview_window) {
 	ENTER();
 	pthread_mutex_lock(&preview_mutex);
@@ -206,6 +243,27 @@ int UVCPreview::setPreviewDisplay(ANativeWindow *preview_window) {
 	RETURN(0, int);
 }
 
+/**
+ * \brief Register or replace the Java frame callback.
+ *
+ * Holds `capture_mutex` while updating callback state so the capture thread
+ * cannot observe a half-updated callback object, method ID, or pixel format.
+ *
+ * \param[in] env JNI environment.
+ * \param[in] frame_callback_obj Global Java callback reference, or NULL to clear the callback.
+ * \param[in] pixel_format Callback pixel format used to select conversion state.
+ * \return 0.
+ *
+ * \pre `frame_callback_obj` is a global reference when non-NULL.
+ *
+ * Code Paths:
+ *   1. Preview is running, capture is active, and a callback was registered → pause capture and wait for the capture thread to leave the callback path.
+ *   2. Callback object unchanged → skip reference and method ID updates.
+ *   3. Callback object changed → clear the cached `onFrame` method ID, delete the previous global reference if present, and store the new pointer.
+ *   4. New object present → resolve the `IFrameCallback#onFrame(Ljava/nio/ByteBuffer;)V` method ID.
+ *   5. Class or method resolution fails → clear any pending JNI exception, delete the new global reference, and reset the callback state.
+ *   6. New object successfully resolved → update `mPixelFormat` and refresh the conversion function.
+ */
 int UVCPreview::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format) {
 	
 	ENTER();
@@ -250,6 +308,19 @@ int UVCPreview::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pi
 	RETURN(0, int);
 }
 
+/**
+ * \brief Select the callback conversion function and output frame size.
+ *
+ * Called after the callback pixel format changes. Determines whether the
+ * capture callback receives raw YUYV data or a converted frame.
+ *
+ * Code Paths:
+ *   1. `PIXEL_FORMAT_RAW` or `PIXEL_FORMAT_YUV` → no conversion, callback size is `width * height * 2`.
+ *   2. `PIXEL_FORMAT_RGB565` → use `uvc_any2rgb565`, callback size is `width * height * 2`.
+ *   3. `PIXEL_FORMAT_RGBX` → use `uvc_any2rgbx`, callback size is `width * height * 4`.
+ *   4. `PIXEL_FORMAT_YUV20SP` or `PIXEL_FORMAT_NV21` → use the matching YUYV-to-semi-planar converter, callback size is `width * height * 3 / 2`.
+ *   5. Unrecognized format → clear the conversion function and leave `callbackPixelBytes` unchanged.
+ */
 void UVCPreview::callbackPixelFormatChanged() {
 	mFrameCallbackFunc = NULL;
 	const size_t sz = requestWidth * requestHeight;
@@ -285,6 +356,17 @@ void UVCPreview::callbackPixelFormatChanged() {
 	}
 }
 
+/**
+ * \brief Clear the preview and capture surfaces.
+ *
+ * Zeroes the visible contents of each installed native window using
+ * stride-aware row writes.
+ *
+ * Code Paths:
+ *   1. Acquire `capture_mutex`; if `mCaptureWindow` exists and can be locked, zero each row and post the buffer.
+ *   2. Acquire `preview_mutex`; if `mPreviewWindow` exists and can be locked, zero each row and post the buffer.
+ *   3. Missing window or failed `ANativeWindow_lock` → skip that surface.
+ */
 void UVCPreview::clearDisplay() {
 	ENTER();
 
@@ -325,6 +407,20 @@ void UVCPreview::clearDisplay() {
 	EXIT();
 }
 
+/**
+ * \brief Start the preview thread.
+ *
+ * Starts `preview_thread_func` only when a preview window is installed and
+ * preview is not already running.
+ *
+ * \return `EXIT_SUCCESS` when the preview thread starts, otherwise `EXIT_FAILURE`.
+ *
+ * Code Paths:
+ *   1. Preview already running → return `EXIT_FAILURE` without changing state.
+ *   2. Preview not running → set `mIsRunning` and inspect `mPreviewWindow` under `preview_mutex`.
+ *   3. Preview window present → create `preview_thread`.
+ *   4. No preview window or thread creation fails → clear `mIsRunning`, signal `preview_sync`, and return `EXIT_FAILURE`.
+ */
 int UVCPreview::startPreview() {
 	ENTER();
 
@@ -351,6 +447,21 @@ int UVCPreview::startPreview() {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Stop preview streaming and release preview/capture windows.
+ *
+ * Signals both preview and capture threads to exit, joins them, and clears
+ * queued frames and native window references.
+ *
+ * \return 0.
+ *
+ * Code Paths:
+ *   1. Preview is not running → skip thread joins and display clearing, but still clear frames and release windows.
+ *   2. Preview is running → clear `mIsRunning` and signal `preview_sync` and `capture_sync`.
+ *   3. Join `capture_thread`, then `preview_thread`; join failures are logged as warnings.
+ *   4. Clear any queued preview and capture frames.
+ *   5. Release `mPreviewWindow` under `preview_mutex` and `mCaptureWindow` under `capture_mutex` if present.
+ */
 int UVCPreview::stopPreview() {
 	ENTER();
 	bool b = isRunning();
@@ -386,6 +497,23 @@ int UVCPreview::stopPreview() {
 //**********************************************************************
 //
 //**********************************************************************
+/**
+ * \brief libuvc callback that queues valid incoming preview frames.
+ *
+ * Runs on the libuvc streaming thread. The callback copies the incoming
+ * frame into the preview frame pool before returning so libuvc can reuse
+ * its original frame safely.
+ *
+ * \param[in] frame Incoming libuvc frame.
+ * \param[in] vptr_args Pointer to the owning `UVCPreview` instance.
+ *
+ * Code Paths:
+ *   1. Preview pointer missing, preview not running, or frame data is invalid → return without queueing.
+ *   2. Frame format or size does not match the negotiated preview format → discard the frame.
+ *   3. Preview is running → allocate a pooled copy large enough for `frame->data_bytes`.
+ *   4. Copy allocation or `uvc_duplicate_frame` fails → recycle any allocated copy and return.
+ *   5. Duplicate succeeds → transfer ownership of the copy to `addPreviewFrame`.
+ */
 void UVCPreview::uvc_preview_frame_callback(uvc_frame_t *frame, void *vptr_args) {
 	UVCPreview *preview = reinterpret_cast<UVCPreview *>(vptr_args);
 	if UNLIKELY(!preview->isRunning() || !frame || !frame->frame_format || !frame->data || !frame->data_bytes) return;
@@ -472,6 +600,23 @@ void *UVCPreview::preview_thread_func(void *vptr_args) {
 	pthread_exit(NULL);
 }
 
+/**
+ * \brief Negotiate the preview stream format and update frame state.
+ *
+ * Queries the device for a stream control matching the requested preview
+ * parameters and updates the frame dimensions, byte estimates, and preview
+ * surface geometry before `do_preview` starts streaming.
+ *
+ * \param[out] ctrl Stream control populated by libuvc on success.
+ * \return 0 on success, libuvc error code on negotiation failure.
+ *
+ * Code Paths:
+ *   1. `uvc_get_stream_ctrl_format_size_fps` fails → log the negotiation failure and return the error.
+ *   2. Stream control succeeds → query the frame descriptor for the negotiated control.
+ *   3. Frame descriptor succeeds → update `frameWidth`/`frameHeight` and the preview window geometry under `preview_mutex`.
+ *   4. Frame descriptor fails → fall back to the requested width and height.
+ *   5. Success path → update `frameMode`, `frameBytes`, and `previewBytes` for the preview loop.
+ */
 int UVCPreview::prepare_preview(uvc_stream_ctrl_t *ctrl) {
 	uvc_error_t result;
 
@@ -509,6 +654,32 @@ int UVCPreview::prepare_preview(uvc_stream_ctrl_t *ctrl) {
 	RETURN(result, int);
 }
 
+/**
+ * \brief Run the preview loop for an active UVC stream.
+ *
+ * Called from the preview thread after `prepare_preview` succeeds. Consumes
+ * frames queued by `uvc_preview_frame_callback`, renders them to the preview
+ * window when available, and forwards the latest YUYV frame to the capture
+ * path.
+ *
+ * \param[in] ctrl Stream control negotiated by `prepare_preview`.
+ *
+ * Code Paths:
+ *   1. `uvc_start_streaming_bandwidth` failure → log the libuvc error and return without starting the capture thread.
+ *   2. Start success → clear any queued preview frames and start the capture thread.
+ *   3. MJPEG mode (`frameMode != 0`) → for each queued MJPEG frame while `mIsRunning`:
+ *      allocate a YUYV frame, decode MJPEG to YUYV, recycle the MJPEG frame,
+ *      render the YUYV frame to `mPreviewWindow`, and enqueue it via `addCaptureFrame`.
+ *   4. YUYV mode (`frameMode == 0`) → for each queued YUYV frame while `mIsRunning`:
+ *      render the frame to `mPreviewWindow` and enqueue it via `addCaptureFrame`.
+ *   5. MJPEG decode failure → recycle the converted YUYV frame and continue with the next queued frame.
+ *   6. `mIsRunning` becomes false → exit the loop, signal the capture thread, and stop streaming.
+ *
+ * Frame Ownership:
+ *   - Queued preview frames are consumed by this method.
+ *   - Frames passed to `addCaptureFrame` are transferred to the capture queue.
+ *   - `draw_preview_one` uses temporary converted frames internally and returns the original input frame.
+ */
 void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
 	ENTER();
 
@@ -593,6 +764,21 @@ static void copyFrame(const uint8_t *src, uint8_t *dest, const int width, int he
 
 
 // transfer specific frame data to the Surface(ANativeWindow)
+/**
+ * \brief Copy frame pixels into an `ANativeWindow` buffer.
+ *
+ * Uses the smaller of the frame and surface dimensions and preserves source
+ * and destination strides.
+ *
+ * \param[in] frame Source frame containing RGBA/RGBX pixel data.
+ * \param[in] window Pointer to the target `ANativeWindow`, or NULL.
+ * \return 0 on success, -1 if the window is missing or cannot be locked.
+ *
+ * Code Paths:
+ *   1. `*window` is NULL → return -1.
+ *   2. `ANativeWindow_lock` fails → return -1.
+ *   3. Lock succeeds → copy the overlapping region row by row, then unlock and post the surface.
+ */
 int copyToSurface(uvc_frame_t *frame, ANativeWindow **window) {
 	// ENTER();
 	int result = 0;
@@ -624,6 +810,27 @@ int copyToSurface(uvc_frame_t *frame, ANativeWindow **window) {
 }
 
 // changed to return original frame instead of returning converted frame even if convert_func is not null.
+/**
+ * \brief Render one preview frame to a native window.
+ *
+ * Converts the frame when required, copies it to the target surface, and
+ * always returns the original input frame so ownership remains with the
+ * caller.
+ *
+ * \param[in] frame Input preview frame.
+ * \param[in] window Pointer to the target `ANativeWindow`, or NULL.
+ * \param[in] convert_func Optional conversion function, or NULL for direct copy.
+ * \param[in] pixcelBytes Output pixel size in bytes used to allocate a converted frame.
+ * \return The original `frame` pointer.
+ *
+ * Code Paths:
+ *   1. Acquire `preview_mutex` and check whether `*window` is present.
+ *   2. `*window` is NULL → return the input frame without rendering.
+ *   3. `convert_func` is non-null → allocate a conversion frame from the pool.
+ *   4. Conversion allocation or conversion fails → recycle the conversion frame and return the input frame.
+ *   5. Conversion succeeds → copy the converted frame to the surface and recycle the conversion frame.
+ *   6. `convert_func` is NULL → copy the input frame directly to the surface.
+ */
 uvc_frame_t *UVCPreview::draw_preview_one(uvc_frame_t *frame, ANativeWindow **window, convFunc_t convert_func, int pixcelBytes) {
 	// ENTER();
 
@@ -662,6 +869,22 @@ uvc_frame_t *UVCPreview::draw_preview_one(uvc_frame_t *frame, ANativeWindow **wi
 //======================================================================
 inline const bool UVCPreview::isCapturing() const { return mIsCapturing; }
 
+/**
+ * \brief Set or clear the capture output window.
+ *
+ * Holds `capture_mutex` while changing the capture window so the capture
+ * thread observes either the old or the new window, never a torn update.
+ *
+ * \param[in] capture_window Target capture `ANativeWindow`, or NULL to clear capture output.
+ * \return 0.
+ *
+ * Code Paths:
+ *   1. Preview is running, capture is active, and a capture window exists → pause capture and wait for the capture loop to finish.
+ *   2. Window pointer unchanged → leave the current window in place.
+ *   3. Window pointer changed → release the previous window if present and assign the new pointer.
+ *   4. New window present → set buffer geometry and query the actual window format.
+ *   5. Actual window format is not RGB565 while `previewFormat` is RGB565 → release the new window and clear `mCaptureWindow`.
+ */
 int UVCPreview::setCaptureDisplay(ANativeWindow *capture_window) {
 	ENTER();
 	pthread_mutex_lock(&capture_mutex);
@@ -746,9 +969,17 @@ void UVCPreview::clearCaptureFrame() {
 }
 
 //======================================================================
-/*
- * thread function
- * @param vptr_args pointer to UVCPreview instance
+/**
+ * \brief Capture thread entry point.
+ *
+ * Attaches the capture thread to the Java VM, runs the capture loop until
+ * `mIsRunning` is cleared, then detaches the thread.
+ *
+ * \param[in] vptr_args Pointer to the owning `UVCPreview` instance.
+ *
+ * Code Paths:
+ *   1. `vptr_args` is null → skip the capture loop and exit the thread.
+ *   2. `vptr_args` is valid → attach to `JavaVM`, call `do_capture`, detach, and exit.
  */
 // static
 void *UVCPreview::capture_thread_func(void *vptr_args) {
@@ -771,7 +1002,20 @@ void *UVCPreview::capture_thread_func(void *vptr_args) {
 }
 
 /**
- * the actual function for capturing
+ * \brief Run the capture thread state loop.
+ *
+ * Called from `capture_thread_func` after the thread is attached to the
+ * Java VM. Selects the capture path based on the current capture window and
+ * keeps capture synchronized with `mIsRunning` and `mIsCapturing`.
+ *
+ * \param[in] env JNI environment for the attached capture thread.
+ *
+ * Code Paths:
+ *   1. Entry → clear any queued capture frame and re-derive callback conversion state.
+ *   2. While `isRunning()` → mark capture active and choose the active capture path.
+ *   3. `mCaptureWindow` exists → run `do_capture_surface`.
+ *   4. No capture window → run `do_capture_idle_loop`.
+ *   5. After each sub-loop returns → broadcast `capture_sync` and re-evaluate running/capture state.
  */
 void UVCPreview::do_capture(JNIEnv *env) {
 
@@ -802,7 +1046,21 @@ void UVCPreview::do_capture_idle_loop(JNIEnv *env) {
 }
 
 /**
- * write frame data to Surface for capturing
+ * \brief Capture loop that writes converted frames to the capture surface.
+ *
+ * Called from `do_capture` when a capture window is active. Consumes YUYV
+ * frames from the capture queue, converts them to RGBX for surface output,
+ * and forwards every frame to `do_capture_callback`.
+ *
+ * \param[in] env JNI environment for the attached capture thread.
+ *
+ * Code Paths:
+ *   1. While `isRunning() && isCapturing()` → wait for a capture frame.
+ *   2. Lazy conversion frame → allocate one RGBX-sized frame from the pool on first use.
+ *   3. Conversion frame unavailable → skip surface copy but still deliver the original frame to the callback path.
+ *   4. YUYV→RGBX conversion succeeds and `mCaptureWindow` exists → copy the converted frame to the capture surface.
+ *   5. Each queued frame is passed to `do_capture_callback`, which owns recycling the callback frame.
+ *   6. Loop exit → recycle the reused conversion frame and release `mCaptureWindow`.
  */
 void UVCPreview::do_capture_surface(JNIEnv *env) {
 	ENTER();
@@ -843,7 +1101,27 @@ void UVCPreview::do_capture_surface(JNIEnv *env) {
 }
 
 /**
-* call IFrameCallback#onFrame if needs
+ * \brief Deliver a captured frame to the registered Java `IFrameCallback`.
+ *
+ * Called from the capture thread with a YUYV frame taken from the capture
+ * queue. The method holds `capture_mutex` for the entire JNI callback so that
+ * `setFrameCallback` and `setCaptureDisplay` observe a stable callback state.
+ *
+ * \param[in] env JNI environment for the attached capture thread.
+ * \param[in] frame YUYV frame from the capture queue, or NULL to do nothing.
+ *
+ * Code Paths:
+ *   1. `frame == NULL` → release `capture_mutex` and return.
+ *   2. No registered Java callback → recycle the frame and return.
+ *   3. Pixel-format conversion is required (`mFrameCallbackFunc != NULL`):
+ *      allocate a callback-sized frame, convert from YUYV, recycle the input
+ *      frame, and pass the converted frame to Java.
+ *   4. Conversion allocation or conversion fails → recycle available frame data
+ *      and skip the JNI call.
+ *   5. No conversion required → pass the original YUYV frame to Java through a
+ *      direct `ByteBuffer`.
+ *   6. After a successful or failed JNI call → clear any pending JNI exception,
+ *      delete the local `ByteBuffer` reference, and recycle the callback frame.
  */
 void UVCPreview::do_capture_callback(JNIEnv *env, uvc_frame_t *frame) {
 	ENTER();

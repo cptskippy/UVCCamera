@@ -16,15 +16,38 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.content.res.AssetManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+/**
+ * Load bundled asset files into memory.
+ *
+ * Convenience helper for the camera sample apps, which keep configuration
+ * data (button layouts, test images) in the Android assets directory rather
+ * than in external storage.
+ */
+
+
 
 public class AssetsHelper {
+	/**
+	 * Load an asset file and return its full contents as a String.
+	 *
+	 * Args:
+	 *     assets: AssetManager to read from (typically context.getAssets()).
+	 *     name: Path of the asset relative to the assets root.
+	 *
+	 * Returns:
+	 *     The complete text content of the asset.
+	 *
+	 * Raises:
+	 *     IOException: If the asset cannot be opened or read.
+	 */
+
 
 	public static String loadString(final AssetManager assets, final String name) throws IOException {
 		final StringBuffer sb = new StringBuffer();

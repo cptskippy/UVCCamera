@@ -18,6 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief File input stream for RapidJSON readers.
+ *
+ * Provides a buffered file reading stream implementing the Stream concept for parsing JSON from files.
+ *
+ * Exports:
+ *     FileReadStream: Buffered file input stream
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - internal/stack.h: Buffer management
+ *     - C standard library: FILE* I/O
+ *
+ * Architecture Note:
+ *     FileReadStream wraps a C FILE* and provides buffered reads. It is not thread-safe and must be used by a single thread.
+ */
+
 #ifndef RAPIDJSON_FILEREADSTREAM_H_
 #define RAPIDJSON_FILEREADSTREAM_H_
 
@@ -26,9 +43,17 @@
 
 namespace rapidjson {
 
-//! File byte stream for input using fread().
+//! \brief File byte stream for input using fread().
 /*!
     \note implements Stream concept
+
+    Properties:
+        fp_: FILE pointer for reading.
+        buffer_: User-supplied buffer.
+        bufferSize_: Size of buffer.
+
+    Thread Safety:
+        Not thread-safe. Instances must be used by a single thread.
 */
 class FileReadStream {
 public:

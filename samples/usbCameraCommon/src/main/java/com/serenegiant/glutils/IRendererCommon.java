@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.support.annotation.IntDef;
 
@@ -36,13 +36,17 @@ public interface IRendererCommon {
 
 	/**
 	 * 映像を上下左右反転させるかどうかをセット
-	 * @param mirror 0:通常, 1:左右反転, 2:上下反転, 3:上下左右反転
+	 *
+	 * Args:
+	 *     mirror: 0:通常, 1:左右反転, 2:上下反転, 3:上下左右反転.
 	 */
 	public void setMirror(@MirrorMode final int mirror);
-	
+
 	/**
 	 * 映像を上下左右反転させるかどうかを取得
-	 * @return 0:通常, 1:左右反転, 2:上下反転, 3:上下左右反転
+	 *
+	 * Returns:
+	 *     0:通常, 1:左右反転, 2:上下反転, 3:上下左右反転.
 	 */
 	public @MirrorMode int getMirror();
 }

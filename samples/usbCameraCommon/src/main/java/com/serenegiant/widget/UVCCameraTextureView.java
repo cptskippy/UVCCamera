@@ -48,6 +48,7 @@ import com.serenegiant.utils.FpsCounter;
  * you can show this view in the center of screen and keep the aspect ratio of content
  * XXX it is better that can set the aspect ratio as xml property
  */
+
 public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	implements TextureView.SurfaceTextureListener, CameraViewInterface {
 
@@ -62,21 +63,20 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	private Callback mCallback;
 	/** for calculation of frame rate */
 	private final FpsCounter mFpsCounter = new FpsCounter();
-
 	public UVCCameraTextureView(final Context context) {
-		this(context, null, 0);
+	this(context, null, 0);
 	}
-
 	public UVCCameraTextureView(final Context context, final AttributeSet attrs) {
-		this(context, attrs, 0);
+	this(context, attrs, 0);
 	}
-
 	public UVCCameraTextureView(final Context context, final AttributeSet attrs, final int defStyle) {
-		super(context, attrs, defStyle);
-		setSurfaceTextureListener(this);
+	super(context, attrs, defStyle);
+	setSurfaceTextureListener(this);
 	}
-
 	@Override
+	/**
+	 * resume rendering the camera preview
+	 */
 	public void onResume() {
 		if (DEBUG) Log.v(TAG, "onResume:");
 		if (mHasSurface) {
@@ -85,6 +85,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * pause rendering and release the render handler and bitmap
+	 */
 	public void onPause() {
 		if (DEBUG) Log.v(TAG, "onPause:");
 		if (mRenderHandler != null) {
@@ -98,6 +101,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * create or resize the render handler for the surface and notify the callback
+	 */
 	public void onSurfaceTextureAvailable(final SurfaceTexture surface, final int width, final int height) {
 		if (DEBUG) Log.v(TAG, "onSurfaceTextureAvailable:" + surface);
 		if (mRenderHandler == null) {
@@ -112,6 +118,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * resize the render handler to the new surface size and notify the callback
+	 */
 	public void onSurfaceTextureSizeChanged(final SurfaceTexture surface, final int width, final int height) {
 		if (DEBUG) Log.v(TAG, "onSurfaceTextureSizeChanged:" + surface);
 		if (mRenderHandler != null) {
@@ -123,6 +132,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * release the render handler and preview surface and notify the callback
+	 */
 	public boolean onSurfaceTextureDestroyed(final SurfaceTexture surface) {
 		if (DEBUG) Log.v(TAG, "onSurfaceTextureDestroyed:" + surface);
 		if (mRenderHandler != null) {
@@ -141,6 +153,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * process a new frame and complete a pending still-image capture
+	 */
 	public void onSurfaceTextureUpdated(final SurfaceTexture surface) {
 		synchronized (mCaptureSync) {
 			if (mReqesutCaptureStillImage) {
@@ -155,6 +170,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * return whether the preview surface is available
+	 */
 	public boolean hasSurface() {
 		return mHasSurface;
 	}
@@ -181,12 +199,18 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * return the preview surface texture, or null if the render handler is not active
+	 */
 	public SurfaceTexture getSurfaceTexture() {
 		return mRenderHandler != null ? mRenderHandler.getPreviewTexture() : null;
 	}
 
 	private Surface mPreviewSurface;
 	@Override
+	/**
+	 * return the preview surface, creating it from the preview surface texture if needed
+	 */
 	public Surface getSurface() {
 		if (DEBUG) Log.v(TAG, "getSurface:hasSurface=" + mHasSurface);
 		if (mPreviewSurface == null) {
@@ -199,28 +223,38 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	}
 
 	@Override
+	/**
+	 * set the video encoder used to capture preview frames
+	 */
 	public void setVideoEncoder(final IVideoEncoder encoder) {
 		if (mRenderHandler != null)
 			mRenderHandler.setVideoEncoder(encoder);
 	}
 
 	@Override
+	/**
+	 * set the callback that receives camera-view surface events
+	 */
 	public void setCallback(final Callback callback) {
 		mCallback = callback;
 	}
 
+	/**
+	 * reset the frame rate counter
+	 */
 	public void resetFps() {
 		mFpsCounter.reset();
 	}
-	
+
 	/** update frame rate of image processing */
 	public void updateFps() {
-		mFpsCounter.update();
+	mFpsCounter.update();
 	}
-
 	/**
 	 * get current frame rate of image processing
-	 * @return
+	 *
+	 * Returns:
+	 *     The FPS.
 	 */
 	public float getFps() {
 		return mFpsCounter.getFps();
@@ -228,7 +262,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 
 	/**
 	 * get total frame rate from start
-	 * @return
+	 *
+	 * Returns:
+	 *     The total FPS.
 	 */
 	public float getTotalFps() {
 		return mFpsCounter.getTotalFps();
@@ -251,10 +287,12 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 		private RenderThread mThread;
 		private boolean mIsActive = true;
 		private final FpsCounter mFpsCounter;
-
+		/**
+		 * create and start the render thread and return its render handler
+		 */
 		public static final RenderHandler createHandler(final FpsCounter counter,
 			final SurfaceTexture surface, final int width, final int height) {
-			
+
 			final RenderThread thread = new RenderThread(counter, surface, width, height);
 			thread.start();
 			return thread.getHandler();
@@ -264,13 +302,17 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 			mThread = thread;
 			mFpsCounter = counter;
 		}
-
+		/**
+		 * ask the render thread to set the video encoder
+		 */
 		public final void setVideoEncoder(final IVideoEncoder encoder) {
 			if (DEBUG) Log.v(TAG, "setVideoEncoder:");
 			if (mIsActive)
 				sendMessage(obtainMessage(MSG_SET_ENCODER, encoder));
 		}
-
+		/**
+		 * return the preview surface texture, or null if the render handler is inactive
+		 */
 		public final SurfaceTexture getPreviewTexture() {
 			if (DEBUG) Log.v(TAG, "getPreviewTexture:");
 			if (mIsActive) {
@@ -287,6 +329,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 			}
 		}
 
+		/**
+		 * resize the preview surface to the given width and height
+		 */
 		public void resize(final int width, final int height) {
 			if (DEBUG) Log.v(TAG, "resize:");
 			if (mIsActive) {
@@ -299,7 +344,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 				}
 			}
 		}
-
+		/**
+		 * stop the render thread
+		 */
 		public final void release() {
 			if (DEBUG) Log.v(TAG, "release:");
 			if (mIsActive) {
@@ -311,6 +358,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 		}
 
 		@Override
+		/**
+		 * count a new frame and request a render
+		 */
 		public final void onFrameAvailable(final SurfaceTexture surfaceTexture) {
 			if (mIsActive) {
 				mFpsCounter.count();
@@ -319,6 +369,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 		}
 
 		@Override
+		/**
+		 * dispatch a message to the render thread
+		 */
 		public final void handleMessage(final Message msg) {
 			if (mThread == null) return;
 			switch (msg.what) {
@@ -348,11 +401,10 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	    	private final SurfaceTexture mSurface;
 	    	private RenderHandler mHandler;
 	    	private EGLBase mEgl;
-	    	/** IEglSurface instance related to this TextureView */
+		/** IEglSurface instance related to this TextureView */
 	    	private EGLBase.IEglSurface mEglSurface;
 	    	private GLDrawer2D mDrawer;
 	    	private int mTexId = -1;
-	    	/** SurfaceTexture instance to receive video images */
 	    	private SurfaceTexture mPreviewSurface;
 			private final float[] mStMatrix = new float[16];
 			private MediaEncoder mEncoder;
@@ -361,7 +413,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 
 			/**
 			 * constructor
-			 * @param surface: drawing surface came from TexureView
+			 *
+			 * Args:
+			 *     surface:: drawing surface came from TexureView.
 			 */
 	    	public RenderThread(final FpsCounter fpsCounter, final SurfaceTexture surface, final int width, final int height) {
 				mFpsCounter = fpsCounter;
@@ -370,11 +424,13 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 				mViewHeight = height;
 	    		setName("RenderThread");
 			}
-
+			/**
+			 * return the render handler, waiting until the render thread creates it
+			 */
 			public final RenderHandler getHandler() {
 				if (DEBUG) Log.v(TAG, "RenderThread#getHandler:");
 	            synchronized (mSync) {
-	                // create rendering thread
+	// create rendering thread
 	            	if (mHandler == null)
 	            	try {
 	            		mSync.wait();
@@ -384,6 +440,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	            return mHandler;
 			}
 
+			/**
+			 * update the preview surface if the size changed, otherwise notify waiters
+			 */
 			public void resize(final int width, final int height) {
 				if (((width > 0) && (width != mViewWidth)) || ((height > 0) && (height != mViewHeight))) {
 					mViewWidth = width;
@@ -395,7 +454,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 					}
 				}
 			}
-
+			/**
+			 * recreate the preview texture and surface texture
+			 */
 			public final void updatePreviewSurface() {
 	            if (DEBUG) Log.i(TAG, "RenderThread#updatePreviewSurface:");
 	            synchronized (mSync) {
@@ -409,17 +470,19 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 		            if (mTexId >= 0) {
 						mDrawer.deleteTex(mTexId);
 		            }
-		    		// create texture and SurfaceTexture for input from camera
+		// create texture and SurfaceTexture for input from camera
 		            mTexId = mDrawer.initTex();
 		            if (DEBUG) Log.v(TAG, "updatePreviewSurface:tex_id=" + mTexId);
 		            mPreviewSurface = new SurfaceTexture(mTexId);
 					mPreviewSurface.setDefaultBufferSize(mViewWidth, mViewHeight);
 		            mPreviewSurface.setOnFrameAvailableListener(mHandler);
-		            // notify to caller thread that previewSurface is ready
+		// notify to caller thread that previewSurface is ready
 					mSync.notifyAll();
 	            }
 			}
-
+			/**
+			 * set the media encoder used for video capture
+			 */
 			public final void setEncoder(final MediaEncoder encoder) {
 				if (DEBUG) Log.v(TAG, "RenderThread#setEncoder:encoder=" + encoder);
 				if (encoder != null && (encoder instanceof MediaVideoEncoder)) {
@@ -433,15 +496,15 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
  * with UVCCamera#setFrameCallback instead of using following code samples.
  */
 /*			// for part1
- 			private static final int BUF_NUM = 1;
-			private static final int BUF_STRIDE = 640 * 480;
-			private static final int BUF_SIZE = BUF_STRIDE * BUF_NUM;
-			int cnt = 0;
-			int offset = 0;
-			final int pixels[] = new int[BUF_SIZE];
-			final IntBuffer buffer = IntBuffer.wrap(pixels); */
+private static final int BUF_NUM = 1;
+private static final int BUF_STRIDE = 640 * 480;
+private static final int BUF_SIZE = BUF_STRIDE * BUF_NUM;
+int cnt = 0;
+int offset = 0;
+final int pixels[] = new int[BUF_SIZE];
+ */
 /*			// for part2
-			private ByteBuffer buf = ByteBuffer.allocateDirect(640 * 480 * 4);
+private ByteBuffer buf = ByteBuffer.allocateDirect(640 * 480 * 4);
  */
 			/**
 			 * draw a frame (and request to draw for video capturing if it is necessary)
@@ -454,7 +517,7 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 				mPreviewSurface.getTransformMatrix(mStMatrix);
 				// notify video encoder if it exist
 				if (mEncoder != null) {
-					// notify to capturing thread that the camera frame is available.
+				// notify to capturing thread that the camera frame is available.
 					if (mEncoder instanceof MediaVideoEncoder)
 						((MediaVideoEncoder)mEncoder).frameAvailableSoon(mStMatrix);
 					else
@@ -464,80 +527,83 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 				mDrawer.draw(mTexId, mStMatrix, 0);
 				mEglSurface.swap();
 /*				// sample code to read pixels into Buffer and save as a Bitmap (part1)
-				buffer.position(offset);
-				GLES20.glReadPixels(0, 0, 640, 480, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
-				if (++cnt == 100) { // save as a Bitmap, only once on this sample code
-					// if you save every frame as a Bitmap, app will crash by Out of Memory exception...
-					Log.i(TAG, "Capture image using glReadPixels:offset=" + offset);
-					final Bitmap bitmap = createBitmap(pixels,offset,  640, 480);
-					final File outputFile = MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".png");
-					try {
-						final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile));
-						try {
-							try {
-								bitmap.compress(CompressFormat.PNG, 100, os);
-								os.flush();
-								bitmap.recycle();
-							} catch (IOException e) {
-							}
-						} finally {
-							os.close();
-						}
-					} catch (FileNotFoundException e) {
-					} catch (IOException e) {
-					}
-				}
-				offset = (offset + BUF_STRIDE) % BUF_SIZE;
-*/
+buffer.position(offset);
+GLES20.glReadPixels(0, 0, 640, 480, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
+if (++cnt == 100) { // save as a Bitmap, only once on this sample code
+// if you save every frame as a Bitmap, app will crash by Out of Memory exception...
+Log.i(TAG, "Capture image using glReadPixels:offset=" + offset);
+final Bitmap bitmap = createBitmap(pixels,offset,  640, 480);
+final File outputFile = MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".png");
+try {
+final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile));
+try {
+try {
+bitmap.compress(CompressFormat.PNG, 100, os);
+os.flush();
+bitmap.recycle();
+} catch (IOException e) {
+}
+} finally {
+os.close();
+}
+} catch (FileNotFoundException e) {
+} catch (IOException e) {
+}
+}
+offset = (offset + BUF_STRIDE) % BUF_SIZE;
+ */
 /*				// sample code to read pixels into Buffer and save as a Bitmap (part2)
-		        buf.order(ByteOrder.LITTLE_ENDIAN);	// it is enough to call this only once.
-		        GLES20.glReadPixels(0, 0, 640, 480, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
-		        buf.rewind();
-				if (++cnt == 100) {	// save as a Bitmap, only once on this sample code
-					// if you save every frame as a Bitmap, app will crash by Out of Memory exception...
-					final File outputFile = MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".png");
-			        BufferedOutputStream os = null;
-					try {
-				        try {
-				            os = new BufferedOutputStream(new FileOutputStream(outputFile));
-				            Bitmap bmp = Bitmap.createBitmap(640, 480, Bitmap.Config.ARGB_8888);
-				            bmp.copyPixelsFromBuffer(buf);
-				            bmp.compress(Bitmap.CompressFormat.PNG, 90, os);
-				            bmp.recycle();
-				        } finally {
-				            if (os != null) os.close();
-				        }
-					} catch (FileNotFoundException e) {
-					} catch (IOException e) {
-					}
-				}
-*/
+buf.order(ByteOrder.LITTLE_ENDIAN);	// it is enough to call this only once.
+GLES20.glReadPixels(0, 0, 640, 480, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
+buf.rewind();
+if (++cnt == 100) {	// save as a Bitmap, only once on this sample code
+// if you save every frame as a Bitmap, app will crash by Out of Memory exception...
+final File outputFile = MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".png");
+BufferedOutputStream os = null;
+try {
+try {
+os = new BufferedOutputStream(new FileOutputStream(outputFile));
+Bitmap bmp = Bitmap.createBitmap(640, 480, Bitmap.Config.ARGB_8888);
+bmp.copyPixelsFromBuffer(buf);
+bmp.compress(Bitmap.CompressFormat.PNG, 90, os);
+bmp.recycle();
+} finally {
+if (os != null) os.close();
+}
+} catch (FileNotFoundException e) {
+} catch (IOException e) {
+}
+}
+ */
 			}
 
 /*			// sample code to read pixels into IntBuffer and save as a Bitmap (part1)
-			private static Bitmap createBitmap(final int[] pixels, final int offset, final int width, final int height) {
-				final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-				paint.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix(new float[] {
-						0, 0, 1, 0, 0,
-						0, 1, 0, 0, 0,
-						1, 0, 0, 0, 0,
-						0, 0, 0, 1, 0
-					})));
-
-				final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-				final Canvas canvas = new Canvas(bitmap);
-
-				final Matrix matrix = new Matrix();
-				matrix.postScale(1.0f, -1.0f);
-				matrix.postTranslate(0, height);
-				canvas.concat(matrix);
-
-				canvas.drawBitmap(pixels, offset, width, 0, 0, width, height, false, paint);
-
-				return bitmap;
-			} */
+private static Bitmap createBitmap(final int[] pixels, final int offset, final int width, final int height) {
+final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+paint.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix(new float[] {
+0, 0, 1, 0, 0,
+0, 1, 0, 0, 0,
+1, 0, 0, 0, 0,
+0, 0, 0, 1, 0
+})));
+ *
+final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+final Canvas canvas = new Canvas(bitmap);
+ *
+final Matrix matrix = new Matrix();
+matrix.postScale(1.0f, -1.0f);
+matrix.postTranslate(0, height);
+canvas.concat(matrix);
+ *
+canvas.drawBitmap(pixels, offset, width, 0, 0, width, height, false, paint);
+ *
+return bitmap;
+ */
 
 			@Override
+			/**
+			 * initialize the thread and run the render loop
+			 */
 			public final void run() {
 				Log.d(TAG, getName() + " started");
 	            init();
@@ -563,7 +629,7 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 	            mEgl = EGLBase.createFrom(null, false, false);
 	    		mEglSurface = mEgl.createFromSurface(mSurface);
 	    		mEglSurface.makeCurrent();
-	    		// create drawing object
+			// create drawing object
 	    		mDrawer = new GLDrawer2D(true);
 			}
 

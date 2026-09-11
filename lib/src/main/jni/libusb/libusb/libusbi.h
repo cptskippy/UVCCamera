@@ -18,6 +18,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/**
+ * \brief Provide internal libusb implementation API and types.
+ *
+ * Internal header exposing libusb core structures, constants, and prototypes
+ * used by the libusb implementation. Not part of the public API.
+ *
+ * Exports:
+ *   libusb_context, libusb_device, libusb_device_handle: Internal structs
+ *   usbi_* functions: Internal helpers
+ *   Configuration macros and OS-specific definitions
+ *
+ * Dependencies:
+ *   - libusb.h: Public API definitions
+ *   - OS-specific headers: os/*
+ *   - config.h: Build configuration
+ *
+ * Architecture Note:
+ *   This header is for internal use only. Public applications should include
+ *   libusb.h. Implementation details may change between releases without notice.
+ */
+
 #ifndef LIBUSBI_H
 #define LIBUSBI_H
 

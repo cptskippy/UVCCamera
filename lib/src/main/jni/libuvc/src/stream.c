@@ -42,6 +42,9 @@
  * @brief Tools for creating, managing and consuming video streams
  */
 
+// Implementation for libuvc streaming; see libuvc/libuvc.h for the public API.
+
+
 #define LOCAL_DEBUG 0
 
 #define LOG_TAG "libuvc/stream"

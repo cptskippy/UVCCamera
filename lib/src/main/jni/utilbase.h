@@ -22,6 +22,27 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
+/**
+ * \brief Shared NDK/JNI helper macros and utilities.
+ *
+ * Provides safe cleanup macros, branch-prediction hints, logging macros,
+ * and assertion helpers used across the native UVCCamera code.
+ *
+ * Exports:
+ *     SAFE_FREE/SAFE_DELETE/SAFE_DELETE_ARRAY: Null-safe cleanup macros.
+ *     LIKELY/UNLIKELY: Branch-prediction hints.
+ *     CHECK/CHECK_*: Assertion helpers.
+ *     LOGV/LOGD/LOGI/LOGW/LOGE: Android logging macros.
+ *
+ * Dependencies:
+ *     - JNI headers
+ *     - Android log when building for Android
+ *
+ * Architecture Note:
+ *     This header is shared by the UVCCamera native implementation and
+ *     the JNI bridge.
+ */
+
 #ifndef UTILBASE_H_
 #define UTILBASE_H_
 
@@ -49,8 +70,8 @@
 #define		UNLIKELY(x)					((x))
 #endif
 
-// XXX assertはNDEBUGが定義されていたら引数を含めて丸ごと削除されてしまうので
-// 関数実行を直接assertの引数にするとその関数はNDEBUGの時に実行されなくなるので注意
+// NOTE: when NDEBUG is defined, assert removes its arguments entirely.
+// Passing a function call directly as an assert argument means the function will not be executed when NDEBUG is defined.
 #include <assert.h>
 #define CHECK(CONDITION) { bool RES = (CONDITION); assert(RES); }
 #define CHECK_EQ(X, Y) { bool RES = (X == Y); assert(RES); }

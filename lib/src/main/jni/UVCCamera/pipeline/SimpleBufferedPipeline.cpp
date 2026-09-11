@@ -3,6 +3,10 @@
 //
 
 #include "utilbase.h"
+
+// Implementation for SimpleBufferedPipeline.h; see the header for the public pipeline interface.
+
+
 #include "common_utils.h"
 
 #include "libUVCCamera.h"

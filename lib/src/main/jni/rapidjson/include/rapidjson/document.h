@@ -18,6 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief JSON DOM document for RapidJSON.
+ *
+ * Provides a DOM-style document for parsing and generating JSON with value manipulation.
+ *
+ * Exports:
+ *     GenericDocument: Templated DOM document
+ *     Document: UTF8 specialization
+ *     GenericValue: JSON value type
+ *     GenericMember: Object member pair
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - reader.h: Parsing
+ *     - internal/meta.h, internal/strfunc.h: Utilities
+ *
+ * Architecture Note:
+ *     Document owns its values and allocator. It is not thread-safe. Use one document per thread.
+ */
+
 #ifndef RAPIDJSON_DOCUMENT_H_
 #define RAPIDJSON_DOCUMENT_H_
 

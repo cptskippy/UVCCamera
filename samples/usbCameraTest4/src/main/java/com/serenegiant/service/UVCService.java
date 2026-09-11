@@ -41,6 +41,17 @@ import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usbcameratest4.MainActivity;
 import com.serenegiant.usbcameratest4.R;
 
+/**
+ * Service for managing UVC camera.
+ *
+ * Provides camera access via bound clients.
+ *
+ * Properties:
+ *     mUVCCamera: Camera instance.
+ *
+ * Thread Safety:
+ *     Service methods on main thread; camera ops synchronized.
+ */
 public class UVCService extends BaseService {
 	private static final boolean DEBUG = true;
 	private static final String TAG = "UVCService";
@@ -115,7 +126,9 @@ public class UVCService extends BaseService {
 	/**
 	 * helper method to show/change message on notification area
 	 * and set this service as foreground service to keep alive as possible as this can.
-	 * @param text
+	 *
+	 * Args:
+	 *     text: Text value
 	 */
 	private void showNotification(final CharSequence text) {
 		if (DEBUG) Log.v(TAG, "showNotification:" + text);
@@ -210,8 +223,12 @@ public class UVCService extends BaseService {
 	 * if zero is provided as ID, just return top of CameraServer instance(non-blocking method) if exists or null.<br>
 	 * if non-zero ID is provided, return specific CameraService if exist. block if not exists.<br>
 	 * return null if not exist matched specific ID<br>
-	 * @param serviceId
-	 * @return
+	 *
+	 * Args:
+	 *     serviceId: Service Id value
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private static CameraServer getCameraServer(final int serviceId) {
 		synchronized (sServiceSync) {
@@ -233,7 +250,9 @@ public class UVCService extends BaseService {
 	}
 
 	/**
-	 * @return true if there are no camera connection
+	 *
+	 * Returns:
+	 *     true if there are no camera connection
 	 */
 	private static boolean checkReleaseService() {
 		CameraServer server = null;

@@ -16,7 +16,7 @@ package com.serenegiant.glutils.es1;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -37,14 +37,18 @@ import javax.microedition.khronos.opengles.GL10;
 /**
  * OpenGL|ES用のヘルパークラス
  */
+
 public final class GLHelper {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = "GLHelper";
 
 	/**
 	 * OpenGL|ESのエラーをチェックしてlogCatに出力する
-	 * @param op
+	 *
+	 * Args:
+	 *     op: The op value.
 	 */
+
     public static void checkGlError(final String op) {
         final int error = GLES10.glGetError();
         if (error != GLES10.GL_NO_ERROR) {
@@ -59,42 +63,55 @@ public final class GLHelper {
 
 	/**
 	 * OpenGL|ESのエラーをチェックしてlogCatに出力する
-	 * @param gl
-	 * @param op
+	 *
+	 * Args:
+	 *     gl: The GL value.
+	 *     op: The op value.
 	 */
+
 	public static void checkGlError(final GL10 gl, final String op) {
 		final int error = gl.glGetError();
 		if (error != GL10.GL_NO_ERROR) {
 			final String msg = op + ": glError 0x" + Integer.toHexString(error);
 			Log.e(TAG, msg);
 			new Throwable(msg).printStackTrace();
-//         	if (DEBUG) {
-//	            throw new RuntimeException(msg);
-//       	}
+			//         	if (DEBUG) {
+			//	            throw new RuntimeException(msg);
+			//       	}
 		}
 	}
 
 	/**
 	 * テクスチャ名を生成, テクスチャユニットはGL_TEXTURE0, クランプ方法はGL_CLAMP_TO_EDGE
-	 * @param texTarget
-	 * @param filter_param テクスチャの補完方法を指定, min/mag共に同じ値になる, GL_LINEARとかGL_NEAREST
-	 * @return
+	 *
+	 * Args:
+	 *     texTarget: The tex target value.
+	 *     filter_param: テクスチャの補完方法を指定, min/mag共に同じ値になる, GL_LINEARとかGL_NEAREST.
+	 *
+	 * Returns:
+	 *     The init tex.
 	 */
+
 	public static int initTex(final int texTarget, final int filter_param) {
 		return initTex(texTarget, GLES10.GL_TEXTURE0, filter_param, filter_param, GLES10.GL_CLAMP_TO_EDGE);
 	}
 
 	/**
 	 * テクスチャ名を生成
-	 * @param texTarget
-	 * @param texUnit テクスチャユニット, GL_TEXTURE0...GL_TEXTURE31
-	 * @param min_filter テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST
-	 * @param mag_filter テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST
-	 * @param wrap テクスチャのクランプ方法, GL_CLAMP_TO_EDGE
-	 * @return
+	 *
+	 * Args:
+	 *     texTarget: The tex target value.
+	 *     texUnit: テクスチャユニット, GL_TEXTURE0...GL_TEXTURE31.
+	 *     min_filter: テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST.
+	 *     mag_filter: テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST.
+	 *     wrap: テクスチャのクランプ方法, GL_CLAMP_TO_EDGE.
+	 *
+	 * Returns:
+	 *     The init tex.
 	 */
+
 	public static int initTex(final int texTarget, final int texUnit, final int min_filter, final int mag_filter, final int wrap) {
-//		if (DEBUG) Log.v(TAG, "initTex:target=" + texTarget);
+	//		if (DEBUG) Log.v(TAG, "initTex:target=" + texTarget);
 		final int[] tex = new int[1];
 		GLES10.glActiveTexture(texUnit);
 		GLES10.glGenTextures(1, tex, 0);
@@ -108,13 +125,18 @@ public final class GLHelper {
 
 	/**
 	 * テクスチャ名を生成(GL_TEXTURE0のみ)
-	 * @param gl
-	 * @param texTarget
-	 * @param filter_param テクスチャの補間方法を指定 GL_LINEARとかGL_NEAREST
-	 * @return
+	 *
+	 * Args:
+	 *     gl: The GL value.
+	 *     texTarget: The tex target value.
+	 *     filter_param: テクスチャの補間方法を指定 GL_LINEARとかGL_NEAREST.
+	 *
+	 * Returns:
+	 *     The init tex.
 	 */
+
 	public static int initTex(final GL10 gl, final int texTarget, final int filter_param) {
-//		if (DEBUG) Log.v(TAG, "initTex:target=" + texTarget);
+	//		if (DEBUG) Log.v(TAG, "initTex:target=" + texTarget);
 		final int[] tex = new int[1];
 		gl.glActiveTexture(GL10.GL_TEXTURE0);
 		gl.glGenTextures(1, tex, 0);
@@ -129,8 +151,9 @@ public final class GLHelper {
 	/**
 	 * delete specific texture
 	 */
+
 	public static void deleteTex(final int hTex) {
-//		if (DEBUG) Log.v(TAG, "deleteTex:");
+	//		if (DEBUG) Log.v(TAG, "deleteTex:");
 		final int[] tex = new int[] {hTex};
 		GLES10.glDeleteTextures(1, tex, 0);
 	}
@@ -138,14 +161,15 @@ public final class GLHelper {
 	/**
 	 * delete specific texture
 	 */
+
 	public static void deleteTex(final GL10 gl, final int hTex) {
-//		if (DEBUG) Log.v(TAG, "deleteTex:");
+	//		if (DEBUG) Log.v(TAG, "deleteTex:");
 		final int[] tex = new int[] {hTex};
 		gl.glDeleteTextures(1, tex, 0);
 	}
 
 	public static int loadTextureFromResource(final Context context, final int resId) {
-		// Create an empty, mutable bitmap
+	// Create an empty, mutable bitmap
 		final Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
 		// get a canvas to paint over the bitmap
 		final Canvas canvas = new Canvas(bitmap);
@@ -181,7 +205,7 @@ public final class GLHelper {
 	}
 
 	public static int createTextureWithTextContent (final String text) {
-		// Create an empty, mutable bitmap
+	// Create an empty, mutable bitmap
 		final Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
 		// get a canvas to paint over the bitmap
 		final Canvas canvas = new Canvas(bitmap);
@@ -215,6 +239,7 @@ public final class GLHelper {
 	 * <p>
 	 * Throws a RuntimeException if the location is invalid.
 	 */
+
 	public static void checkLocation(final int location, final String label) {
 		if (location < 0) {
 			throw new RuntimeException("Unable to locate '" + label + "' in program");
@@ -225,6 +250,7 @@ public final class GLHelper {
 	 * Writes GL version info to the log.
 	 */
 	@SuppressLint("InlinedApi")
+
 	public static void logVersionInfo() {
 		Log.i(TAG, "vendor  : " + GLES10.glGetString(GLES10.GL_VENDOR));
 		Log.i(TAG, "renderer: " + GLES10.glGetString(GLES10.GL_RENDERER));
@@ -242,14 +268,19 @@ public final class GLHelper {
 		}
 	}
 
-// came from GLU
+	// came from GLU
 	/**
 	 * Return an error string from a GL or GLU error code.
 	 *
-	 * @param error - a GL or GLU error code.
-	 * @return the error string for the input error code, or NULL if the input
 	 *         was not a valid GL or GLU error code.
+	 *
+	 * Args:
+	 *     error: - a GL or GLU error code.
+	 *
+	 * Returns:
+	 *     the error string for the input error code, or NULL if the input.
 	 */
+
 	public static String gluErrorString(final int error) {
 		switch (error) {
 		case GLES10.GL_NO_ERROR:
@@ -275,16 +306,18 @@ public final class GLHelper {
 	 * Define a viewing transformation in terms of an eye point, a center of
 	 * view, and an up vector.
 	 *
-	 * @param eyeX eye point X
-	 * @param eyeY eye point Y
-	 * @param eyeZ eye point Z
-	 * @param centerX center of view X
-	 * @param centerY center of view Y
-	 * @param centerZ center of view Z
-	 * @param upX up vector X
-	 * @param upY up vector Y
-	 * @param upZ up vector Z
+	 * Args:
+	 *     eyeX: eye point X.
+	 *     eyeY: eye point Y.
+	 *     eyeZ: eye point Z.
+	 *     centerX: center of view X.
+	 *     centerY: center of view Y.
+	 *     centerZ: center of view Z.
+	 *     upX: up vector X.
+	 *     upY: up vector Y.
+	 *     upZ: up vector Z.
 	 */
+
 	public static void gluLookAt(final float eyeX, final float eyeY, final float eyeZ,
 		final float centerX, final float centerY, final float centerZ,
 		final float upX, final float upY, final float upZ) {
@@ -300,11 +333,13 @@ public final class GLHelper {
 	/**
 	 * Set up a 2D orthographic projection matrix
 	 *
-	 * @param left
-	 * @param right
-	 * @param bottom
-	 * @param top
+	 * Args:
+	 *     left: The left value.
+	 *     right: The right value.
+	 *     bottom: The bottom value.
+	 *     top: The top value.
 	 */
+
 	public static void gluOrtho2D(final float left, final float right,
 		final float bottom, final float top) {
 		GLES10.glOrthof(left, right, bottom, top, -1.0f, 1.0f);
@@ -313,16 +348,19 @@ public final class GLHelper {
 	/**
 	 * Set up a perspective projection matrix
 	 *
-	 * @param fovy specifies the field of view angle, in degrees, in the Y
 	 *        direction.
-	 * @param aspect specifies the aspect ration that determins the field of
 	 *        view in the x direction. The aspect ratio is the ratio of x
 	 *        (width) to y (height).
-	 * @param zNear specifies the distance from the viewer to the near clipping
 	 *        plane (always positive).
-	 * @param zFar specifies the distance from the viewer to the far clipping
 	 *        plane (always positive).
+	 *
+	 * Args:
+	 *     fovy: specifies the field of view angle, in degrees, in the Y.
+	 *     aspect: specifies the aspect ration that determins the field of.
+	 *     zNear: specifies the distance from the viewer to the near clipping.
+	 *     zFar: specifies the distance from the viewer to the far clipping.
 	 */
+
 	public static void gluPerspective(final float fovy, final float aspect,
 		final float zNear, final float zFar) {
 
@@ -341,25 +379,30 @@ public final class GLHelper {
 	 * Note that you can use the OES_matrix_get extension, if present, to get
 	 * the current modelView and projection matrices.
 	 *
-	 * @param objX object coordinates X
-	 * @param objY object coordinates Y
-	 * @param objZ object coordinates Z
-	 * @param model the current modelview matrix
-	 * @param modelOffset the offset into the model array where the modelview
 	 *        maxtrix data starts.
-	 * @param project the current projection matrix
-	 * @param projectOffset the offset into the project array where the project
 	 *        matrix data starts.
-	 * @param view the current view, {x, y, width, height}
-	 * @param viewOffset the offset into the view array where the view vector
 	 *        data starts.
-	 * @param win the output vector {winX, winY, winZ}, that returns the
 	 *        computed window coordinates.
-	 * @param winOffset the offset into the win array where the win vector data
 	 *        starts.
-	 * @return A return value of GL_TRUE indicates success, a return value of
 	 *         GL_FALSE indicates failure.
+	 *
+	 * Args:
+	 *     objX: object coordinates X.
+	 *     objY: object coordinates Y.
+	 *     objZ: object coordinates Z.
+	 *     model: the current modelview matrix.
+	 *     modelOffset: the offset into the model array where the modelview.
+	 *     project: the current projection matrix.
+	 *     projectOffset: the offset into the project array where the project.
+	 *     view: the current view, {x, y, width, height}.
+	 *     viewOffset: the offset into the view array where the view vector.
+	 *     win: the output vector {winX, winY, winZ}, that returns the.
+	 *     winOffset: the offset into the win array where the win vector data.
+	 *
+	 * Returns:
+	 *     A return value of GL_TRUE indicates success, a return value of.
 	 */
+
 	public static int gluProject(final float objX, final float objY, final float objZ,
 		final float[] model, final int modelOffset, final float[] project, final int projectOffset,
 		final int[] view, final int viewOffset, final float[] win, final int winOffset) {
@@ -406,25 +449,30 @@ public final class GLHelper {
 	 * Note that you can use the OES_matrix_get extension, if present, to get
 	 * the current modelView and projection matrices.
 	 *
-	 * @param winX window coordinates X
-	 * @param winY window coordinates Y
-	 * @param winZ window coordinates Z
-	 * @param model the current modelview matrix
-	 * @param modelOffset the offset into the model array where the modelview
 	 *        maxtrix data starts.
-	 * @param project the current projection matrix
-	 * @param projectOffset the offset into the project array where the project
 	 *        matrix data starts.
-	 * @param view the current view, {x, y, width, height}
-	 * @param viewOffset the offset into the view array where the view vector
 	 *        data starts.
-	 * @param obj the output vector {objX, objY, objZ}, that returns the
 	 *        computed object coordinates.
-	 * @param objOffset the offset into the obj array where the obj vector data
 	 *        starts.
-	 * @return A return value of GL10.GL_TRUE indicates success, a return value
 	 *         of GL10.GL_FALSE indicates failure.
+	 *
+	 * Args:
+	 *     winX: window coordinates X.
+	 *     winY: window coordinates Y.
+	 *     winZ: window coordinates Z.
+	 *     model: the current modelview matrix.
+	 *     modelOffset: the offset into the model array where the modelview.
+	 *     project: the current projection matrix.
+	 *     projectOffset: the offset into the project array where the project.
+	 *     view: the current view, {x, y, width, height}.
+	 *     viewOffset: the offset into the view array where the view vector.
+	 *     obj: the output vector {objX, objY, objZ}, that returns the.
+	 *     objOffset: the offset into the obj array where the obj vector data.
+	 *
+	 * Returns:
+	 *     A return value of GL10.GL_TRUE indicates success, a return value.
 	 */
+
 	public static int gluUnProject(final float winX, final float winY, final float winZ,
 		final float[] model, final int modelOffset, final float[] project, final int projectOffset,
 		final int[] view, final int viewOffset, final float[] obj, final int objOffset) {

@@ -48,6 +48,10 @@
  * @defgroup frame Frame processing
  * @brief Tools for managing frame buffers and converting between image formats
  */
+
+// Implementation for libuvc frame handling and conversion; see libuvc/libuvc.h for the public API.
+
+
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"
 

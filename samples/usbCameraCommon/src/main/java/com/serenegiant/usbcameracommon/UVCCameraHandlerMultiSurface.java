@@ -29,16 +29,27 @@ import android.view.Surface;
 import com.serenegiant.glutils.RendererHolder;
 import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.widget.CameraViewInterface;
+/**
+ * Manage a UVCCamera handler for multi-surface preview and recording.
+ *
+ * Preview frames are rendered by a RendererHolder that draws to the primary
+ * surface plus any extra surfaces added with addSurface.
+ */
+
+
 
 public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	/**
-	 * create UVCCameraHandlerMultiSurface, use MediaVideoEncoder, try MJPEG, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param width
-	 * @param height
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface using MediaVideoEncoder,
+	 * trying MJPEG preview with the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
 	 */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int width, final int height) {
@@ -47,14 +58,17 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandlerMultiSurface, use MediaVideoEncoder, try MJPEG
-	 * @param parent
-	 * @param cameraView
-	 * @param width
-	 * @param height
-	 * @param bandwidthFactor
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface using MediaVideoEncoder,
+	 * trying MJPEG preview with the given bandwidth factor.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     bandwidthFactor: the bandwidth factor passed to the camera.
 	 */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int width, final int height, final float bandwidthFactor) {
@@ -63,14 +77,17 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandlerMultiSurface, try MJPEG, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType
-	 * @param width
-	 * @param height
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface with the given encoder,
+	 * trying MJPEG preview with the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
 	 */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int encoderType, final int width, final int height) {
@@ -79,15 +96,18 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandlerMultiSurface, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType
-	 * @param width
-	 * @param height
-	 * @param format
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface with the given encoder and
+	 * frame format, using the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     format: either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1).
 	 */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int encoderType, final int width, final int height, final int format) {
@@ -96,16 +116,19 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandlerMultiSurface
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder
-	 * @param width
-	 * @param height
-	 * @param format either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1)
-	 * @param bandwidthFactor
-	 * @return
+	 * Create and return a UVCCameraHandlerMultiSurface with the given encoder,
+	 * frame format, and bandwidth factor.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used for still capturing.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     format: either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1).
+	 *     bandwidthFactor: the bandwidth factor passed to the camera.
 	 */
+
 	public static final UVCCameraHandlerMultiSurface createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
 			final int encoderType, final int width, final int height, final int format, final float bandwidthFactor) {
@@ -120,6 +143,9 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 		super(thread);
 		mRendererHolder = new RendererHolder(thread.getWidth(), thread.getHeight(), null);
 	}
+	/**
+	 * Release the renderer, then release the camera and the camera thread.
+	 */
 
 	public synchronized void release() {
 		if (mRendererHolder != null) {
@@ -128,6 +154,13 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 		}
 		super.release();
 	}
+	/**
+	 * Resize the preview and the renderer to the given size.
+	 *
+	 * Args:
+	 *     width: the new preview width in pixels.
+	 *     height: the new preview height in pixels.
+	 */
 
 	public synchronized void resize(final int width, final int height) {
 		super.resize(width, height);
@@ -135,6 +168,9 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 			mRendererHolder.resize(width, height);
 		}
 	}
+	/**
+	 * Start the preview on the renderer's primary surface.
+	 */
 
 	public synchronized void startPreview() {
 		checkReleased();
@@ -144,11 +180,25 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 			throw new IllegalStateException();
 		}
 	}
+	/**
+	 * Add an extra surface to render the preview on.
+	 *
+	 * Args:
+	 *     surfaceId: the unique id of the surface.
+	 *     surface: the surface to add.
+	 *     isRecordable: true if the surface is used for recording.
+	 */
 
 	public synchronized void addSurface(final int surfaceId, final Surface surface, final boolean isRecordable) {
 		checkReleased();
 		mRendererHolder.addSurface(surfaceId, surface, isRecordable);
 	}
+	/**
+	 * Remove a previously added extra rendering surface.
+	 *
+	 * Args:
+	 *     surfaceId: the id of the surface to remove.
+	 */
 
 	public synchronized void removeSurface(final int surfaceId) {
 		if (mRendererHolder != null) {
@@ -157,16 +207,31 @@ public class UVCCameraHandlerMultiSurface extends AbstractUVCCameraHandler {
 	}
 
 	@Override
+	/**
+	 * Capture a still image and save it as a PNG in the DCIM directory.
+	 */
+
 	public void captureStill() {
 		checkReleased();
 		super.captureStill();
 	}
 
 	@Override
+	/**
+	 * Capture a still image and save it to the given file path.
+	 *
+	 * Args:
+	 *     path: the output file path of the captured still image.
+	 */
+
 	public void captureStill(final String path) {
 		checkReleased();
 		post(new Runnable() {
 			@Override
+			/**
+			 * Capture the still image on the renderer and update the media store.
+			 */
+
 			public void run() {
 				synchronized (UVCCameraHandlerMultiSurface.this) {
 					if (mRendererHolder != null) {

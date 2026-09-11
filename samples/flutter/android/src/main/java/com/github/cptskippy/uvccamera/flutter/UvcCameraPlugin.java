@@ -11,28 +11,31 @@ import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel;
 
 /**
- * UvcCameraPlugin
+ * Flutter plugin entry point for the UVC camera plugin.
+ *
+ * Creates the "uvccamera/native" method channel and the "uvccamera/device_events" event channel on
+ * attach, wires them to a {@link UvcCameraPlatform}, and releases the platform and channels on detach.
  */
 public class UvcCameraPlugin implements FlutterPlugin, ActivityAware {
 
-    /**
-     * Log tag
-     */
+/**
+ * Log tag
+ */
     private static final String TAG = UvcCameraPlugin.class.getCanonicalName();
 
-    /**
-     * "uvccamera/native" method channel
-     */
+/**
+ * "uvccamera/native" method channel
+ */
     private MethodChannel nativeMethodChannel;
 
-    /**
-     * "uvccamera/device_events" event channel
-     */
+/**
+ * "uvccamera/device_events" event channel
+ */
     private EventChannel deviceEventChannel;
 
-    /**
-     * {@link UvcCameraPlatform} instance.
-     */
+/**
+ * {@link UvcCameraPlatform} instance.
+ */
     private UvcCameraPlatform uvcCameraPlatform;
 
     @Override

@@ -69,14 +69,77 @@ import java.util.concurrent.CopyOnWriteArraySet;
 abstract class AbstractUVCCameraHandler extends Handler {
 	private static final boolean DEBUG = true;  // TODO set false on release
 	private static final String TAG = "AbsUVCCameraHandler";
+	/**
+	 * Callback interface for camera lifecycle events dispatched by CameraThread.
+	 *
+	 * Register with addCallback(CameraCallback) and remove with removeCallback(CameraCallback).
+	 * All callbacks are invoked sequentially on the handler's private CameraThread, not on
+	 * the UI thread; implementers must marshal any UI work to the main thread themselves.
+	 * A callback that throws Exception is removed from the callback set and logged.
+	 */
+
+
 
 	public interface CameraCallback {
+		/**
+		 * Called after UVCCamera.open succeeds for the requested USB control block.
+		 *
+		 * If another camera was already open, handleClose() runs first and may invoke
+		 * onClose() before this callback. The camera is open but preview has not started.
+		 * Invoked on CameraThread; return promptly so the camera message loop can continue.
+		 */
 		public void onOpen();
+		/**
+		 * Called after a previously opened UVCCamera has been closed or released.
+		 *
+		 * This can occur from close(), release(), or handleClose() when switching to a
+		 * different camera. After this callback the camera is no longer open and preview
+		 * or recording cannot be active. Invoked on CameraThread; return promptly.
+		 */
 		public void onClose();
+		/**
+		 * Called after UVCCamera.startPreview succeeds and preview state is active.
+		 *
+		 * This is only invoked when the camera is open and preview was not already running.
+		 * If preview setup fails, onError(Exception) is invoked instead. Invoked on
+		 * CameraThread; return promptly so preview frame processing can continue.
+		 */
 		public void onStartPreview();
+		/**
+		 * Called after UVCCamera.stopPreview succeeds and preview state is inactive.
+		 *
+		 * This is only invoked when preview was active. If the camera was open while
+		 * previewing, it remains open after this callback unless a close or release path
+		 * continues. Invoked on CameraThread; return promptly.
+		 */
 		public void onStopPreview();
+		/**
+		 * Called after the MediaMuxer and configured MediaCodec encoders are prepared
+		 * and recording has started.
+		 *
+		 * This is only invoked when the camera is open and no recording muxer was already
+		 * active. If encoder or muxer setup fails, onError(Exception) is invoked instead.
+		 * Invoked on CameraThread; return promptly so recording can continue.
+		 */
 		public void onStartRecording();
+		/**
+		 * Called after an active MediaMuxer recording has stopped and the camera frame
+		 * callback has been cleared.
+		 *
+		 * This may be invoked directly from stopRecording() or indirectly from
+		 * handleClose() when an open camera with active recording is closed or released.
+		 * Invoked on CameraThread; return promptly.
+		 */
 		public void onStopRecording();
+		/**
+		 * Called when an unrecoverable camera operation fails on CameraThread.
+		 *
+		 * Args:
+		 *     e: The non-null exception describing the failed operation. Failures may
+		 *        occur while opening the camera, starting preview, capturing a still
+		 *        image, or starting recording. Camera state after the error is not
+		 *        uniform; inspect the handler state before attempting recovery.
+		 */
 		public void onError(final Exception e);
 	}
 
@@ -97,30 +160,69 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		mWeakThread = new WeakReference<CameraThread>(thread);
 	}
 
+	/**
+	 * Return the preview width in pixels, or 0 if the camera thread is gone.
+	 */
+
+
+
 	public int getWidth() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null ? thread.getWidth() : 0;
 	}
+
+	/**
+	 * Return the preview height in pixels, or 0 if the camera thread is gone.
+	 */
+
+
 
 	public int getHeight() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null ? thread.getHeight() : 0;
 	}
 
+	/**
+	 * Return true if the camera is opened.
+	 */
+
+
+
 	public boolean isOpened() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null && thread.isCameraOpened();
 	}
+
+	/**
+	 * Return true if the preview is running.
+	 */
+
+
 
 	public boolean isPreviewing() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null && thread.isPreviewing();
 	}
 
+	/**
+	 * Return true if recording is in progress.
+	 */
+
+
+
 	public boolean isRecording() {
 		final CameraThread thread = mWeakThread.get();
 		return thread != null && thread.isRecording();
 	}
+
+	/**
+	 * Return true if the given device is the opened camera.
+	 *
+	 * Args:
+	 *     device: the USB device to compare with.
+	 */
+
+
 
 	public boolean isEqual(final UsbDevice device) {
 		final CameraThread thread = mWeakThread.get();
@@ -143,10 +245,25 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 	}
 
+	/**
+	 * Open the camera with the given control block.
+	 *
+	 * Args:
+	 *     ctrlBlock: the USB control block of the device to open.
+	 */
+
+
+
 	public void open(final USBMonitor.UsbControlBlock ctrlBlock) {
 		checkReleased();
 		sendMessage(obtainMessage(MSG_OPEN, ctrlBlock));
 	}
+
+	/**
+	 * Stop the preview and close the camera if it is opened.
+	 */
+
+
 
 	public void close() {
 		if (DEBUG) Log.v(TAG, "close:");
@@ -156,6 +273,16 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 		if (DEBUG) Log.v(TAG, "close:finished");
 	}
+
+	/**
+	 * Resize the preview size. Not supported, always throws UnsupportedOperationException.
+	 *
+	 * Args:
+	 *     width: the new preview width in pixels.
+	 *     height: the new preview height in pixels.
+	 */
+
+
 
 	public void resize(final int width, final int height) {
 		checkReleased();
@@ -170,6 +297,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		sendMessage(obtainMessage(MSG_PREVIEW_START, surface));
 	}
 
+	/**
+	 * Stop the preview and recording, waiting for the preview to actually stop.
+	 */
+
+
+
 	public void stopPreview() {
 		if (DEBUG) Log.v(TAG, "stopPreview:");
 		removeMessages(MSG_PREVIEW_START);
@@ -180,9 +313,9 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			synchronized (thread.mSync) {
 				sendEmptyMessage(MSG_PREVIEW_STOP);
 				if (!isCameraThread()) {
-					// wait for actually preview stopped to avoid releasing Surface/SurfaceTexture
-					// while preview is still running.
-					// therefore this method will take a time to execute
+				// wait for actually preview stopped to avoid releasing Surface/SurfaceTexture
+				// while preview is still running.
+				// therefore this method will take a time to execute
 					try {
 						thread.mSync.wait();
 					} catch (final InterruptedException e) {
@@ -203,20 +336,47 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		sendMessage(obtainMessage(MSG_CAPTURE_STILL, path));
 	}
 
+	/**
+	 * Start video and audio recording.
+	 */
+
+
+
 	public void startRecording() {
 		checkReleased();
 		sendEmptyMessage(MSG_CAPTURE_START);
 	}
 
+	/**
+	 * Stop video and audio recording.
+	 */
+
+
+
 	public void stopRecording() {
 		sendEmptyMessage(MSG_CAPTURE_STOP);
 	}
+
+	/**
+	 * Close the camera and release the camera thread.
+	 */
+
+
 
 	public void release() {
 		mReleased = true;
 		close();
 		sendEmptyMessage(MSG_RELEASE);
 	}
+
+	/**
+	 * Add a callback for camera lifecycle events.
+	 *
+	 * Args:
+	 *     callback: the callback to register, ignored if null.
+	 */
+
+
 
 	public void addCallback(final CameraCallback callback) {
 		checkReleased();
@@ -227,6 +387,15 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 	}
+
+	/**
+	 * Remove a previously registered camera lifecycle callback.
+	 *
+	 * Args:
+	 *     callback: the callback to remove, ignored if null.
+	 */
+
+
 
 	public void removeCallback(final CameraCallback callback) {
 		if (callback != null) {
@@ -241,11 +410,29 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		sendMessage(obtainMessage(MSG_MEDIA_UPDATE, path));
 	}
 
+	/**
+	 * Check if the opened camera supports the given property flag.
+	 *
+	 * Args:
+	 *     flag: the property flag to check, e.g. UVCCamera.PU_BRIGHTNESS.
+	 */
+
+
+
 	public boolean checkSupportFlag(final long flag) {
 		checkReleased();
 		final CameraThread thread = mWeakThread.get();
 		return thread != null && thread.mUVCCamera != null && thread.mUVCCamera.checkSupportFlag(flag);
 	}
+
+	/**
+	 * Return the current value of the given property.
+	 *
+	 * Args:
+	 *     flag: either UVCCamera.PU_BRIGHTNESS or UVCCamera.PU_CONTRAST.
+	 */
+
+
 
 	public int getValue(final int flag) {
 		checkReleased();
@@ -260,6 +447,16 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 		throw new IllegalStateException();
 	}
+
+	/**
+	 * Set the value of the given property and return the actual value.
+	 *
+	 * Args:
+	 *     flag: either UVCCamera.PU_BRIGHTNESS or UVCCamera.PU_CONTRAST.
+	 *     value: the new property value.
+	 */
+
+
 
 	public int setValue(final int flag, final int value) {
 		checkReleased();
@@ -276,6 +473,15 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 		throw new IllegalStateException();
 	}
+
+	/**
+	 * Reset the given property to its default value and return the actual value.
+	 *
+	 * Args:
+	 *     flag: either UVCCamera.PU_BRIGHTNESS or UVCCamera.PU_CONTRAST.
+	 */
+
+
 
 	public int resetValue(final int flag) {
 		checkReleased();
@@ -294,6 +500,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 	}
 
 	@Override
+	/**
+	 * Dispatch the message to the camera thread.
+	 */
+
+
+
 	public void handleMessage(final Message msg) {
 		final CameraThread thread = mWeakThread.get();
 		if (thread == null) return;
@@ -345,30 +557,43 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		/**
 		 * shutter sound
 		 */
+
+
+
 		private SoundPool mSoundPool;
 		private int mSoundId;
 		private AbstractUVCCameraHandler mHandler;
 		/**
 		 * for accessing UVC camera
 		 */
+
+
+
 		private UVCCamera mUVCCamera;
 		/**
 		 * muxer for audio/video recording
 		 */
+
+
+
 		private MediaMuxerWrapper mMuxer;
 		private MediaVideoBufferEncoder mVideoEncoder;
 
 		/**
 		 *
-		 * @param clazz Class extends AbstractUVCCameraHandler
-		 * @param parent parent Activity
-		 * @param cameraView for still capturing
-		 * @param encoderType 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder
-		 * @param width
-		 * @param height
-		 * @param format either FRAME_FORMAT_YUYV(0) or FRAME_FORMAT_MJPEG(1)
-		 * @param bandwidthFactor
+		 * Args:
+		 *     clazz: Class extends AbstractUVCCameraHandler.
+		 *     parent: parent Activity.
+		 *     cameraView: for still capturing.
+		 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+		 *     width: The width value in pixels.
+		 *     height: The height value in pixels.
+		 *     format: either FRAME_FORMAT_YUYV(0) or FRAME_FORMAT_MJPEG(1).
+		 *     bandwidthFactor: The bandwidth factor value.
 		 */
+
+
+
 		CameraThread(final Class<? extends AbstractUVCCameraHandler> clazz,
 			final Activity parent, final CameraViewInterface cameraView,
 			final int encoderType, final int width, final int height, final int format,
@@ -392,6 +617,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			super.finalize();
 		}
 
+		/**
+		 * Return the handler created on this thread, waiting if it is not created yet.
+		 */
+
+
+
 		public AbstractUVCCameraHandler getHandler() {
 			if (DEBUG) Log.v(TAG_THREAD, "getHandler:");
 			synchronized (mSync) {
@@ -404,11 +635,23 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			return mHandler;
 		}
 
+		/**
+		 * Return the preview width in pixels.
+		 */
+
+
+
 		public int getWidth() {
 			synchronized (mSync) {
 				return mWidth;
 			}
 		}
+
+		/**
+		 * Return the preview height in pixels.
+		 */
+
+
 
 		public int getHeight() {
 			synchronized (mSync) {
@@ -416,11 +659,23 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+		 * Return true if the camera device is opened.
+		 */
+
+
+
 		public boolean isCameraOpened() {
 			synchronized (mSync) {
 				return mUVCCamera != null;
 			}
 		}
+
+		/**
+		 * Return true if the preview is running.
+		 */
+
+
 
 		public boolean isPreviewing() {
 			synchronized (mSync) {
@@ -428,15 +683,39 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+		 * Return true if recording is in progress.
+		 */
+
+
+
 		public boolean isRecording() {
 			synchronized (mSync) {
 				return (mUVCCamera != null) && (mMuxer != null);
 			}
 		}
 
+		/**
+		 * Return true if the given device is the opened camera.
+		 *
+		 * Args:
+		 *     device: the USB device to compare with.
+		 */
+
+
+
 		public boolean isEqual(final UsbDevice device) {
 			return (mUVCCamera != null) && (mUVCCamera.getDevice() != null) && mUVCCamera.getDevice().equals(device);
 		}
+
+		/**
+		 * Close the current camera and open the camera with the given control block.
+		 *
+		 * Args:
+		 *     ctrlBlock: the USB control block of the device to open.
+		 */
+
+
 
 		public void handleOpen(final USBMonitor.UsbControlBlock ctrlBlock) {
 			if (DEBUG) Log.v(TAG_THREAD, "handleOpen:");
@@ -454,6 +733,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			if (DEBUG) Log.i(TAG, "supportedSize:" + (mUVCCamera != null ? mUVCCamera.getSupportedSize() : null));
 		}
 
+		/**
+		 * Stop recording and close the camera, destroying the UVCCamera instance.
+		 */
+
+
+
 		public void handleClose() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleClose:");
 			handleStopRecording();
@@ -469,6 +754,15 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+		 * Start the preview on the given surface.
+		 *
+		 * Args:
+		 *     surface: a SurfaceHolder, Surface, or SurfaceTexture for the preview.
+		 */
+
+
+
 		public void handleStartPreview(final Object surface) {
 			if (DEBUG) Log.v(TAG_THREAD, "handleStartPreview:");
 			if ((mUVCCamera == null) || mIsPreviewing) return;
@@ -476,7 +770,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
 				mUVCCamera.setPreviewSize(mWidth, mHeight, 1, 31, mPreviewMode, mBandwidthFactor);
 			} catch (final IllegalArgumentException e) {
 				try {
-					// fallback to YUV mode
+				// fallback to YUV mode
 					mUVCCamera.setPreviewSize(mWidth, mHeight, 1, 31, UVCCamera.DEFAULT_PREVIEW_MODE, mBandwidthFactor);
 				} catch (final IllegalArgumentException e1) {
 					callOnError(e1);
@@ -498,6 +792,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			callOnStartPreview();
 		}
 
+		/**
+		 * Stop the preview and notify the threads waiting for it.
+		 */
+
+
+
 		public void handleStopPreview() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleStopPreview:");
 			if (mIsPreviewing) {
@@ -512,6 +812,15 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 			if (DEBUG) Log.v(TAG_THREAD, "handleStopPreview:finished");
 		}
+
+		/**
+		 * Capture a still image, play the shutter sound, and save it as a PNG file.
+		 *
+		 * Args:
+		 *     path: the output file path, or a generated path in the DCIM directory if empty.
+		 */
+
+
 
 		public void handleCaptureStill(final String path) {
 			if (DEBUG) Log.v(TAG_THREAD, "handleCaptureStill:");
@@ -542,6 +851,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+		 * Start recording video and audio with the configured encoders.
+		 */
+
+
+
 		public void handleStartRecording() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleStartRecording:");
 			try {
@@ -555,13 +870,13 @@ abstract class AbstractUVCCameraHandler extends Handler {
 				case 2: // for video capturing using MediaVideoBufferEncoder
 					videoEncoder = new MediaVideoBufferEncoder(muxer, getWidth(), getHeight(), mMediaEncoderListener);
 					break;
-				// case 0:  // for video capturing using MediaSurfaceEncoder
+					// case 0:  // for video capturing using MediaSurfaceEncoder
 				default:
 					new MediaSurfaceEncoder(muxer, getWidth(), getHeight(), mMediaEncoderListener);
 					break;
 				}
 				if (true) {
-					// for audio capturing
+				// for audio capturing
 					new MediaAudioEncoder(muxer, mMediaEncoderListener);
 				}
 				muxer.prepare();
@@ -580,6 +895,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+		 * Stop recording, finalize the media file, and notify the callbacks.
+		 */
+
+
+
 		public void handleStopRecording() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleStopRecording:mMuxer=" + mMuxer);
 			final MediaMuxerWrapper muxer;
@@ -594,7 +915,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			try {
 				mWeakCameraView.get().setVideoEncoder(null);
 			} catch (final Exception e) {
-				// ignore
+			// ignore
 			}
 			if (muxer != null) {
 				muxer.stopRecording();
@@ -606,6 +927,15 @@ abstract class AbstractUVCCameraHandler extends Handler {
 
 		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
 			@Override
+			/**
+			 * Encode the given NV21 frame.
+			 *
+			 * Args:
+			 *     frame: the NV21 frame buffer from the camera.
+			 */
+
+
+
 			public void onFrame(final ByteBuffer frame) {
 				final MediaVideoBufferEncoder videoEncoder;
 				synchronized (mSync) {
@@ -617,6 +947,15 @@ abstract class AbstractUVCCameraHandler extends Handler {
 				}
 			}
 		};
+
+		/**
+		 * Add the captured media file to the media store.
+		 *
+		 * Args:
+		 *     path: the path of the media file to register.
+		 */
+
+
 
 		public void handleUpdateMedia(final String path) {
 			if (DEBUG) Log.v(TAG_THREAD, "handleUpdateMedia:path=" + path);
@@ -639,6 +978,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 		}
 
+		/**
+		 * Close the camera, clear the callbacks, and quit the looper.
+		 */
+
+
+
 		public void handleRelease() {
 			if (DEBUG) Log.v(TAG_THREAD, "handleRelease:mIsRecording=" + mIsRecording);
 			handleClose();
@@ -652,6 +997,15 @@ abstract class AbstractUVCCameraHandler extends Handler {
 
 		private final MediaEncoder.MediaEncoderListener mMediaEncoderListener = new MediaEncoder.MediaEncoderListener() {
 			@Override
+			/**
+			 * Called when the encoder is prepared, start the capture.
+			 *
+			 * Args:
+			 *     encoder: the prepared media encoder.
+			 */
+
+
+
 			public void onPrepared(final MediaEncoder encoder) {
 				if (DEBUG) Log.v(TAG, "onPrepared:encoder=" + encoder);
 				mIsRecording = true;
@@ -671,6 +1025,15 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			}
 
 			@Override
+			/**
+			 * Called when the encoder is stopped, finalize the recording.
+			 *
+			 * Args:
+			 *     encoder: the stopped media encoder.
+			 */
+
+
+
 			public void onStopped(final MediaEncoder encoder) {
 				if (DEBUG) Log.v(TAG_THREAD, "onStopped:encoder=" + encoder);
 				if ((encoder instanceof MediaVideoEncoder)
@@ -702,20 +1065,23 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		/**
 		 * prepare and load shutter sound for still image capturing
 		 */
+
+
+
 		@SuppressLint("SoonBlockedPrivateApi")
 		protected void loadShutterSound(final Context context) {
-			// Define a default stream type
+		// Define a default stream type
 			int streamType = AudioManager.STREAM_SYSTEM;
 
 			// Conditionally handle reflection based on the Android version
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S_V2) {  // API 32 is Android 12L
 				try {
-					// Use reflection only for older versions
+				// Use reflection only for older versions
 					final Class<?> audioSystemClass = Class.forName("android.media.AudioSystem");
 					final Field sseField = audioSystemClass.getDeclaredField("STREAM_SYSTEM_ENFORCED");
 					streamType = sseField.getInt(null);
 				} catch (final Exception e) {
-					// If reflection fails, fall back to STREAM_SYSTEM
+				// If reflection fails, fall back to STREAM_SYSTEM
 					streamType = AudioManager.STREAM_SYSTEM;
 				}
 			}
@@ -725,7 +1091,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
 				try {
 					mSoundPool.release();
 				} catch (final Exception e) {
-					// Handle the exception (optional)
+				// Handle the exception (optional)
 				}
 				mSoundPool = null;
 			}
@@ -736,6 +1102,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		}
 
 		@Override
+		/**
+		 * Create the camera handler and run the message loop.
+		 */
+
+
+
 		public void run() {
 			Looper.prepare();
 			AbstractUVCCameraHandler handler = null;

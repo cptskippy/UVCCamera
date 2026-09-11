@@ -31,6 +31,22 @@ import android.view.Window;
 
 import com.serenegiant.common.BaseActivity;
 
+/**
+ * Host activity for service-based camera client.
+ *
+ * Manages CameraFragment and service binding for remote camera control.
+ * Follows Activity lifecycle with service connection management.
+ *
+ * Properties:
+ *     mCameraFragment: Fragment displaying camera preview.
+ *     mBound: Service binding state.
+ *
+ * State Machine:
+ *     Idle → Binding → Bound → Unbound
+ *
+ * Thread Safety:
+ *     Service callbacks on main thread; UI updates on main thread.
+ */
 public class MainActivity extends BaseActivity {
 	private static final boolean DEBUG = false;
 	private static final String TAG = "MainActivity";

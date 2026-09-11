@@ -16,13 +16,14 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.os.Build;
 
 /**
  * EGLレンダリングコンテキストを生成＆使用するためのヘルパークラス
  */
+
 public abstract class EGLBase {
 	public static final Object EGL_LOCK = new Object();
 
@@ -30,16 +31,21 @@ public abstract class EGLBase {
 	public static final int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 	public static final int EGL_OPENGL_ES2_BIT = 4;
 	public static final int EGL_OPENGL_ES3_BIT_KHR = 0x0040;
-//	public static final int EGL_SWAP_BEHAVIOR_PRESERVED_BIT = 0x0400;
+	//	public static final int EGL_SWAP_BEHAVIOR_PRESERVED_BIT = 0x0400;
 
 	/**
 	 * EGL生成のヘルパーメソッド, 環境に応じてEGLBase10またはEGLBase14を生成する
 	 * maxClientVersion=3, ステンシルバッファなし
-	 * @param sharedContext
-	 * @param withDepthBuffer
-	 * @param isRecordable
-	 * @return
+	 *
+	 * Args:
+	 *     sharedContext: The shared context value.
+	 *     withDepthBuffer: The with depth buffer value.
+	 *     isRecordable: The is recordable value.
+	 *
+	 * Returns:
+	 *     The created from.
 	 */
+
 	public static EGLBase createFrom(final IContext sharedContext,
 		final boolean withDepthBuffer, final boolean isRecordable) {
 
@@ -49,12 +55,17 @@ public abstract class EGLBase {
 	/**
 	 * EGL生成のヘルパーメソッド, 環境に応じてEGLBase10またはEGLBase14を生成する
 	 * maxClientVersion=3
-	 * @param sharedContext
-	 * @param withDepthBuffer
-	 * @param stencilBits
-	 * @param isRecordable
-	 * @return
+	 *
+	 * Args:
+	 *     sharedContext: The shared context value.
+	 *     withDepthBuffer: The with depth buffer value.
+	 *     stencilBits: The stencil bits value.
+	 *     isRecordable: The is recordable value.
+	 *
+	 * Returns:
+	 *     The created from.
 	 */
+
 	public static EGLBase createFrom(final IContext sharedContext,
 		final boolean withDepthBuffer, final int stencilBits, final boolean isRecordable) {
 
@@ -64,13 +75,18 @@ public abstract class EGLBase {
 
 	/**
 	 * EGL生成のヘルパーメソッド, 環境に応じてEGLBase10またはEGLBase14を生成する
-	 * @param maxClientVersion
-	 * @param sharedContext
-	 * @param withDepthBuffer trueなら16ビットのデプスバッファ有り, falseならデプスバッファなし
-	 * @param stencilBits 0以下ならステンシルバッファなし
-	 * @param isRecordable
-	 * @return
+	 *
+	 * Args:
+	 *     maxClientVersion: The max client version value.
+	 *     sharedContext: The shared context value.
+	 *     withDepthBuffer: trueなら16ビットのデプスバッファ有り, falseならデプスバッファなし.
+	 *     stencilBits: 0以下ならステンシルバッファなし.
+	 *     isRecordable: The is recordable value.
+	 *
+	 * Returns:
+	 *     The created from.
 	 */
+
 	public static EGLBase createFrom(final int maxClientVersion,
 		final IContext sharedContext, final boolean withDepthBuffer,
 		final int stencilBits, final boolean isRecordable) {
@@ -113,7 +129,9 @@ public abstract class EGLBase {
 		/**
 		 * swap with presentation time[ns]
 		 * only works well now when using EGLBase14
-		 * @param presentationTimeNs
+		 *
+		 * Args:
+		 *     presentationTimeNs: The presentation time ns value.
 		 */
 		public void swap(final long presentationTimeNs);
 		public void release();
@@ -130,42 +148,60 @@ public abstract class EGLBase {
 	public abstract void release();
 	/**
 	 * GLESに文字列を問い合わせる
-	 * @param what
-	 * @return
+	 *
+	 * Args:
+	 *     what: The what value.
+	 *
+	 * Returns:
+	 *     The query string.
 	 */
 	public abstract String queryString(final int what);
 	/**
 	 * GLESバージョンを取得する
-	 * @return 1, 2または3
+	 *
+	 * Returns:
+	 *     1, 2または3.
 	 */
 	public abstract int getGlVersion();
 	/**
 	 * EGLレンダリングコンテキストを取得する
 	 * このEGLBaseインスタンスを使って生成したEglSurfaceをmakeCurrentした状態で
 	 * eglGetCurrentContextを呼び出すのと一緒
-	 * @return
+	 *
+	 * Returns:
+	 *     The context.
 	 */
 	public abstract IContext getContext();
 
 	/**
 	 * EGLコンフィグを取得する
-	 * @return
+	 *
+	 * Returns:
+	 *     The config.
 	 */
 	public abstract IConfig getConfig();
 
 	/**
 	 * 指定したSurfaceからEglSurfaceを生成する
 	 * 生成したEglSurfaceをmakeCurrentした状態で戻る
-	 * @param nativeWindow Surface/SurfaceTexture/SurfaceHolder
-	 * @return
+	 *
+	 * Args:
+	 *     nativeWindow: Surface/SurfaceTexture/SurfaceHolder.
+	 *
+	 * Returns:
+	 *     The created from surface.
 	 */
 	public abstract IEglSurface createFromSurface(final Object nativeWindow);
 	/**
 	 * 指定した大きさのオフスクリーンEglSurfaceを生成する
 	 * 生成したEglSurfaceをmakeCurrentした状態で戻る
-	 * @param width PBufferオフスクリーンのサイズ(0以下はだめ)
-	 * @param height
-	 * @return
+	 *
+	 * Args:
+	 *     width: PBufferオフスクリーンのサイズ(0以下はだめ).
+	 *     height: The height value in pixels.
+	 *
+	 * Returns:
+	 *     The created offscreen.
 	 */
 	public abstract IEglSurface createOffscreen(final int width, final int height);
 	/**

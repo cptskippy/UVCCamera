@@ -62,6 +62,10 @@ const bool CaptureBasePipeline::isCapturing() const { return mIsCapturing; }
 /**
  * clear frame data for capturing
  */
+
+// Implementation for CaptureBasePipeline.h; see the header for the public pipeline interface.
+
+
 void CaptureBasePipeline::clearCaptureFrame() {
 	Mutex::Autolock lock(capture_mutex);
 
@@ -131,6 +135,20 @@ void CaptureBasePipeline::on_stop() {
 	EXIT();
 }
 
+/**
+ * \brief Duplicate the incoming frame and queue it for the capture thread.
+ *
+ * Only the latest frame is kept; older queued frames are recycled.
+ *
+ * \param[in] frame Source frame, or null (no-op).
+ * \return 0 (frame consumed; do not chain further).
+ *
+ * Code Paths:
+ *   1. frame is null → return 0.
+ *   2. get_frame() returns null (pool exhausted) → log, return 0.
+ *   3. uvc_duplicate_frame fails → recycle the empty copy, return 0.
+ *   4. Success → addCaptureFrame() replaces any previously queued frame.
+ */
 /* override protected */
 int CaptureBasePipeline::handle_frame(uvc_frame_t *frame) {
 //	ENTER();
@@ -155,9 +173,20 @@ int CaptureBasePipeline::handle_frame(uvc_frame_t *frame) {
 	return 0; // 	RETURN(0, int);
 }
 
-/*
- * thread function
- * @param vptr_args pointer to UVCCameraControl instance
+/**
+ * \brief Thread entry point for the capture worker thread.
+ *
+ * Attaches the thread to the JavaVM, runs internal_do_capture() (which
+ * blocks until the pipeline stops), then detaches.
+ *
+ * \param[in] vptr_args Pointer to the CaptureBasePipeline instance.
+ *
+ * Code Paths:
+ *   1. Cast vptr_args to CaptureBasePipeline.
+ *   2. AttachCurrentThread to obtain JNIEnv.
+ *   3. Call internal_do_capture() — blocks until isRunning() is false.
+ *   4. DetachCurrentThread.
+ *   5. pthread_exit.
  */
 // static
 void *CaptureBasePipeline::capture_thread_func(void *vptr_args) {
@@ -181,7 +210,19 @@ void *CaptureBasePipeline::capture_thread_func(void *vptr_args) {
 }
 
 /**
- * the actual function for capturing
+ * \brief Repeatedly run do_capture() until the pipeline stops.
+ *
+ * Called from the capture thread after JNI attach. Each iteration sets
+ * mIsCapturing, runs the subclass-specific do_capture() loop, and
+ * broadcasts capture_sync to wake any waiters.
+ *
+ * \param[in] env JNI environment (attached to this thread).
+ *
+ * Code Paths:
+ *   1. clearCaptureFrame() to discard any stale queued frame.
+ *   2. Loop while isRunning(): set mIsCapturing=true, call do_capture(env),
+ *      broadcast capture_sync.
+ *   3. Exit when isRunning() becomes false.
  */
 void CaptureBasePipeline::internal_do_capture(JNIEnv *env) {
 

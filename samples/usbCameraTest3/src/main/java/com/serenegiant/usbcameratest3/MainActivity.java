@@ -46,6 +46,33 @@ import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.widget.CameraViewInterface;
 
+/**
+ * Demonstrate USB UVC preview with selectable texture-view and encoder backends.
+ *
+ * USE_SURFACE_ENCODER selects both the preview view and the recording encoder:
+ * false (default) inflates activity_main, uses UVCCameraTextureView, and creates
+ * UVCCameraHandler with encoderType 1 (MediaVideoEncoder). true inflates
+ * activity_main2, uses the local UVCCameraTextureView2, and creates
+ * UVCCameraHandler with encoderType 0 (MediaSurfaceEncoder).
+ *
+ * Properties:
+ *     mUSBMonitor: USBMonitor that watches for UVC device attach/connect events.
+ *     mCameraHandler: UVCCameraHandler that owns the camera on its private Handler thread.
+ *     mUVCCameraView: CameraViewInterface preview target from activity_main or activity_main2.
+ *     mCameraButton: ToggleButton that requests camera open/close through CameraDialog.
+ *     mCaptureButton: ImageButton that toggles video recording while the camera is open.
+ *
+ * State Machine:
+ *     Created → Monitoring (onStart) → CameraDialog → Previewing → Recording (optional)
+ *     Previewing → Monitoring (device disconnect or user turn-off)
+ *     Monitoring/Previewing → Stopped (onStop: camera closed, USBMonitor still registered)
+ *     Stopped → Released (onDestroy: handler and USBMonitor released)
+ *
+ * Thread Safety:
+ *     The Activity has no explicit lock. Camera open/close/preview/capture calls are
+ *     queued on UVCCameraHandler's private Handler thread; UI mutations are marshalled
+ *     with runOnUiThread, and onDisconnect queues handler.close() via queueEvent.
+ */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MainActivity";
@@ -288,7 +315,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 	/**
 	 * to access from CameraDialog
-	 * @return
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	@Override
 	public USBMonitor getUSBMonitor() {

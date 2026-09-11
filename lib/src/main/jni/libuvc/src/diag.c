@@ -42,6 +42,9 @@
  * @brief Interpretation of devices, error codes and negotiated stream parameters
  */
 
+// Implementation for libuvc diagnostics; see libuvc/libuvc.h for the public API.
+
+
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"
 

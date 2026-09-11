@@ -54,6 +54,53 @@ import com.serenegiant.usb.Size;
 import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.usbcameratest4.R;
 
+/**
+ * Per-device IPC controller for the usbCameraTest4 UVC camera service.
+ *
+ * CameraServer is one Handler per connected UVC device. UVCService creates it from
+ * USBMonitor.OnDeviceConnectListener#onConnect, stores it in sCameraServers keyed by
+ * UsbDevice.hashCode(), and exposes it to bound clients through IUVCService or
+ * IUVCSlaveService. It is not the Service itself: UVCService owns USB monitoring and
+ * binder exposure, while CameraServer owns the per-device message loop that sequences
+ * open, preview, surface, still-capture, and recording operations for that device.
+ *
+ * Public control methods are normally invoked through UVCService AIDL binders. They post
+ * messages to the CameraThread Looper rather than manipulating the camera directly.
+ * handleMessage therefore runs on CameraThread. processOnCameraStart and
+ * processOnCameraStop usually run on CameraThread from handleOpen/handleClose, but they
+ * can also run on the caller thread when connect()/connectSlave() observes an already
+ * opened camera. disconnect() is blocking: it posts preview-stop and close messages and
+ * waits on CameraThread.mSync until the close path has completed.
+ *
+ * RemoteCallbackList<IUVCServiceCallback> provides multi-client IPC. Remote clients are
+ * registered via UVCService.select(...) and receive onConnected/onDisConnected broadcasts
+ * when the device camera opens or closes; CallbackCookie.isConnected suppresses repeated
+ * notifications for the same connection state. RendererHolder is owned by CameraServer
+ * and receives the preview surface plus client-added surfaces for GL distribution.
+ *
+ * The inner CameraThread class actually owns UVCCamera, UsbControlBlock,
+ * MediaMuxerWrapper, and MediaSurfaceEncoder. CameraServer holds only a WeakReference to
+ * CameraThread and forwards lifecycle messages to it. createServer starts CameraThread and
+ * blocks until CameraThread.run() constructs the CameraServer Handler. release() calls
+ * disconnect(), kills the remote callback list, and releases RendererHolder. finalize()
+ * also calls release() as a last-resort cleanup path. UVCService removes and releases the
+ * CameraServer when the device disconnects or when no connected servers remain.
+ *
+ * State Machine (implicit in CameraThread fields):
+ *     Disconnected: mUVCCamera == null
+ *     Connected:    mUVCCamera != null
+ *     Recording:    mUVCCamera != null && mMuxer != null
+ *     Disconnected -> Connected via MSG_OPEN
+ *     Connected -> Recording via MSG_CAPTURE_START
+ *     Recording -> Connected via MSG_CAPTURE_STOP or handleClose()
+ *     Connected -> Disconnected via MSG_CLOSE
+ *
+ * Thread Safety:
+ *     Camera operations are serialized on CameraThread, with UVCCamera mutations guarded
+ *     by CameraThread.mSync. Public CameraServer methods are not generally synchronized;
+ *     use the UVCService AIDL boundary and do not call blocking methods such as
+ *     disconnect() from the UI thread.
+ */
 public final class CameraServer extends Handler {
 	private static final boolean DEBUG = true;
 	private static final String TAG = "CameraServer";

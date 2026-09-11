@@ -23,8 +23,33 @@
 
 package com.serenegiant.widget;
 
+/**
+ * Define contract for views that maintain aspect ratio and handle lifecycle.
+ *
+ * Thread Safety:
+ *     Methods must be called on UI thread.
+ */
 public interface AspectRatioViewInterface {
+    /**
+     * Set aspect ratio to maintain during layout.
+     *
+     * Args:
+     *     aspectRatio: Width divided by height; must be >= 0.
+     *
+     * Raises:
+     *     IllegalArgumentException: If aspectRatio is negative.
+     *
+     * Code Paths:
+     *     1. Valid ratio → updates state.
+     *     2. Invalid ratio → throws.
+     */
     public void setAspectRatio(double aspectRatio);
+    /**
+     * Notify view that hosting component is pausing.
+     */
     public void onPause();
+    /**
+     * Notify view that hosting component is resuming.
+     */
     public void onResume();
 }

@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.graphics.SurfaceTexture;
 import android.support.annotation.NonNull;
@@ -26,10 +26,13 @@ import android.view.Surface;
 /**
  * 分配描画インターフェース
  */
+
 public interface IRendererHolder extends IRendererCommon {
 	/**
 	 * 実行中かどうか
-	 * @return
+	 *
+	 * Returns:
+	 *     Whether the running condition is true.
 	 */
 	public boolean isRunning();
 	/**
@@ -42,13 +45,17 @@ public interface IRendererHolder extends IRendererCommon {
 
 	/**
 	 * マスター用の映像を受け取るためのSurfaceを取得
-	 * @return
+	 *
+	 * Returns:
+	 *     The surface.
 	 */
 	public Surface getSurface();
 
 	/**
 	 * マスター用の映像を受け取るためのSurfaceTextureを取得
-	 * @return
+	 *
+	 * Returns:
+	 *     The surface texture.
 	 */
 	public SurfaceTexture getSurfaceTexture();
 
@@ -59,8 +66,10 @@ public interface IRendererHolder extends IRendererCommon {
 
 	/**
 	 * マスター映像サイズをサイズ変更要求
-	 * @param width
-	 * @param height
+	 *
+	 * Args:
+	 *     width: The width value in pixels.
+	 *     height: The height value in pixels.
 	 */
 	public void resize(final int width, final int height)
 		throws IllegalStateException;
@@ -69,9 +78,11 @@ public interface IRendererHolder extends IRendererCommon {
 	 * 分配描画用のSurfaceを追加
 	 * このメソッドは指定したSurfaceが追加されるか
 	 * interruptされるまでカレントスレッドをブロックする。
-	 * @param id 普通は#hashCodeを使う
-	 * @param surface, should be one of Surface, SurfaceTexture or SurfaceHolder
-	 * @param isRecordable
+	 *
+	 * Args:
+	 *     id: 普通は#hashCodeを使う.
+	 *     surface,: should be one of Surface, SurfaceTexture or SurfaceHolder.
+	 *     isRecordable: The is recordable value.
 	 */
 	public void addSurface(final int id, final Object surface,
 		final boolean isRecordable)
@@ -81,10 +92,12 @@ public interface IRendererHolder extends IRendererCommon {
 	 * 分配描画用のSurfaceを追加
 	 * このメソッドは指定したSurfaceが追加されるか
 	 * interruptされるまでカレントスレッドをブロックする。
-	 * @param id 普通は#hashCodeを使う
-	 * @param surface, should be one of Surface, SurfaceTexture or SurfaceHolder
-	 * @param isRecordable
-	 * @param maxFps 0以下なら制限しない
+	 *
+	 * Args:
+	 *     id: 普通は#hashCodeを使う.
+	 *     surface,: should be one of Surface, SurfaceTexture or SurfaceHolder.
+	 *     isRecordable: The is recordable value.
+	 *     maxFps: 0以下なら制限しない.
 	 */
 	public void addSurface(final int id, final Object surface,
 		final boolean isRecordable, final int maxFps)
@@ -94,50 +107,64 @@ public interface IRendererHolder extends IRendererCommon {
 	 * 分配描画用のSurfaceを削除
 	 * このメソッドは指定したSurfaceが削除されるか
 	 * interruptされるまでカレントスレッドをブロックする。
-	 * @param id
+	 *
+	 * Args:
+	 *     id: The ID value.
 	 */
 	public void removeSurface(final int id);
-	
+
 	/**
 	 * 分配描画用のSurfaceを全て削除
 	 * このメソッドはSurfaceが削除されるか
 	 * interruptされるまでカレントスレッドをブロックする。
 	 */
 	public void removeSurfaceAll();
-	
+
 	/**
 	 * 分配描画用のSurfaceを指定した色で塗りつぶす
-	 * @param id
-	 * @param color
+	 *
+	 * Args:
+	 *     id: The ID value.
+	 *     color: The color value.
 	 */
 	public void clearSurface(final int id, final int color);
-	
+
 	/**
 	 * 分配描画用のSurfaceを指定した色で塗りつぶす
-	 * @param color
+	 *
+	 * Args:
+	 *     color: The color value.
 	 */
 	public void clearSurfaceAll(final int color);
-	
+
 	/**
 	 * モデルビュー変換行列をセット
-	 * @param id
-	 * @param offset
-	 * @param matrix offset以降に16要素以上
+	 *
+	 * Args:
+	 *     id: The ID value.
+	 *     offset: The offset value.
+	 *     matrix: offset以降に16要素以上.
 	 */
 	public void setMvpMatrix(final int id,
 		final int offset, @NonNull final float[] matrix);
 
 	/**
 	 * 分配描画用のSurfaceへの描画が有効かどうかを取得
-	 * @param id
-	 * @return
+	 *
+	 * Args:
+	 *     id: The ID value.
+	 *
+	 * Returns:
+	 *     Whether the enabled condition is true.
 	 */
 	public boolean isEnabled(final int id);
-	
+
 	/**
 	 * 分配描画用のSurfaceへの描画の有効・無効を切替
-	 * @param id
-	 * @param enable
+	 *
+	 * Args:
+	 *     id: The ID value.
+	 *     enable: Whether the feature is enabled.
 	 */
 	public void setEnabled(final int id, final boolean enable);
 
@@ -149,37 +176,47 @@ public interface IRendererHolder extends IRendererCommon {
 
 	/**
 	 * 追加されている分配描画用のSurfaceの数を取得
-	 * @return
+	 *
+	 * Returns:
+	 *     The count.
 	 */
 	public int getCount();
 
 	/**
 	 * 静止画を撮影する
 	 * 撮影完了を待機しない
-	 * @param path
+	 *
+	 * Args:
+	 *     path: The path value.
 	 */
 	public void captureStillAsync(final String path);
-	
+
 	/**
 	 * 静止画を撮影する
 	 * 撮影完了を待機しない
-	 * @param path
-	 * @param captureCompression JPEGの圧縮率, pngの時は無視
+	 *
+	 * Args:
+	 *     path: The path value.
+	 *     captureCompression: JPEGの圧縮率, pngの時は無視.
 	 */
 	public void captureStillAsync(final String path, final int captureCompression);
 
 	/**
 	 * 静止画を撮影する
 	 * 撮影完了を待機する
-	 * @param path
+	 *
+	 * Args:
+	 *     path: The path value.
 	 */
 	public void captureStill(final String path);
 
 	/**
 	 * 静止画を撮影する
 	 * 撮影完了を待機する
-	 * @param path
-	 * @param captureCompression JPEGの圧縮率, pngの時は無視
+	 *
+	 * Args:
+	 *     path: The path value.
+	 *     captureCompression: JPEGの圧縮率, pngの時は無視.
 	 */
 	public void captureStill(final String path, final int captureCompression);
 

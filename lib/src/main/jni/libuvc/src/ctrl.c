@@ -44,6 +44,9 @@
  * with the device's input, processing and output units.
  */
 
+// Implementation for libuvc control transfer helpers; see libuvc/libuvc.h for the public API.
+
+
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"
 

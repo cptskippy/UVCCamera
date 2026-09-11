@@ -96,6 +96,10 @@ int PublisherPipeline::queueFrame(uvc_frame_t *frame) {
  * build transfer header.
  * all multi bytes fields are little endian.
  */
+
+// Implementation for PublisherPipeline.h; see the header for the public pipeline interface.
+
+
 static void build_header(publish_header_t &header, uvc_frame_t *frame) {
 	// build header
 	switch (frame->frame_format) {
@@ -119,6 +123,17 @@ static void build_header(publish_header_t &header, uvc_frame_t *frame) {
 	header.data_bytes_le = htole32(frame->actual_bytes);
 }
 
+/**
+ * \brief Create the ZeroMQ context and socket, and bind to the publish endpoint.
+ *
+ * Called from the handler thread via do_loop() → on_start().
+ *
+ * Code Paths:
+ *   1. Acquire publisher_mutex.
+ *   2. Create zmq::context_t.
+ *   3. Create ZMQ_PAIR socket, set 1s send timeout and 100ms linger.
+ *   4. Bind socket to host address.
+ */
 /* override protected */
 void PublisherPipeline::on_start() {
 	ENTER();
@@ -136,6 +151,16 @@ void PublisherPipeline::on_start() {
 	EXIT();
 }
 
+/**
+ * \brief Close and destroy the ZeroMQ socket and context.
+ *
+ * Called from the handler thread via do_loop() → on_stop().
+ *
+ * Code Paths:
+ *   1. Acquire publisher_mutex.
+ *   2. Close and delete the zmq socket (if non-null).
+ *   3. Close and delete the zmq context (if non-null).
+ */
 /* override protected */
 void PublisherPipeline::on_stop() {
 	ENTER();
@@ -157,6 +182,27 @@ void PublisherPipeline::on_stop() {
 	EXIT();
 }
 
+/**
+ * \brief Package the frame with a publish header and send it over ZeroMQ.
+ *
+ * Builds a publish_header_t (format, dimensions, sequence, timestamp,
+ * byte count) prepended to the raw frame data, then sends the subscription
+ * ID followed by the payload. Retries on send timeout (EAGAIN) until the
+ * pipeline stops.
+ *
+ * \param[in] frame Frame to publish.
+ * \return 1 (frame consumed; do not chain further).
+ *
+ * Code Paths:
+ *   1. Build header via build_header() (maps UVC frame format to wire format).
+ *   2. Allocate zmq::message_t for header + frame data.
+ *   3. Copy header and frame data into the payload.
+ *   4. Loop while isRunning(): send subscription ID (ZMQ_SNDMORE), then send
+ *      payload. Break on success.
+ *   5. Send timeout → usleep 25ms, retry.
+ *   6. zmq::error_t (other than timeout) → log, break.
+ *   7. Unknown exception → log, break.
+ */
 /* override protected */
 int PublisherPipeline::handle_frame(uvc_frame_t *frame) {
 //	ENTER();

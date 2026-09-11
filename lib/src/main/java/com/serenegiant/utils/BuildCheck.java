@@ -16,9 +16,25 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.os.Build;
+
+/**
+ * Android API level checks for UVCCamera.
+ *
+ * Module:
+ *     com.serenegiant.utils — stateless platform version gating.
+ *
+ * Contract:
+ *     All public methods compare Build.VERSION.SDK_INT against an Android release
+ *     threshold and return true when the current device meets or exceeds it.
+ *     Methods have no side effects and are safe to call from any thread.
+ *
+ * Naming:
+ *     Codename methods (isFroyo, isKitKat, ...) check the named release.
+ *     Numeric aliases (isAndroid2_2, isAndroid4_4, ...) check the same threshold.
+ */
 
 public final class BuildCheck {
 
@@ -26,426 +42,267 @@ public final class BuildCheck {
 		return (Build.VERSION.SDK_INT >= value);
 	}
 
-	/**
-	 * Magic version number for a current development build,
-	 * which has not yet turned into an official release. API=10000
-	 * @return
-	 */
+	/** Returns true when the device is running a current development build. */
 	public static boolean isCurrentDevelopment() {
 		return (Build.VERSION.SDK_INT == Build.VERSION_CODES.CUR_DEVELOPMENT);
 	}
 
-	/**
-	 * October 2008: The original, first, version of Android.  Yay!, API>=1
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= BASE (Android 1.0). */
 	public static boolean isBase() {
 		return check(Build.VERSION_CODES.BASE);
 	}
 
-	/**
-	 * February 2009: First Android update, officially called 1.1., API>=2
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= BASE_1_1 (Android 1.1). */
 	public static boolean isBase11() {
 		return check(Build.VERSION_CODES.BASE_1_1);
 	}
 
-	/**
-	 * May 2009: Android 1.5., API>=3
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= CUPCAKE (Android 1.5). */
 	public static boolean isCupcake() {
 		return check(Build.VERSION_CODES.CUPCAKE);
 	}
 
-	/**
-	 * May 2009: Android 1.5., API>=3
-	 * @return
-	 */
+	/** Alias for isCupcake. */
 	public static boolean isAndroid1_5() {
 		return check(Build.VERSION_CODES.CUPCAKE);
 	}
 
-	/**
-	 * September 2009: Android 1.6., API>=4
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= DONUT (Android 1.6). */
 	public static boolean isDonut() {
 		return check(Build.VERSION_CODES.DONUT);
 	}
 
-	/**
-	 * September 2009: Android 1.6., API>=4
-	 * @return
-	 */
+	/** Alias for isDonut. */
 	public static boolean isAndroid1_6() {
 		return check(Build.VERSION_CODES.DONUT);
 	}
 
-	/**
-	 * November 2009: Android 2.0, API>=5
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= ECLAIR (Android 2.0). */
 	public static boolean isEclair() {
 		return check(Build.VERSION_CODES.ECLAIR);
 	}
 
-	/**
-	 * November 2009: Android 2.0, API>=5
-	 * @return
-	 */
+	/** Alias for isEclair. */
 	public static boolean isAndroid2_0() {
 		return check(Build.VERSION_CODES.ECLAIR);
 	}
 
-	/**
-	 * December 2009: Android 2.0.1, API>=6
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= ECLAIR_0_1 (Android 2.0.1). */
 	public static boolean isEclair01() {
 		return check(Build.VERSION_CODES.ECLAIR_0_1);
 	}
 
-	/**
-	 * January 2010: Android 2.1, API>=7
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= ECLAIR_MR1 (Android 2.1). */
 	public static boolean isEclairMR1() {
 		return check(Build.VERSION_CODES.ECLAIR_MR1);
 	}
 
-	/**
-	 * June 2010: Android 2.2, API>=8
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= FROYO (Android 2.2). */
 	public static boolean isFroyo() {
 		return check(Build.VERSION_CODES.FROYO);
 	}
 
-	/**
-	 * June 2010: Android 2.2, API>=8
-	 * @return
-	 */
+	/** Alias for isFroyo. */
 	public static boolean isAndroid2_2() {
 		return check(Build.VERSION_CODES.FROYO);
 	}
 
-	/**
-	 * November 2010: Android 2.3, API>=9
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= GINGERBREAD (Android 2.3). */
 	public static boolean isGingerBread() {
 		return check(Build.VERSION_CODES.GINGERBREAD);
 	}
 
-	/**
-	 * November 2010: Android 2.3, API>=9
-	 * @return
-	 */
+	/** Alias for isGingerBread. */
 	public static boolean isAndroid2_3() {
 		return check(Build.VERSION_CODES.GINGERBREAD);
 	}
 
-	/**
-	 * February 2011: Android 2.3.3., API>=10
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= GINGERBREAD_MR1 (Android 2.3.3). */
 	public static boolean isGingerBreadMR1() {
 		return check(Build.VERSION_CODES.GINGERBREAD_MR1);
 	}
 
-	/**
-	 * February 2011: Android 2.3.3., API>=10
-	 * @return
-	 */
+	/** Alias for isGingerBreadMR1. */
 	public static boolean isAndroid2_3_3() {
 		return check(Build.VERSION_CODES.GINGERBREAD_MR1);
 	}
 
-	/**
-	 * February 2011: Android 3.0., API>=11
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= HONEYCOMB (Android 3.0). */
 	public static boolean isHoneyComb() {
 		return check(Build.VERSION_CODES.HONEYCOMB);
 	}
 
-	/**
-	 * February 2011: Android 3.0., API>=11
-	 * @return
-	 */
+	/** Alias for isHoneyComb. */
 	public static boolean isAndroid3() {
 		return check(Build.VERSION_CODES.HONEYCOMB);
 	}
 
-	/**
-	 * May 2011: Android 3.1., API>=12
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= HONEYCOMB_MR1 (Android 3.1). */
 	public static boolean isHoneyCombMR1() {
 		return check(Build.VERSION_CODES.HONEYCOMB_MR1);
 	}
 
-	/**
-	 * May 2011: Android 3.1., API>=12
-	 * @return
-	 */
+	/** Alias for isHoneyCombMR1. */
 	public static boolean isAndroid3_1() {
 		return check(Build.VERSION_CODES.HONEYCOMB_MR1);
 	}
 
-	/**
-	 * June 2011: Android 3.2., API>=13
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= HONEYCOMB_MR2 (Android 3.2). */
 	public static boolean isHoneyCombMR2() {
 		return check(Build.VERSION_CODES.HONEYCOMB_MR2);
 	}
 
-	/**
-	 * June 2011: Android 3.2., API>=13
-	 * @return
-	 */
+	/** Alias for isHoneyCombMR2. */
 	public static boolean isAndroid3_2() {
 		return check(Build.VERSION_CODES.HONEYCOMB_MR2);
 	}
 
-	/**
-	 * October 2011: Android 4.0., API>=14
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= ICE_CREAM_SANDWICH (Android 4.0). */
 	public static boolean isIcecreamSandwich() {
 		return check(Build.VERSION_CODES.ICE_CREAM_SANDWICH);
 	}
 
-	/**
-	 * October 2011: Android 4.0., API>=14
-	 * @return
-	 */
+	/** Alias for isIcecreamSandwich. */
 	public static boolean isAndroid4() {
 		return check(Build.VERSION_CODES.ICE_CREAM_SANDWICH);
 	}
 
-	/**
-	 * December 2011: Android 4.0.3., API>=15
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= ICE_CREAM_SANDWICH_MR1 (Android 4.0.3). */
 	public static boolean isIcecreamSandwichMR1() {
 		return check(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1);
 	}
 
-	/**
-	 * December 2011: Android 4.0.3., API>=15
-	 * @return
-	 */
+	/** Alias for isIcecreamSandwichMR1. */
 	public static boolean isAndroid4_0_3() {
 		return check(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1);
 	}
 
-	/**
-	 * June 2012: Android 4.1., API>=16
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= JELLY_BEAN (Android 4.1). */
 	public static boolean isJellyBean() {
 		return check(Build.VERSION_CODES.JELLY_BEAN);
 	}
 
-	/**
-	 * June 2012: Android 4.1., API>=16
-	 * @return
-	 */
+	/** Alias for isJellyBean. */
 	public static boolean isAndroid4_1() {
 		return check(Build.VERSION_CODES.JELLY_BEAN);
 	}
 
-	/**
-	 * November 2012: Android 4.2, Moar jelly beans!, API>=17
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= JELLY_BEAN_MR1 (Android 4.2). */
 	public static boolean isJellyBeanMr1() {
 		return check(Build.VERSION_CODES.JELLY_BEAN_MR1);
 	}
 
-	/**
-	 * November 2012: Android 4.2, Moar jelly beans!, API>=17
-	 * @return
-	 */
+	/** Alias for isJellyBeanMr1. */
 	public static boolean isAndroid4_2() {
 		return check(Build.VERSION_CODES.JELLY_BEAN_MR1);
 	}
 
-	/**
-	 * July 2013: Android 4.3, the revenge of the beans., API>=18
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= JELLY_BEAN_MR2 (Android 4.3). */
 	public static boolean isJellyBeanMR2() {
 		return check(Build.VERSION_CODES.JELLY_BEAN_MR2);
 	}
 
-	/**
-	 * July 2013: Android 4.3, the revenge of the beans., API>=18
-	 * @return
-	 */
+	/** Alias for isJellyBeanMR2. */
 	public static boolean isAndroid4_3() {
 		return check(Build.VERSION_CODES.JELLY_BEAN_MR2);
 	}
 
-	/**
-	 * October 2013: Android 4.4, KitKat, another tasty treat., API>=19
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= KITKAT (Android 4.4). */
 	public static boolean isKitKat() {
 		return check(Build.VERSION_CODES.KITKAT);
 	}
 
-	/**
-	 * October 2013: Android 4.4, KitKat, another tasty treat., API>=19
-	 * @return
-	 */
+	/** Alias for isKitKat. */
 	public static boolean isAndroid4_4() {
 		return check(Build.VERSION_CODES.KITKAT);
 	}
 
-	/**
-	 * Android 4.4W: KitKat for watches, snacks on the run., API>=20
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= KITKAT_WATCH (Android 4.4W). */
 	public static boolean isKitKatWatch() {
 		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH);
 	}
 
-	/**
-	 * Lollipop.  A flat one with beautiful shadows.  But still tasty., API>=21
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= LOLLIPOP (Android 5.0). */
 	public static boolean isL() {
 		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
 	}
 
-	/**
-	 * Lollipop.  A flat one with beautiful shadows.  But still tasty., API>=21
-	 * @return
-	 */
+	/** Alias for isL. */
 	public static boolean isLollipop() {
 		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
 	}
 
-	/**
-	 * Lollipop.  A flat one with beautiful shadows.  But still tasty., API>=21
-	 * @return
-	 */
+	/** Alias for isL. */
 	public static boolean isAndroid5() {
 		return check(Build.VERSION_CODES.LOLLIPOP);
 	}
 
-	/**
-	 * Lollipop with an extra sugar coating on the outside!, API>=22
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= LOLLIPOP_MR1 (Android 5.1). */
 	public static boolean isLollipopMR1() {
 		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1);
 	}
 
-	/**
-	 * Marshmallow.  A flat one with beautiful shadows.  But still tasty., API>=23
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= M (Android 6.0). */
 	public static boolean isM() {
 		return check(Build.VERSION_CODES.M);
 	}
 
-	/**
-	 * Marshmallow.  A flat one with beautiful shadows.  But still tasty., API>=23
-	 * @return
-	 */
+	/** Alias for isM. */
 	public static boolean isMarshmallow() {
 		return check(Build.VERSION_CODES.M);
 	}
 
-	/**
-	 * Marshmallow.  A flat one with beautiful shadows.  But still tasty., API>=23
-	 * @return
-	 */
+	/** Alias for isM. */
 	public static boolean isAndroid6() {
 		return check(Build.VERSION_CODES.M);
 	}
 
-	/**
-	 * 虫歯の元, API >= 24
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= N (Android 7.0). */
 	public static boolean isN() {
 		return check(Build.VERSION_CODES.N);
 	}
 
-	/**
-	 * 歯にくっつくやつ, API >= 24
-	 * @return
-	 */
+	/** Alias for isN. */
 	public static boolean isNougat() {
 		return check(Build.VERSION_CODES.N);
 	}
-	/**
-	 * API >= 24
-	 * @return
-	 */
+
+	/** Alias for isN. */
 	public static boolean isAndroid7() {
 		return check(Build.VERSION_CODES.N);
 	}
-	
-	/**
-	 * API>=25
- 	 * @return
-	 */
+
+	/** Returns true when SDK_INT >= N_MR1 (Android 7.1). */
 	public static boolean isNMR1() {
 		return check(Build.VERSION_CODES.N_MR1);
 	}
-	
-	/**
-	 * API>=25
- 	 * @return
-	 */
+
+	/** Alias for isNMR1. */
 	public static boolean isNougatMR1() {
 		return check(Build.VERSION_CODES.N_MR1);
 	}
 
-	/**
-	 * おれおれぇー API>=26
-	 * @return
-	 */
+	/** Returns true when SDK_INT >= O (Android 8.0). */
 	public static boolean isO() {
 		return check(Build.VERSION_CODES.O);
 	}
-	
-	/**
-	 * おれおれぇー API>=26
-	 * @return
-	 */
+
+	/** Alias for isO. */
 	public static boolean isOreo() {
 		return check(Build.VERSION_CODES.O);
 	}
-	
-	/**
-	 * おれおれぇー API>=26
-	 * @return
-	 */
+
+	/** Alias for isO. */
 	public static boolean isAndroid8() {
 		return check(Build.VERSION_CODES.O);
 	}
-	
-	/**
-	 * おれおれぇー API>=27
-	 * @return
-	 */
+
+	/** Returns true when SDK_INT >= O_MR1 (Android 8.1). */
 	public static boolean isOMR1() {
 		return check(Build.VERSION_CODES.O_MR1);
 	}
 
-	/**
-	 * おれおれぇー MR1 API>=27
-	 * @return
-	 */
+	/** Alias for isOMR1. */
 	public static boolean isOreoMR1() {
 		return check((Build.VERSION_CODES.O_MR1));
 	}

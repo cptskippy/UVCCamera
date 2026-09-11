@@ -50,6 +50,39 @@ import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.utils.ViewAnimationHelper;
 import com.serenegiant.widget.CameraViewInterface;
 
+/**
+ * Demonstrate USB UVC preview with animated brightness/contrast controls.
+ *
+ * This Activity uses a single UVCCameraHandler with encoderType selected by
+ * USE_SURFACE_ENCODER (false by default, so encoderType 1 / MediaVideoEncoder).
+ * The controls expose UVCCamera.PU_BRIGHTNESS and UVCCamera.PU_CONTRAST through the
+ * handler's getValue/setValue/resetValue methods.
+ *
+ * Properties:
+ *     mUSBMonitor: USBMonitor that watches for UVC device attach/connect events.
+ *     mCameraHandler: UVCCameraHandler that owns the camera on its private Handler thread.
+ *     mUVCCameraView: CameraViewInterface preview target from activity_main.
+ *     mCameraButton: ToggleButton that requests camera open/close through CameraDialog.
+ *     mCaptureButton: ImageButton that toggles video recording while the camera is open.
+ *     mBrightnessButton: Button that selects brightness mode in the settings panel.
+ *     mContrastButton: Button that selects contrast mode in the settings panel.
+ *     mResetButton: Button that resets the selected parameter and hides the panel.
+ *     mToolsLayout: Container holding the brightness/contrast/reset controls.
+ *     mValueLayout: Animated SeekBar panel shown for the selected parameter.
+ *     mSettingSeekbar: SeekBar that writes the selected parameter on touch stop.
+ *
+ * State Machine:
+ *     Created → Monitoring (onStart) → CameraDialog → Previewing
+ *     Previewing → Settings (optional) / Recording (optional)
+ *     Previewing → Monitoring (device disconnect or user turn-off)
+ *     Monitoring/Previewing → Stopped (onStop: camera closed, USBMonitor still registered)
+ *     Stopped → Released (onDestroy: handler and USBMonitor released)
+ *
+ * Thread Safety:
+ *     The Activity has no explicit lock. Camera and parameter operations are queued on
+ *     UVCCameraHandler's private Handler thread; UI mutations are marshalled with
+ *     runOnUiThread, and onDisconnect queues handler.close() via queueEvent.
+ */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MainActivity";
@@ -320,7 +353,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 	/**
 	 * to access from CameraDialog
-	 * @return
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	@Override
 	public USBMonitor getUSBMonitor() {
@@ -378,7 +413,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 	private int mSettingMode = -1;
 	/**
 	 * 設定画面を表示
-	 * @param mode
+	 *
+	 * Args:
+	 *     mode: Mode value
 	 */
 	private final void showSettings(final int mode) {
 		if (DEBUG) Log.v(TAG, String.format("showSettings:%08x", mode));
@@ -410,7 +447,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 	/**
 	 * 設定画面を非表示にする
-	 * @param fadeOut trueならばフェードアウトさせる, falseなら即座に非表示にする
+	 *
+	 * Args:
+	 *     fadeOut: trueならばフェードアウトさせる, falseなら即座に非表示にする
 	 */
 	protected final void hideSetting(final boolean fadeOut) {
 		removeFromUiThread(mSettingHideTask);

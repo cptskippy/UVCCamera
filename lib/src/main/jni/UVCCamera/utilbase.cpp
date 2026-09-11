@@ -22,6 +22,10 @@
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
+// Shared JNI utility implementation for the UVCCamera native library; see utilbase.h for declarations.
+
+
+
 #include "utilbase.h"
 
 static JavaVM *savedVm;

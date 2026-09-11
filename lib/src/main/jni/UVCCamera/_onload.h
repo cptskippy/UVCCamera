@@ -29,10 +29,23 @@
 
 #include <jni.h>
 
+/**
+ * \brief JNI entry point for the UVCCamera native library.
+ *
+ * Registers native methods when the Android runtime loads the library.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+ * \brief Load the UVCCamera native library and register native methods.
+ *
+ * \param[in] vm Java virtual machine instance.
+ * \param[in] reserved Reserved by the JNI specification; must be passed
+ *     through unchanged.
+ * \return JNI_VERSION_1_6 on success, or JNI_ERR on failure.
+ */
 jint JNI_OnLoad(JavaVM *vm, void *reserved);
 
 #ifdef __cplusplus

@@ -5,18 +5,41 @@ import 'package:uvccamera/uvccamera.dart';
 
 import 'uvccamera_device_screen.dart';
 
+/// Screen listing the UVC cameras currently connected to the device.
+///
+/// Seeds the list from [UvcCamera.getDevices] on start and keeps it in sync by
+/// listening to [UvcCamera.deviceEventStream] for attach/detach events. Tapping a
+/// device opens [UvcCameraDeviceScreen].
+///
+/// State Machine:
+///   Loading → Unsupported (UVC not supported)
+///   Loading → Empty (supported, no devices)
+///   Loading → List (one or more devices)
+///   List ↔ Empty on attach/detach device events.
 class UvcCameraDevicesScreen extends StatefulWidget {
   const UvcCameraDevicesScreen({super.key});
 
+  /// Create the state object for [UvcCameraDevicesScreen].
   @override
   State<UvcCameraDevicesScreen> createState() => _UvcCameraDevicesScreenState();
 }
 
+/// State for [UvcCameraDevicesScreen].
+///
+/// Tracks the UVC support flag, the live device map, and the device-event
+/// subscription.
 class _UvcCameraDevicesScreenState extends State<UvcCameraDevicesScreen> {
   bool _isSupported = false;
   StreamSubscription<UvcCameraDeviceEvent>? _deviceEventSubscription;
   final Map<String, UvcCameraDevice> _devices = {};
 
+  /// Initialize: query the support flag, subscribe to device events, and seed the
+  /// device list.
+  ///
+  /// Side Effects:
+  ///   - Subscribes to [UvcCamera.deviceEventStream] for attach/detach updates.
+  ///   - Seeds [_devices] from [UvcCamera.getDevices].
+  ///   - Sets [_isSupported] from [UvcCamera.isSupported].
   @override
   void initState() {
     super.initState();
@@ -44,6 +67,10 @@ class _UvcCameraDevicesScreenState extends State<UvcCameraDevicesScreen> {
     });
   }
 
+  /// Cancel the device-event subscription.
+  ///
+  /// Side Effects:
+  ///   - Cancels [_deviceEventSubscription].
   @override
   void dispose() {
     _deviceEventSubscription?.cancel();
@@ -52,6 +79,17 @@ class _UvcCameraDevicesScreenState extends State<UvcCameraDevicesScreen> {
     super.dispose();
   }
 
+  /// Build the screen.
+  ///
+  /// Returns:
+  ///   A message when UVC is unsupported or no devices are present, otherwise a
+  ///   [ListView] of device tiles.
+  ///
+  /// Code Paths:
+  ///   1. If not supported → "not supported" message.
+  ///   2. If no devices → "no devices" message.
+  ///   3. Otherwise → [ListView] of [ListTile]s; tapping one pushes
+  ///      [UvcCameraDeviceScreen].
   @override
   Widget build(BuildContext context) {
     if (!_isSupported) {

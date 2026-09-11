@@ -8,13 +8,13 @@ import java.io.File;
 @FunctionalInterface
 /* package-private */ interface UvcCameraTakePictureResultHandler {
 
-    /**
-     * Called when the take-picture result is available
-     *
-     * @param outputFile the output file to which the picture is saved
-     *                   or null if the picture could not be taken
-     * @param error      the error that occurred while taking the picture
-     */
+/**
+ * Report the result of a take-picture request.
+ *
+ * Args:
+ *     outputFile: the file the picture was saved to, or null if the picture could not be taken
+ *     error: the error that occurred while taking the picture, or null on success
+ */
     void onResult(File outputFile, Exception error);
 
 }

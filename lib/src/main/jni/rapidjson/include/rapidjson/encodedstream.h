@@ -18,6 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief Encoded input/output stream adapters for RapidJSON.
+ *
+ * Provides wrappers to convert between byte streams and character streams with specific encodings.
+ *
+ * Exports:
+ *     EncodedInputStream: Decodes bytes to characters using an encoding
+ *     EncodedOutputStream: Encodes characters to bytes using an encoding
+ *     AutoUTFInputStream: Automatically detects UTF encoding
+ *     AutoUTFOutputStream: Outputs UTF with BOM handling
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - encodings.h: Encoding definitions
+ *
+ * Architecture Note:
+ *     Encoded streams are used to abstract encoding details from parsers and writers. They are not thread-safe.
+ */
+
 #ifndef RAPIDJSON_ENCODEDSTREAM_H_
 #define RAPIDJSON_ENCODEDSTREAM_H_
 

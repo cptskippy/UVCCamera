@@ -26,6 +26,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \brief TurboJPEG API for in-memory JPEG and YUV image processing.
+ *
+ * Provides high-level functions for JPEG compression, decompression, and
+ * YUV transformations without file I/O.
+ *
+ * Exports:
+ *     tjInitCompress: Initialize TurboJPEG compressor
+ *     tjInitDecompress: Initialize TurboJPEG decompressor
+ *     tjCompress2: Compress image to JPEG
+ *     tjDecompress2: Decompress JPEG to image
+ *     tjEncodeYUV2: Encode YUV to JPEG
+ *     tjDecodeYUV: Decode JPEG to YUV
+ *     tjAlloc: Allocate memory
+ *     tjFree: Free memory
+ *     tjGetErrorStr: Get last error string
+ *     tjGetScalingFactors: Get supported scaling factors
+ *
+ * Dependencies:
+ *     - jpeglib.h: JPEG library core
+ *     - jerror.h: Error handling
+ *
+ * Architecture Note:
+ *     TurboJPEG wraps libjpeg-turbo with a handle-based API. Handles encapsulate
+ *     compressor/decompressor state. The API supports planar YUV formats and
+ *     multiple pixel formats with SIMD-accelerated paths.
+ */
+
 #ifndef __TURBOJPEG_H__
 #define __TURBOJPEG_H__
 

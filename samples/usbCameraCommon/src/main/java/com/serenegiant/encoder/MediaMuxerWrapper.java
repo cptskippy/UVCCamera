@@ -36,7 +36,9 @@ import android.media.MediaMuxer;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
-
+/**
+ * Wrap MediaMuxer for audio/video track management.
+ */
 public class MediaMuxerWrapper {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MediaMuxerWrapper";
@@ -52,8 +54,12 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * Constructor
-	 * @param ext extension of output file
-	 * @throws IOException
+	 *
+	 * Args:
+	 *     ext: extension of output file.
+	 *
+	 * Raises:
+	 *     IOException: If an I/O error occurs.
 	 */
 	public MediaMuxerWrapper(String ext) throws IOException {
 		if (TextUtils.isEmpty(ext)) ext = ".mp4";
@@ -67,10 +73,19 @@ public class MediaMuxerWrapper {
 		mIsStarted = false;
 	}
 
+	/**
+	 * Get output file path.
+	 */
 	public String getOutputPath() {
 		return mOutputPath;
 	}
 
+	/**
+	 * Prepare video and audio encoders.
+	 *
+	 * Raises:
+	 *     IOException: If an I/O error occurs.
+	 */
 	public void prepare() throws IOException {
 		if (mVideoEncoder != null)
 			mVideoEncoder.prepare();
@@ -78,6 +93,9 @@ public class MediaMuxerWrapper {
 			mAudioEncoder.prepare();
 	}
 
+	/**
+	 * Start recording on video and audio encoders.
+	 */
 	public void startRecording() {
 		if (mVideoEncoder != null)
 			mVideoEncoder.startRecording();
@@ -85,6 +103,9 @@ public class MediaMuxerWrapper {
 			mAudioEncoder.startRecording();
 	}
 
+	/**
+	 * Stop recording on video and audio encoders.
+	 */
 	public void stopRecording() {
 		if (mVideoEncoder != null)
 			mVideoEncoder.stopRecording();
@@ -94,15 +115,20 @@ public class MediaMuxerWrapper {
 		mAudioEncoder = null;
 	}
 
+	/**
+	 * Check whether recording has started.
+	 */
 	public synchronized boolean isStarted() {
 		return mIsStarted;
 	}
 
-//**********************************************************************
-//**********************************************************************
+	//**********************************************************************
+	//**********************************************************************
 	/**
 	 * assign encoder to this calss. this is called from encoder.
-	 * @param encoder instance of MediaVideoEncoder or MediaAudioEncoder
+	 *
+	 * Args:
+	 *     encoder: instance of MediaVideoEncoder or MediaAudioEncoder.
 	 */
 	/*package*/ void addEncoder(final MediaEncoder encoder) {
 		if (encoder instanceof MediaVideoEncoder) {
@@ -128,7 +154,9 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * request start recording from encoder
-	 * @return true when muxer is ready to write
+	 *
+	 * Returns:
+	 *     true when muxer is ready to write.
 	 */
 	/*package*/ synchronized boolean start() {
 		if (DEBUG) Log.v(TAG,  "start:");
@@ -144,7 +172,7 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * request stop recording from encoder when encoder received EOS
-	*/
+	 */
 	/*package*/ synchronized void stop() {
 		if (DEBUG) Log.v(TAG,  "stop:mStatredCount=" + mStatredCount);
 		mStatredCount--;
@@ -161,8 +189,12 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * assign encoder to muxer
-	 * @param format
-	 * @return minus value indicate error
+	 *
+	 * Args:
+	 *     format: The format value.
+	 *
+	 * Returns:
+	 *     minus value indicate error.
 	 */
 	/*package*/ synchronized int addTrack(final MediaFormat format) {
 		if (mIsStarted)
@@ -174,23 +206,29 @@ public class MediaMuxerWrapper {
 
 	/**
 	 * write encoded data to muxer
-	 * @param trackIndex
-	 * @param byteBuf
-	 * @param bufferInfo
+	 *
+	 * Args:
+	 *     trackIndex: The track index value.
+	 *     byteBuf: The byte buf value.
+	 *     bufferInfo: The buffer info value.
 	 */
 	/*package*/ synchronized void writeSampleData(final int trackIndex, final ByteBuffer byteBuf, final MediaCodec.BufferInfo bufferInfo) {
 		if (mStatredCount > 0)
 			mMediaMuxer.writeSampleData(trackIndex, byteBuf, bufferInfo);
 	}
 
-//**********************************************************************
-//**********************************************************************
-    /**
-     * generate output file
-     * @param type Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM etc.
-     * @param ext .mp4(.m4a for audio) or .png
-     * @return return null when this app has no writing permission to external storage.
-     */
+	//**********************************************************************
+	//**********************************************************************
+/**
+ * generate output file
+ *
+ * Args:
+ *     type: Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM etc.
+ *     ext: .mp4(.m4a for audio) or .png.
+ *
+ * Returns:
+ *     return null when this app has no writing permission to external storage.
+ */
     public static final File getCaptureFile(final String type, final String ext) {
 		final File dir = new File(Environment.getExternalStoragePublicDirectory(type), DIR_NAME);
 		Log.d(TAG, "path=" + dir.toString());
@@ -201,10 +239,12 @@ public class MediaMuxerWrapper {
     	return null;
     }
 
-    /**
-     * get current date and time as String
-     * @return
-     */
+/**
+ * get current date and time as String
+ *
+ * Returns:
+ *     The date time string.
+ */
     private static final String getDateTimeString() {
     	final GregorianCalendar now = new GregorianCalendar();
     	return mDateTimeFormat.format(now.getTime());

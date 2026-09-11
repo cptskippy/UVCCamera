@@ -16,11 +16,16 @@ package com.serenegiant.widget;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 /**
- * アスペクト比を一定に保つView用のインターフェースを定義
+ * Define the contract for views that keep a fixed aspect ratio.
+ *
+ * Implementations (e.g. AspectRatioTextureView, UVCCameraTextureView) resize
+ * themselves so the rendered camera image preserves the requested
+ * width-to-height ratio while fitting the surrounding layout.
  */
+
 public interface IAspectRatioView {
 	public void setAspectRatio(double aspectRatio);
 	public void setAspectRatio(final int width, final int height);

@@ -18,6 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief In-memory output byte stream buffer for RapidJSON writers.
+ *
+ * Provides a growable memory buffer implementing the Stream concept for writing JSON output to RAM.
+ *
+ * Exports:
+ *     GenericMemoryBuffer: Templated in-memory output buffer with allocator support
+ *     MemoryBuffer: Default instantiation of GenericMemoryBuffer
+ *     PutN: Optimized write of repeated characters
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions and Stream concept
+ *     - internal/stack.h: Stack allocator backing store
+ *
+ * Architecture Note:
+ *     MemoryBuffer is used internally by StringBuffer and writers to accumulate output before flushing to a final destination. It is not thread-safe and should be confined to a single thread.
+ */
+
 #ifndef RAPIDJSON_MEMORYBUFFER_H_
 #define RAPIDJSON_MEMORYBUFFER_H_
 
@@ -26,7 +44,7 @@
 
 namespace rapidjson {
 
-//! Represents an in-memory output byte stream.
+//! \brief Represents an in-memory output byte stream.
 /*!
     This class is mainly for being wrapped by EncodedOutputStream or AutoUTFOutputStream.
 
@@ -38,6 +56,12 @@ namespace rapidjson {
 
     \tparam Allocator type for allocating memory buffer.
     \note implements Stream concept
+
+    Properties:
+        stack_: Internal stack allocator holding the buffer contents.
+
+    Thread Safety:
+        Not thread-safe. Instances must be used by a single thread only.
 */
 template <typename Allocator = CrtAllocator>
 struct GenericMemoryBuffer {

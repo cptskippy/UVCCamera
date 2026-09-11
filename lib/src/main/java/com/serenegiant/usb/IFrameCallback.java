@@ -25,21 +25,46 @@ package com.serenegiant.usb;
 
 import java.nio.ByteBuffer;
 /**
- * Callback interface for UVCCamera class
- * If you need frame data as ByteBuffer, you can use this callback interface with UVCCamera#setFrameCallback
+ * Receive raw video frames as ByteBuffer from UVCCamera native capture pipeline.
+ *
+ * Implementations are invoked from the native capture thread via JNI for each
+ * captured frame when frame callback mode is active. Register an implementation
+ * with UVCCamera#setFrameCallback to receive frames.
+ *
+ * Usage:
+ *     Prerequisites:
+ *         - UVCCamera instance must be initialized and native pointer non-zero
+ *     Call sequence:
+ *         1. UVCCamera#setFrameCallback(callback, pixelFormat) — registers callback and selects pixel format
+ *         2. Callback onFrame is invoked asynchronously on native capture thread for each frame
+ *         3. Process frame quickly to avoid drops; avoid blocking work in callback
+ *
+ * Thread safety:
+ *     - onFrame is called on the native capture thread. Do not perform blocking work.
+ *       Copy frame data if processing must occur on another thread.
+ *
+ * Performance note:
+ *     - Long processing in onFrame causes frame drops. Prefer SurfaceTexture/GL pipeline for efficient rendering.
  */
 public interface IFrameCallback {
 	/**
-	 * This method is called from native library via JNI on the same thread as UVCCamera#startCapture.
-	 * You can use both UVCCamera#startCapture and #setFrameCallback
-	 * but it is better to use either for better performance.
-	 * You can also pass pixel format type to UVCCamera#setFrameCallback for this method.
-	 * Some frames may drops if this method takes a time.
-	 * When you use some color format like NV21, this library never execute color space conversion,
-	 * just execute pixel format conversion. If you want to get same result as on screen, please try to
-	 * consider to get images via texture(SurfaceTexture) and read pixel buffer from it using OpenGL|ES2/3
-	 * instead of using IFrameCallback(this way is much efficient in most case than using IFrameCallback).
-	 * @param frame this is direct ByteBuffer from JNI layer and you should handle it's byte order and limitation.
+	 * Process a raw video frame delivered from native capture.
+	 *
+	 * Args:
+	 *     frame: Direct ByteBuffer containing raw frame data in the pixel format selected via setFrameCallback.
+	 *         Byte order and buffer limits must be handled by the caller. The buffer is valid only during callback execution.
+	 *
+	 * Side Effects:
+	 *     - Execution blocks the native capture pipeline. Long processing causes frame drops.
+	 *     - Caller is responsible for copying frame data if processing must continue after callback returns.
+	 *
+	 * Code Paths:
+	 *     1. Frame arrives from native capture → callback invoked with ByteBuffer containing frame data.
+	 *        Implementation should process frame promptly and return.
+	 *
+	 * Performance note:
+	 *     - For color formats like NV21, library performs pixel format conversion only, no colorspace conversion.
+	 *     - Prefer SurfaceTexture/GL pipeline for efficient on-screen rendering instead of CPU processing via callback.
 	 */
 	public void onFrame(ByteBuffer frame);
 }

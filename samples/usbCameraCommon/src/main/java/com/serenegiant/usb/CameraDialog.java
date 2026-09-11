@@ -48,18 +48,29 @@ import com.serenegiant.usb.USBMonitor;
 
 import com.serenegiant.usbcameracommon.R;
 
+/**
+ * Show a UVC camera selection dialog.
+ *
+ * The hosting activity must implement {@link CameraDialogParent}.
+ */
 public class CameraDialog extends DialogFragment {
 	private static final String TAG = CameraDialog.class.getSimpleName();
 
+	/**
+	 * Host contract for a camera-selection dialog.
+	 */
 	public interface CameraDialogParent {
 		public USBMonitor getUSBMonitor();
 		public void onDialogResult(boolean canceled);
 	}
 
 	/**
-	 * Helper method
-	 * @param parent FragmentActivity
-	 * @return
+	 * Show a UVC camera selection dialog on the given activity.
+	 *
+	 * Args:
+	 *   parent: the hosting activity; must implement {@link CameraDialogParent}
+	 * Returns:
+	 *   the shown dialog, or null if it could not be shown
 	 */
 	public static CameraDialog showDialog(final Activity parent/* add parameters here if you need */) {
 		CameraDialog dialog = newInstance(/* add parameters here if you need */);
@@ -71,6 +82,9 @@ public class CameraDialog extends DialogFragment {
     	return dialog;
 	}
 
+	/**
+	 * Create a new CameraDialog with empty arguments.
+	 */
 	public static CameraDialog newInstance(/* add parameters here if you need */) {
 		final CameraDialog dialog = new CameraDialog();
 		final Bundle args = new Bundle();
@@ -84,11 +98,17 @@ public class CameraDialog extends DialogFragment {
 	private DeviceListAdapter mDeviceListAdapter;
 
 	public CameraDialog(/* no arguments */) {
-		// Fragment need default constructor
+	// Fragment need default constructor
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
+	/**
+	 * Acquire the USBMonitor from the hosting activity.
+	 *
+	 * Args:
+	 *   activity: the hosting activity; must implement {@link CameraDialogParent}
+	 */
 	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
        if (mUSBMonitor == null)
@@ -103,6 +123,12 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	@Override
+/**
+ * Use the fragment arguments when no saved instance state was provided.
+ *
+ * Args:
+ *   savedInstanceState: the saved instance state, or null
+ */
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (savedInstanceState == null)
@@ -110,6 +136,12 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	@Override
+	/**
+	 * Copy the fragment arguments into the out-state bundle.
+	 *
+	 * Args:
+	 *   saveInstanceState: the bundle that receives the saved state
+	 */
 	public void onSaveInstanceState(final Bundle saveInstanceState) {
 		final Bundle args = getArguments();
 		if (args != null)
@@ -118,6 +150,14 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	@Override
+/**
+ * Build the AlertDialog that lists the available UVC cameras.
+ *
+ * Args:
+ *   savedInstanceState: the saved instance state, or null
+ * Returns:
+ *   the created dialog
+ */
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setView(initView());
@@ -132,8 +172,10 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	/**
-	 * create view that this fragment shows
-	 * @return
+	 * Create the view that this fragment shows.
+	 *
+	 * Returns:
+	 *   the inflated dialog view
 	 */
 	private final View initView() {
 		final View rootView = getActivity().getLayoutInflater().inflate(R.layout.dialog_camera, null);
@@ -145,6 +187,9 @@ public class CameraDialog extends DialogFragment {
 
 
 	@Override
+	/**
+	 * Refresh the device list and bind the refresh button.
+	 */
 	public void onResume() {
 		super.onResume();
 		updateDevices();
@@ -156,6 +201,12 @@ public class CameraDialog extends DialogFragment {
 
 	private final OnClickListener mOnClickListener = new OnClickListener() {
 		@Override
+		/**
+		 * Refresh the device list when the refresh button is clicked.
+		 *
+		 * Args:
+		 *   v: the clicked view
+		 */
 		public void onClick(final View v) {
 			switch (v.getId()) {
 			case android.R.id.button3:
@@ -167,6 +218,13 @@ public class CameraDialog extends DialogFragment {
 
 	private final DialogInterface.OnClickListener mOnDialogClickListener = new DialogInterface.OnClickListener() {
 		@Override
+		/**
+		 * Handle the OK or Cancel button click.
+		 *
+		 * Args:
+		 *   dialog: the clicked dialog
+		 *   which: the id of the clicked button
+		 */
 		public void onClick(final DialogInterface dialog, final int which) {
 			switch (which) {
 			case DialogInterface.BUTTON_POSITIVE:
@@ -184,13 +242,22 @@ public class CameraDialog extends DialogFragment {
 	};
 
 	@Override
+	/**
+	 * Notify the hosting activity that the dialog was canceled.
+	 *
+	 * Args:
+	 *   dialog: the canceled dialog
+	 */
 	public void onCancel(final DialogInterface dialog) {
 		((CameraDialogParent)getActivity()).onDialogResult(true);
 		super.onCancel(dialog);
 	}
 
+	/**
+	 * Rebuild the device list and update the spinner adapter.
+	 */
 	public void updateDevices() {
-//		mUSBMonitor.dumpDevices();
+	//		mUSBMonitor.dumpDevices();
 		final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(getActivity(), com.github.cptskippy.uvccamera.lib.R.xml.device_filter);
 		mDeviceListAdapter = new DeviceListAdapter(getActivity(), mUSBMonitor.getDeviceList(filter.get(0)));
 		mSpinner.setAdapter(mDeviceListAdapter);
@@ -207,11 +274,22 @@ public class CameraDialog extends DialogFragment {
 		}
 
 		@Override
+		/**
+		 * Return the number of devices in the list.
+		 */
 		public int getCount() {
 			return mList.size();
 		}
 
 		@Override
+		/**
+		 * Get the device at the given position.
+		 *
+		 * Args:
+		 *   position: the row index
+		 * Returns:
+		 *   the device, or null if the position is out of range
+		 */
 		public UsbDevice getItem(final int position) {
 			if ((position >= 0) && (position < mList.size()))
 				return mList.get(position);
@@ -220,11 +298,29 @@ public class CameraDialog extends DialogFragment {
 		}
 
 		@Override
+		/**
+		 * Return the row position as the item id.
+		 *
+		 * Args:
+		 *   position: the row index
+		 * Returns:
+		 *   the row position
+		 */
 		public long getItemId(final int position) {
 			return position;
 		}
 
 		@Override
+		/**
+		 * Create or fill the list row for a device.
+		 *
+		 * Args:
+		 *   position: the row index
+		 *   convertView: the row view to reuse, or null
+		 *   parent: the list view
+		 * Returns:
+		 *   the row view
+		 */
 		public View getView(final int position, View convertView, final ViewGroup parent) {
 			if (convertView == null) {
 				convertView = mInflater.inflate(R.layout.listitem_device, parent, false);

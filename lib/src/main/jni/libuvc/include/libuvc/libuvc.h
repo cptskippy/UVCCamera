@@ -1,6 +1,38 @@
 #ifndef LIBUVC_H
 #define LIBUVC_H
 
+/**
+ * \brief Public API for USB Video Class (UVC) camera access via libusb.
+ *
+ * Provides device enumeration, control, and streaming for UVC-compliant cameras.
+ * The library abstracts libusb operations and exposes a C API for opening devices,
+ * configuring streams, and receiving frames via callbacks or polling.
+ *
+ * Exports:
+ *   uvc_error_t: Error codes mirroring libusb errors
+ *   uvc_device_t, uvc_device_handle_t, uvc_stream_handle_t: opaque handles
+ *   uvc_frame_t: frame container
+ *   uvc_stream_ctrl_t: streaming configuration
+ *   uvc_init, uvc_exit, uvc_get_device_list, uvc_open, uvc_close: device lifecycle
+ *   uvc_start_streaming, uvc_stream_open_ctrl, uvc_stream_start: streaming control
+ *   uvc_get_ctrl, uvc_set_ctrl: generic and camera/processing unit controls
+ *   uvc_allocate_frame, uvc_free_frame, uvc_*2rgb/bgr: frame conversion utilities
+ *
+ * Dependencies:
+ *   - libusb: USB device communication
+ *   - libuvc/libuvc_config.h: version and feature macros
+ *
+ * Architecture Note:
+ *   libuvc is a thin wrapper over libusb with UVC protocol parsing. Public headers
+ *   define opaque types and control structures; implementation resides in src/. The
+ *   API is designed for embedding in Android/JNI layers where libusb is provided by
+ *   the host. Control transfers are serialized per device handle. Frame conversion is
+ *   CPU-intensive per frame, and caller-owned buffers are never modified. libuvc can
+ *   own its libusb context or use an external one; the first opened device starts an
+ *   internal event-handler thread, and the last closed device terminates it.
+ *   Thread safety is not guaranteed across multiple concurrent operations on the same
+ *   handle.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -144,11 +176,17 @@ enum uvc_vs_desc_subtype {
 struct uvc_format_desc;
 struct uvc_frame_desc;
 
-/** Frame descriptor
+/**
+ * \brief Configuration of a streaming format for a particular image size and frame rates.
  *
- * A "frame" is a configuration of a streaming format
- * for a particular image size at one of possibly several
- * available frame rates.
+ * A frame descriptor defines the size, bitrate, and timing parameters for a single
+ * video format variant. It is linked into a uvc_format_desc.
+ *
+ * Properties:
+ *   parent: Owning format descriptor
+ *   wWidth / wHeight: Image dimensions in pixels
+ *   dwDefaultFrameInterval: Default interval in 100ns units
+ *   dwMaxVideoFrameBufferSize: Maximum buffer size for this frame
  */
 typedef struct uvc_frame_desc {
   struct uvc_format_desc *parent;
@@ -521,6 +559,31 @@ typedef struct uvc_stream_ctrl {
 	uint8_t bInterfaceNumber;
 } uvc_stream_ctrl_t;
 
+/**
+ * \brief Initialize libuvc context.
+ *
+ * Creates a libuvc context that wraps an optional libusb context. If usb_ctx is
+ * NULL, libuvc will initialize its own libusb context.
+ *
+ * \param[out] ctx  Pointer to receive the new uvc_context_t. Must not be NULL.
+ * \param[in]  usb_ctx Optional existing libusb context. Pass NULL to create new.
+ *
+ * \return UVC_SUCCESS on success, or a negative libusb error code on failure.
+ *
+ * \pre ctx must point to a valid pointer location.
+ * \post On success, *ctx is a valid context that must be released with uvc_exit().
+ *
+ * \warning Not thread-safe. Do not call concurrently with uvc_exit on the same context.
+ *
+ * Side Effects:
+ *   - Initializes libusb if usb_ctx is NULL.
+ *   - Allocates internal context structures.
+ *
+ * Code Paths:
+ *   1. If usb_ctx is NULL → calls libusb_init, returns error on failure.
+ *   2. If usb_ctx is provided → uses existing context, skips libusb_init.
+ *   3. Allocates uvc_context_t and sets ownership flags, returns UVC_SUCCESS.
+ */
 uvc_error_t uvc_init(uvc_context_t **ctx, struct libusb_context *usb_ctx);
 uvc_error_t uvc_init2(uvc_context_t **ctx, struct libusb_context *usb_ctx, const char *usbfs);
 void uvc_exit(uvc_context_t *ctx);

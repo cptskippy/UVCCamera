@@ -31,6 +31,9 @@ import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.util.Log;
 import android.view.Surface;
+/**
+ * Encode video frames from a SurfaceTexture into a muxer.
+ */
 
 public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 	private static final boolean DEBUG = true;	// TODO set false on release
@@ -52,8 +55,8 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 	}
 
 	/**
-	* Returns the encoder's input surface.
-	*/
+	 * Get the encoder input surface.
+	 */
 	public Surface getInputSurface() {
 		return mSurface;
 	}
@@ -80,8 +83,8 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 
         mMediaCodec = MediaCodec.createEncoderByType(MIME_TYPE);
         mMediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        // get Surface for encoder input
-        // this method only can call between #configure and #start
+// get Surface for encoder input
+// this method only can call between #configure and #start
         mSurface = mMediaCodec.createInputSurface();	// API >= 18
         mMediaCodec.start();
         if (DEBUG) Log.i(TAG, "prepare finishing");
@@ -110,15 +113,19 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 		return bitrate;
 	}
 
-    /**
-     * select the first codec that match a specific MIME type
-     * @param mimeType
-     * @return null if no codec matched
-     */
+/**
+ * Select the first encoder codec that matches a specific MIME type.
+ *
+ * Args:
+ *     mimeType: MIME type to match, e.g. video/avc.
+ *
+ * Returns:
+ *     null if no codec matched.
+ */
     protected static final MediaCodecInfo selectVideoCodec(final String mimeType) {
     	if (DEBUG) Log.v(TAG, "selectVideoCodec:");
 
-    	// get the list of available codecs
+	// get the list of available codecs
         final int numCodecs = MediaCodecList.getCodecCount();
         for (int i = 0; i < numCodecs; i++) {
         	final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
@@ -126,7 +133,7 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
             if (!codecInfo.isEncoder()) {	// skipp decoder
                 continue;
             }
-            // select first codec that match a specific MIME type and color format
+// select first codec that match a specific MIME type and color format
             final String[] types = codecInfo.getSupportedTypes();
             for (int j = 0; j < types.length; j++) {
                 if (types[j].equalsIgnoreCase(mimeType)) {
@@ -141,10 +148,12 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
         return null;
     }
 
-    /**
-     * select color format available on specific codec and we can use.
-     * @return 0 if no colorFormat is matched
-     */
+/**
+ * select color format available on specific codec and we can use.
+ *
+ * Returns:
+ *     0 if no colorFormat is matched.
+ */
     protected static final int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
 		if (DEBUG) Log.i(TAG, "selectColorFormat: ");
     	int result = 0;
@@ -175,9 +184,9 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
     protected static int[] recognizedFormats;
 	static {
 		recognizedFormats = new int[] {
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
-//        	MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
         	MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
 		};
 	}

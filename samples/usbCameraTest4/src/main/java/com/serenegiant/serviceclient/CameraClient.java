@@ -41,6 +41,17 @@ import android.view.Surface;
 import com.serenegiant.service.IUVCService;
 import com.serenegiant.service.IUVCServiceCallback;
 
+/**
+ * Client for interacting with camera service.
+ *
+ * Binds to UVCService and forwards commands.
+ *
+ * Properties:
+ *     mService: Bound service reference.
+ *
+ * Thread Safety:
+ *     Bind/unbind on main thread.
+ */
 public class CameraClient implements ICameraClient {
 	private static final boolean DEBUG = true;
 	private static final String TAG = "CameraClient";
@@ -208,7 +219,9 @@ public class CameraClient implements ICameraClient {
 	/**
 	 * get reference to instance of IUVCService
 	 * you should not call this from UI thread, this method block until the service is available
-	 * @return
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private IUVCService getService() {
 		synchronized (mServiceSync) {

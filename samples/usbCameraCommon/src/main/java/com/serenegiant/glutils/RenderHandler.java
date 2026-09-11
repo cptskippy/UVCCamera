@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -32,6 +32,7 @@ import android.view.SurfaceHolder;
  * this will deprecate soon because I don't use this now
  */
 @Deprecated
+
 public final class RenderHandler extends Handler {
 //	private static final boolean DEBUG = false;	// FIXME set false on release
 	private static final String TAG = "RenderHandler";
@@ -45,12 +46,12 @@ public final class RenderHandler extends Handler {
 	private final RenderThread mThread;
 
 	public static RenderHandler createHandler() {
-//		if (DEBUG) Log.v(TAG, "createHandler:");
+	//		if (DEBUG) Log.v(TAG, "createHandler:");
 		return createHandler("RenderThread");
 	}
 
 	public static final RenderHandler createHandler(final String name) {
-//		if (DEBUG) Log.v(TAG, "createHandler:name=" + name);
+	//		if (DEBUG) Log.v(TAG, "createHandler:name=" + name);
 		final RenderThread thread = new RenderThread(name);
 		thread.start();
 		return thread.getHandler();
@@ -58,7 +59,7 @@ public final class RenderHandler extends Handler {
 
 	public final void setEglContext(final EGLBase.IContext sharedContext,
 		final int tex_id, final Object surface, final boolean isRecordable) {
-//		if (DEBUG) Log.i(TAG, "RenderHandler:setEglContext:");
+		//		if (DEBUG) Log.i(TAG, "RenderHandler:setEglContext:");
 		if (!(surface instanceof Surface)
 			&& !(surface instanceof SurfaceTexture)
 			&& !(surface instanceof SurfaceHolder))
@@ -84,6 +85,8 @@ public final class RenderHandler extends Handler {
 		sendMessage(obtainMessage(MSG_RENDER_DRAW, tex_id, 0, tex_matrix));
 	}
 
+
+
 	public boolean isValid() {
 		synchronized (mThread.mSync) {
 			sendEmptyMessage(MSG_CHECK_VALID);
@@ -96,13 +99,14 @@ public final class RenderHandler extends Handler {
 	}
 
 	public final void release() {
-//		if (DEBUG) Log.i(TAG, "release:");
+	//		if (DEBUG) Log.i(TAG, "release:");
 		removeMessages(MSG_RENDER_SET_GLCONTEXT);
 		removeMessages(MSG_RENDER_DRAW);
 		sendEmptyMessage(MSG_RENDER_QUIT);
 	}
 
 	@Override
+
 	public final void handleMessage(final Message msg) {
 		switch (msg.what) {
 		case MSG_RENDER_SET_GLCONTEXT:
@@ -125,10 +129,10 @@ public final class RenderHandler extends Handler {
 		}
 	}
 
-//********************************************************************************
-//********************************************************************************
+	//********************************************************************************
+	//********************************************************************************
 	private RenderHandler(final RenderThread thread) {
-//		if (DEBUG) Log.i(TAG, "RenderHandler:");
+	//		if (DEBUG) Log.i(TAG, "RenderHandler:");
 		mThread = thread;
 	}
 
@@ -160,7 +164,7 @@ public final class RenderHandler extends Handler {
 
     	public final RenderHandler getHandler() {
             synchronized (mSync) {
-                // create rendering thread
+// create rendering thread
             	try {
             		mSync.wait();
             	} catch (final InterruptedException e) {
@@ -169,14 +173,17 @@ public final class RenderHandler extends Handler {
             return mHandler;
     	}
 
-    	/**
-    	 * Set shared context and Surface
-    	 * @param shardContext
-    	 * @param surface
-    	 */
+	/**
+	 * Set shared context and Surface
+	 *
+	 * Args:
+	 *     shardContext: The shard context value.
+	 *     surface: The surface value.
+	 */
+
     	public final void handleSetEglContext(final EGLBase.IContext shardContext,
     		final Object surface, final boolean isRecordable) {
-//    		if (DEBUG) Log.i(TAG_THREAD, "setEglContext:");
+		//    		if (DEBUG) Log.i(TAG_THREAD, "setEglContext:");
     		release();
     		synchronized (mSync) {
     			mSurface = surface instanceof Surface ? (Surface)surface
@@ -200,13 +207,16 @@ public final class RenderHandler extends Handler {
     		}
     	}
 
-    	/**
-    	 * drawing
-    	 * @param tex_id
-    	 * @param tex_matrix
-    	 */
+	/**
+	 * drawing
+	 *
+	 * Args:
+	 *     tex_id: The tex ID value.
+	 *     tex_matrix: The tex matrix value.
+	 */
+
     	public void handleDraw(final int tex_id, final float[] tex_matrix) {
-//    		if (DEBUG) Log.i(TAG_THREAD, "draw");
+	//    		if (DEBUG) Log.i(TAG_THREAD, "draw");
     		if (tex_id >= 0 && mTargetSurface != null) {
 	    		mTargetSurface.makeCurrent();
 	    		mDrawer.draw(tex_id, tex_matrix, 0);
@@ -215,8 +225,9 @@ public final class RenderHandler extends Handler {
     	}
 
     	@Override
+
     	public final void run() {
-//			if (DEBUG) Log.v(TAG_THREAD, "started");
+	//			if (DEBUG) Log.v(TAG_THREAD, "started");
             Looper.prepare();
             synchronized (mSync) {
                 mHandler = new RenderHandler(this);
@@ -232,7 +243,7 @@ public final class RenderHandler extends Handler {
     	}
 
     	private final void release() {
-//    		if (DEBUG) Log.v(TAG_THREAD, "release:");
+	//    		if (DEBUG) Log.v(TAG_THREAD, "release:");
     		if (mDrawer != null) {
     			mDrawer.release();
     			mDrawer = null;
@@ -251,11 +262,11 @@ public final class RenderHandler extends Handler {
     		}
     	}
 
-    	/**
-    	 * Fill black on specific Surface
-    	 */
+	/**
+	 * Fill black on specific Surface
+	 */
     	private final void clear() {
-//    		if (DEBUG) Log.v(TAG_THREAD, "clear:");
+	//    		if (DEBUG) Log.v(TAG_THREAD, "clear:");
     		mTargetSurface.makeCurrent();
 			GLES20.glClearColor(0, 0, 0, 1);
 			GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);

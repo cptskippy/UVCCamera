@@ -20,14 +20,17 @@
  *
  * All files in the folder are under this Apache License, Version 2.0.
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
-*/
+ */
+
+// Implementation for UVCCamera.h; see the header for the public native camera API.
+
 
 #define LOG_TAG "UVCCamera"
-#if 1	// デバッグ情報を出さない時1
+#if 1	// Disable debug logging
 	#ifndef LOG_NDEBUG
-		#define	LOG_NDEBUG		// LOGV/LOGD/MARKを出力しない時
+		#define	LOG_NDEBUG		// Suppress LOGV/LOGD/MARK output
 		#endif
-	#undef USE_LOGALL			// 指定したLOGxだけを出力
+	#undef USE_LOGALL			// Output only the selected LOGx macros
 #else
 	#define USE_LOGALL
 	#undef LOG_NDEBUG
@@ -52,7 +55,7 @@
 //
 //**********************************************************************
 /**
- * コンストラクタ
+ * Constructor
  */
 UVCCamera::UVCCamera()
 :	mFd(0),
@@ -72,7 +75,7 @@ UVCCamera::UVCCamera()
 }
 
 /**
- * デストラクタ
+ * Destructor
  */
 UVCCamera::~UVCCamera() {
 	ENTER();
@@ -132,7 +135,31 @@ void UVCCamera::clearCameraParams() {
 
 //======================================================================
 /**
- * カメラへ接続する
+ * \brief Connect to a UVC camera device.
+ *
+ * Opens the device for streaming using an already-open USB file descriptor.
+ * The method stores a duplicate of `fd` in `mFd`; the caller keeps ownership
+ * of the original descriptor.
+ *
+ * \param[in] vid Vendor ID of the target UVC device.
+ * \param[in] pid Product ID of the target UVC device.
+ * \param[in] fd An open file descriptor for the USB device, or 0 to reject the connection.
+ * \param[in] busnum USB bus number used to locate the device.
+ * \param[in] devaddr USB device address used to locate the device.
+ * \param[in] usbfs Path to the USB filesystem. Replaces any stored path.
+ *
+ * \return 0 on success.
+ * \return UVC_ERROR_BUSY if the camera is already open or `fd` is 0.
+ * \return A negative libuvc error if libuvc initialization, device lookup, or device open fails.
+ *
+ * Code Paths:
+ *   1. `mDeviceHandle` is already non-null or `fd == 0` → log and return `UVC_ERROR_BUSY`.
+ *   2. Replace `mUsbFs` with a copy of `usbfs`.
+ *   3. If `mContext` is null, initialize libuvc with `uvc_init2`; return the negative error immediately if initialization fails.
+ *   4. Clear supported camera parameter ranges, duplicate `fd`, and locate the device by VID/PID/fd/bus/address.
+ *   5. Device lookup failure → close the duplicated fd and return the libuvc error.
+ *   6. `uvc_open` failure → unref the device, clear device state, close the duplicated fd, and return the libuvc error.
+ *   7. Success → store the duplicated fd in `mFd` and allocate the status, button, and preview objects.
  */
 int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const char *usbfs) {
 	ENTER();
@@ -149,17 +176,17 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 				RETURN(result, int);
 			}
 		}
-		// カメラ機能フラグをクリア
+		// Clear the supported camera feature flags
 		clearCameraParams();
 		fd = dup(fd);
-		// 指定したvid,idを持つデバイスを検索, 見つかれば0を返してmDeviceに見つかったデバイスをセットする(既に1回uvc_ref_deviceを呼んである)
+		// Search for a device with the specified VID/PID; if found, return 0 and set mDevice to the device (uvc_ref_device has already been called once)
 //		result = uvc_find_device2(mContext, &mDevice, vid, pid, NULL, fd);
 		result = uvc_get_device_with_fd(mContext, &mDevice, vid, pid, NULL, fd, busnum, devaddr);
 		if (LIKELY(!result)) {
-			// カメラのopen処理
+			// Open the camera device
 			result = uvc_open(mDevice, &mDeviceHandle);
 			if (LIKELY(!result)) {
-				// open出来た時
+				// Camera opened successfully
 #if LOCAL_DEBUG
 				uvc_print_diag(mDeviceHandle, stderr);
 #endif
@@ -168,10 +195,10 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 				mButtonCallback = new UVCButtonCallback(mDeviceHandle);
 				mPreview = new UVCPreview(mDeviceHandle);
 			} else {
-				// open出来なかった時
+				// Camera open failed
 				LOGE("could not open camera:err=%d", result);
 				uvc_unref_device(mDevice);
-//				SAFE_DELETE(mDevice);	// 参照カウンタが0ならuvc_unref_deviceでmDeviceがfreeされるから不要 XXX クラッシュ, 既に破棄されているのを再度破棄しようとしたからみたい
+//				SAFE_DELETE(mDevice);	// Not needed: mDevice is freed by uvc_unref_device when the reference count reaches 0. XXX This previously crashed because an already destroyed object was destroyed again.
 				mDevice = NULL;
 				mDeviceHandle = NULL;
 				close(fd);
@@ -181,34 +208,48 @@ int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const 
 			close(fd);
 		}
 	} else {
-		// カメラが既にopenしている時
+		// Camera is already open
 		LOGW("camera is already opened. you should release first");
 	}
 	RETURN(result, int);
 }
 
-// カメラを開放する
+/**
+ * \brief Release the camera device and native resources.
+ *
+ * \return 0 after the release sequence completes.
+ *
+ * \post `mDeviceHandle`, `mDevice`, and `mUsbFs` are null, `mFd` is 0, and cached control support flags are cleared.
+ *
+ * Code Paths:
+ *   1. Call `stopPreview()` first so the capture thread is stopped before the preview object is deleted.
+ *   2. If `mDeviceHandle` is non-null, delete the status and button callback objects, delete `mPreview`, close the device with `uvc_close`, and null the handle.
+ *   3. If `mDevice` is non-null, unref the device with `uvc_unref_device` and null the pointer.
+ *   4. Clear all cached control support flags and parameter ranges with `clearCameraParams()`.
+ *   5. If `mUsbFs` is non-null, close `mFd`, zero the descriptor, free the stored USB filesystem path, and null the pointer.
+ *   6. Return 0.
+ */
 int UVCCamera::release() {
 	ENTER();
 	stopPreview();
-	// カメラのclose処理
+	// Close the camera device
 	if (LIKELY(mDeviceHandle)) {
-		MARK("カメラがopenしていたら開放する");
-		// ステータスコールバックオブジェクトを破棄
+		MARK("close the camera if it was open");
+		// Destroy the status callback object
 		SAFE_DELETE(mStatusCallback);
 		SAFE_DELETE(mButtonCallback);
-		// プレビューオブジェクトを破棄
+		// Destroy the preview object
 		SAFE_DELETE(mPreview);
-		// カメラをclose
+		// Close the camera
 		uvc_close(mDeviceHandle);
 		mDeviceHandle = NULL;
 	}
 	if (LIKELY(mDevice)) {
-		MARK("カメラを開放");
+		MARK("release the camera device");
 		uvc_unref_device(mDevice);
 		mDevice = NULL;
 	}
-	// カメラ機能フラグをクリア
+	// Clear the supported camera feature flags
 	clearCameraParams();
 	if (mUsbFs) {
 		close(mFd);
@@ -301,13 +342,27 @@ int UVCCamera::setCaptureDisplay(ANativeWindow *capture_window) {
 }
 
 //======================================================================
-// カメラのサポートしているコントロール機能を取得する
+/**
+ * \brief Return the camera's input-terminal control support flags.
+ *
+ * \param[out] supports Receives the cached `mCtrlSupports` value; may be null to skip the write.
+ *
+ * \return 0 when the device handle is present and a cached or queried support value is available.
+ * \return UVC_ERROR_NOT_FOUND when no device handle is present or no usable input terminal is found.
+ *
+ * Code Paths:
+ *   1. `mDeviceHandle` is null → skip the query and keep `UVC_ERROR_NOT_FOUND`.
+ *   2. `mCtrlSupports` is non-zero → use the cached value and return success.
+ *   3. Cache is empty → query `uvc_get_input_terminals` and store the first non-null terminal's `bmControls` in `mCtrlSupports`.
+ *   4. If `supports` is non-null, write the current `mCtrlSupports` value.
+ *   5. Return the libuvc status from the query or `UVC_ERROR_NOT_FOUND`.
+ */
 int UVCCamera::getCtrlSupports(uint64_t *supports) {
 	ENTER();
 	uvc_error_t ret = UVC_ERROR_NOT_FOUND;
 	if (LIKELY(mDeviceHandle)) {
 		if (!mCtrlSupports) {
-			// 何個あるのかわからへんねんけど、試した感じは１個みたいやからとりあえず先頭のを返す
+			// The number of controls is unknown, but in practice there seems to be one, so return the first entry
 			const uvc_input_terminal_t *input_terminals = uvc_get_input_terminals(mDeviceHandle);
 			const uvc_input_terminal_t *it;
 			DL_FOREACH(input_terminals, it)
@@ -327,12 +382,27 @@ int UVCCamera::getCtrlSupports(uint64_t *supports) {
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Return the camera's processing-unit control support flags.
+ *
+ * \param[out] supports Receives the cached `mPUSupports` value; may be null to skip the write.
+ *
+ * \return 0 when the device handle is present and a cached or queried support value is available.
+ * \return UVC_ERROR_NOT_FOUND when no device handle is present or no usable processing unit is found.
+ *
+ * Code Paths:
+ *   1. `mDeviceHandle` is null → skip the query and keep `UVC_ERROR_NOT_FOUND`.
+ *   2. `mPUSupports` is non-zero → use the cached value and return success.
+ *   3. Cache is empty → query `uvc_get_processing_units` and store the first non-null unit's `bmControls` in `mPUSupports`.
+ *   4. If `supports` is non-null, write the current `mPUSupports` value.
+ *   5. Return the libuvc status from the query or `UVC_ERROR_NOT_FOUND`.
+ */
 int UVCCamera::getProcSupports(uint64_t *supports) {
 	ENTER();
 	uvc_error_t ret = UVC_ERROR_NOT_FOUND;
 	if (LIKELY(mDeviceHandle)) {
 		if (!mPUSupports) {
-			// 何個あるのかわからへんねんけど、試した感じは１個みたいやからとりあえず先頭のを返す
+			// The number of controls is unknown, but in practice there seems to be one, so return the first entry
 			const uvc_processing_unit_t *proc_units = uvc_get_processing_units(mDeviceHandle);
 			const uvc_processing_unit_t *pu;
 			DL_FOREACH(proc_units, pu)
@@ -360,6 +430,21 @@ int UVCCamera::getProcSupports(uint64_t *supports) {
 #define CTRL_WHITEBLANCE	4
 #define CTRL_FOCUS			5
 
+/**
+ * \brief Populate cached limits for a signed 16-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i16 get_func) {
 
@@ -390,6 +475,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for an unsigned 16-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_u16 get_func) {
 
@@ -420,6 +520,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a signed 8-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i8 get_func) {
 
@@ -450,6 +565,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for an unsigned 8-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_u8 get_func) {
 
@@ -480,6 +610,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a packed two-byte unsigned UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query the high and low bytes for min, max, and default.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query the two-byte minimum, then maximum, then default.
+ *   3. Pack each queried pair as `(high_byte << 8) + low_byte` before storing it in `values`.
+ *   4. Any getter failure stops the query chain and returns that error.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_u8u8 get_func) {
 
@@ -510,6 +655,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a packed two-byte signed/unsigned UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query the signed high byte and unsigned low byte.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query the two-byte minimum, then maximum, then default.
+ *   3. Pack each queried pair using the signed high byte and unsigned low byte before storing it in `values`.
+ *   4. Any getter failure stops the query chain and returns that error.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i8u8 get_func) {
 
@@ -541,6 +701,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a packed three-byte signed/unsigned UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query the signed high byte and two unsigned bytes.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query the three-byte minimum, then maximum, then default.
+ *   3. Pack each queried triple using the signed high byte and two unsigned bytes before storing it in `values`.
+ *   4. Any getter failure stops the query chain and returns that error.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i8u8u8 get_func) {
 
@@ -573,6 +748,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a signed 32-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_i32 get_func) {
 
@@ -603,6 +793,21 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for an unsigned 32-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values Cached control limits; updated only when both `min` and `max` are zero.
+ * \param[in] get_func libuvc getter used to query `UVC_GET_MIN`, `UVC_GET_MAX`, and `UVC_GET_DEF`.
+ *
+ * \return 0 when limits are already cached or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. `values.min` and `values.max` are not both zero → return success without querying the device.
+ *   2. Limits are not cached → query `UVC_GET_MIN`, then `UVC_GET_MAX`, then `UVC_GET_DEF`.
+ *   3. Any getter failure stops the query chain and returns that error.
+ *   4. Success stores the queried minimum, maximum, and default in `values`.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values,
 	paramget_func_u32 get_func) {
 
@@ -633,6 +838,22 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	RETURN(ret, uvc_error_t);
 }
 
+/**
+ * \brief Populate cached limits for a paired 32-bit UVC control.
+ *
+ * \param[in] devh Open libuvc device handle.
+ * \param[out] values1 Cached limits for the first paired value.
+ * \param[out] values2 Cached limits for the second paired value.
+ * \param[in] get_func libuvc getter used to query paired min, max, and default values.
+ *
+ * \return 0 when the relevant cached limits are present or all queries succeed; negative libuvc error otherwise.
+ *
+ * Code Paths:
+ *   1. Either `values1` or `values2` has non-zero `min` and `max` → return success without querying the device.
+ *   2. Cached limits are incomplete → query the paired minimum, then maximum, then default.
+ *   3. Store each queried pair in the matching `values1` and `values2` fields.
+ *   4. Any getter failure stops the query chain and returns that error.
+ */
 static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t &values1, control_value_t &values2,
 	paramget_func_i32i32 get_func) {
 
@@ -677,12 +898,24 @@ static uvc_error_t update_ctrl_values(uvc_device_handle_t *devh, control_value_t
 	} \
 
 /**
- * カメラコントロール設定の下請け
+ * \brief Update cached limits and write a signed 8-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value,
 		paramget_func_i8 get_func, paramset_func_i8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -691,10 +924,25 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value,
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Update cached limits and write an unsigned 8-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
+ */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value,
 		paramget_func_u8 get_func, paramset_func_u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -703,10 +951,27 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value,
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Update cached limits and write a packed two-byte unsigned UVC control.
+ *
+ * \param[in,out] values Cached packed control limits; updated when both `min` and `max` are zero.
+ * \param[in] value1 Requested high byte; clamped independently to the cached high-byte range.
+ * \param[in] value2 Requested low byte; clamped independently to the cached low-byte range.
+ * \param[in] get_func libuvc getter used to refresh the cached packed limits.
+ * \param[in] set_func libuvc setter used to write the clamped bytes.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → split the packed min/max into high and low byte ranges.
+ *   3. Clamp `value1` and `value2` independently to their byte ranges.
+ *   4. Call `set_func` with the clamped bytes and return the limit-query status.
+ */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value1, uint8_t value2,
 		paramget_func_u8u8 get_func, paramset_func_u8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		uint8_t v1min = (uint8_t)((values.min >> 8) & 0xff);
 		uint8_t v2min = (uint8_t)(values.min & 0xff);
 		uint8_t v1max = (uint8_t)((values.max >> 8) & 0xff);
@@ -722,10 +987,27 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint8_t value1, uin
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Update cached limits and write a packed two-byte signed/unsigned UVC control.
+ *
+ * \param[in,out] values Cached packed control limits; updated when both `min` and `max` are zero.
+ * \param[in] value1 Requested signed high byte; clamped independently to the cached signed high-byte range.
+ * \param[in] value2 Requested unsigned low byte; clamped independently to the cached low-byte range.
+ * \param[in] get_func libuvc getter used to refresh the cached packed limits.
+ * \param[in] set_func libuvc setter used to write the clamped bytes.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → split the packed min/max into signed high-byte and unsigned low-byte ranges.
+ *   3. Clamp `value1` and `value2` independently to their byte ranges.
+ *   4. Call `set_func` with the clamped bytes and return the limit-query status.
+ */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint8_t value2,
 		paramget_func_i8u8 get_func, paramset_func_i8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		int8_t v1min = (int8_t)((values.min >> 8) & 0xff);
 		uint8_t v2min = (uint8_t)(values.min & 0xff);
 		int8_t v1max = (int8_t)((values.max >> 8) & 0xff);
@@ -741,10 +1023,28 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint
 	RETURN(ret, int);
 }
 
+/**
+ * \brief Update cached limits and write a packed three-byte signed/unsigned UVC control.
+ *
+ * \param[in,out] values Cached packed control limits; updated when both `min` and `max` are zero.
+ * \param[in] value1 Requested signed high byte; clamped independently to the cached signed high-byte range.
+ * \param[in] value2 Requested middle byte; clamped independently to the cached middle-byte range.
+ * \param[in] value3 Requested low byte; clamped independently to the cached low-byte range.
+ * \param[in] get_func libuvc getter used to refresh the cached packed limits.
+ * \param[in] set_func libuvc setter used to write the clamped bytes.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → split the packed min/max into signed high, middle, and low byte ranges.
+ *   3. Clamp each requested byte independently to its cached range.
+ *   4. Call `set_func` with the clamped bytes and return the limit-query status.
+ */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint8_t value2, uint8_t value3,
 		paramget_func_i8u8u8 get_func, paramset_func_i8u8u8 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		int8_t v1min = (int8_t)((values.min >> 16) & 0xff);
 		uint8_t v2min = (uint8_t)((values.min >> 8) & 0xff);
 		uint8_t v3min = (uint8_t)(values.min & 0xff);
@@ -766,12 +1066,24 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int8_t value1, uint
 }
 
 /**
- * カメラコントロール設定の下請け
+ * \brief Update cached limits and write a signed 16-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int16_t value,
 		paramget_func_i16 get_func, paramset_func_i16 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -781,12 +1093,24 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int16_t value,
 }
 
 /**
- * カメラコントロール設定の下請け
+ * \brief Update cached limits and write an unsigned 16-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint16_t value,
 		paramget_func_u16 get_func, paramset_func_u16 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -796,12 +1120,24 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint16_t value,
 }
 
 /**
- * カメラコントロール設定の下請け
+ * \brief Update cached limits and write a signed 32-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, int32_t value,
 		paramget_func_i32 get_func, paramset_func_i32 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -811,12 +1147,24 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, int32_t value,
 }
 
 /**
- * カメラコントロール設定の下請け
+ * \brief Update cached limits and write an unsigned 32-bit UVC control.
+ *
+ * \param[in,out] values Cached control limits; updated when both `min` and `max` are zero.
+ * \param[in] value Requested control value; clamped to the cached range before writing.
+ * \param[in] get_func libuvc getter used to refresh the cached limits.
+ * \param[in] set_func libuvc setter used to write the clamped value.
+ *
+ * \return 0 when the limit query succeeds; negative libuvc error when the limit query fails.
+ *
+ * Code Paths:
+ *   1. `update_ctrl_values` fails → return the error without calling `set_func`.
+ *   2. Limit query succeeds → clamp `value` to `[values.min, values.max]`.
+ *   3. Call `set_func` with the clamped value and return the limit-query status.
  */
 int UVCCamera::internalSetCtrlValue(control_value_t &values, uint32_t value,
 		paramget_func_u32 get_func, paramset_func_u32 set_func) {
 	int ret = update_ctrl_values(mDeviceHandle, values, get_func);
-	if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+	if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 		value = value < values.min
 			? values.min
 			: (value > values.max ? values.max : value);
@@ -826,7 +1174,7 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint32_t value,
 }
 
 //======================================================================
-// スキャニングモード
+// Scanning mode
 int UVCCamera::updateScanningModeLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -836,7 +1184,7 @@ int UVCCamera::updateScanningModeLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// スキャニングモードをセット
+// Set scanning mode
 int UVCCamera::setScanningMode(int mode) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -847,7 +1195,7 @@ int UVCCamera::setScanningMode(int mode) {
 	RETURN(r, int);
 }
 
-// スキャニングモード設定を取得
+// Get scanning mode setting
 int UVCCamera::getScanningMode() {
 
 	ENTER();
@@ -864,7 +1212,7 @@ int UVCCamera::getScanningMode() {
 }
 
 //======================================================================
-// 露出モード
+// Exposure mode
 int UVCCamera::updateExposureModeLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -874,7 +1222,7 @@ int UVCCamera::updateExposureModeLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 露出をセット
+// Set exposure
 int UVCCamera::setExposureMode(int mode) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -885,7 +1233,7 @@ int UVCCamera::setExposureMode(int mode) {
 	RETURN(r, int);
 }
 
-// 露出設定を取得
+// Get exposure
 int UVCCamera::getExposureMode() {
 
 	ENTER();
@@ -902,7 +1250,7 @@ int UVCCamera::getExposureMode() {
 }
 
 //======================================================================
-// 露出優先設定
+// Exposure priority
 int UVCCamera::updateExposurePriorityLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -912,7 +1260,7 @@ int UVCCamera::updateExposurePriorityLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 露出優先設定をセット
+// Set exposure priority
 int UVCCamera::setExposurePriority(int priority) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -923,7 +1271,7 @@ int UVCCamera::setExposurePriority(int priority) {
 	RETURN(r, int);
 }
 
-// 露出優先設定を取得
+// Get exposure priority
 int UVCCamera::getExposurePriority() {
 
 	ENTER();
@@ -940,7 +1288,7 @@ int UVCCamera::getExposurePriority() {
 }
 
 //======================================================================
-// 露出(絶対値)設定
+// Absolute exposure
 int UVCCamera::updateExposureLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -950,7 +1298,7 @@ int UVCCamera::updateExposureLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 露出(絶対値)設定をセット
+// Set absolute exposure
 int UVCCamera::setExposure(int ae_abs) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -961,7 +1309,7 @@ int UVCCamera::setExposure(int ae_abs) {
 	RETURN(r, int);
 }
 
-// 露出(絶対値)設定を取得
+// Get absolute exposure
 int UVCCamera::getExposure() {
 
 	ENTER();
@@ -978,7 +1326,7 @@ int UVCCamera::getExposure() {
 }
 
 //======================================================================
-// 露出(相対値)設定
+// Relative exposure
 int UVCCamera::updateExposureRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -988,7 +1336,7 @@ int UVCCamera::updateExposureRelLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 露出(相対値)設定をセット
+// Set relative exposure
 int UVCCamera::setExposureRel(int ae_rel) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -999,7 +1347,7 @@ int UVCCamera::setExposureRel(int ae_rel) {
 	RETURN(r, int);
 }
 
-// 露出(相対値)設定を取得
+// Get relative exposure
 int UVCCamera::getExposureRel() {
 
 	ENTER();
@@ -1016,7 +1364,7 @@ int UVCCamera::getExposureRel() {
 }
 
 //======================================================================
-// オートフォーカス
+// Auto focus
 int UVCCamera::updateAutoFocusLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1026,7 +1374,7 @@ int UVCCamera::updateAutoFocusLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オートフォーカスをon/off
+// Turn auto focus on/off
 int UVCCamera::setAutoFocus(bool autoFocus) {
 	ENTER();
 
@@ -1037,7 +1385,7 @@ int UVCCamera::setAutoFocus(bool autoFocus) {
 	RETURN(r, int);
 }
 
-// オートフォーカスのon/off状態を取得
+// Get auto focus on/off state
 bool UVCCamera::getAutoFocus() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1051,7 +1399,7 @@ bool UVCCamera::getAutoFocus() {
 }
 
 //======================================================================
-// フォーカス(絶対値)調整
+// Adjust absolute focus
 int UVCCamera::updateFocusLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1061,7 +1409,7 @@ int UVCCamera::updateFocusLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// フォーカス(絶対値)を設定
+// Set absolute focus
 int UVCCamera::setFocus(int focus) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1071,12 +1419,12 @@ int UVCCamera::setFocus(int focus) {
 	RETURN(ret, int);
 }
 
-// フォーカス(絶対値)の現在値を取得
+// Get current absolute focus
 int UVCCamera::getFocus() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mFocus, uvc_get_focus_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t value;
 			ret = uvc_get_focus_abs(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1087,7 +1435,7 @@ int UVCCamera::getFocus() {
 }
 
 //======================================================================
-// フォーカス(相対値)調整
+// Adjust relative focus
 int UVCCamera::updateFocusRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1097,7 +1445,7 @@ int UVCCamera::updateFocusRelLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// フォーカス(相対値)を設定
+// Set relative focus
 int UVCCamera::setFocusRel(int focus_rel) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1107,12 +1455,12 @@ int UVCCamera::setFocusRel(int focus_rel) {
 	RETURN(ret, int);
 }
 
-// フォーカス(相対値)の現在値を取得
+// Get current relative focus
 int UVCCamera::getFocusRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_REL) {
 		int ret = update_ctrl_values(mDeviceHandle, mFocusRel, uvc_get_focus_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int8_t focus;
 			uint8_t speed;
 			ret = uvc_get_focus_rel(mDeviceHandle, &focus, &speed, UVC_GET_CUR);
@@ -1125,7 +1473,7 @@ int UVCCamera::getFocusRel() {
 
 //======================================================================
 /*
-// フォーカス(シンプル)調整
+// Adjust simple focus
 int UVCCamera::updateFocusSimpleLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1135,7 +1483,7 @@ int UVCCamera::updateFocusSimpleLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// フォーカス(シンプル)を設定
+// Set simple focus
 int UVCCamera::setFocusSimple(int focus) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1145,12 +1493,12 @@ int UVCCamera::setFocusSimple(int focus) {
 	RETURN(ret, int);
 }
 
-// フォーカス(シンプル)の現在値を取得
+// Get current simple focus
 int UVCCamera::getFocusSimple() {
 	ENTER();
 	if (mCtrlSupports & CTRL_FOCUS_SIMPLE) {
 		int ret = update_ctrl_values(mDeviceHandle, mFocusSimple, uvc_get_focus_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t value;
 			ret = uvc_get_focus_simple_range(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1162,7 +1510,7 @@ int UVCCamera::getFocusSimple() {
 */
 
 //======================================================================
-// 絞り(絶対値)調整
+// Adjust absolute iris
 int UVCCamera::updateIrisLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1172,7 +1520,7 @@ int UVCCamera::updateIrisLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 絞り(絶対値)を設定
+// Set absolute iris
 int UVCCamera::setIris(int iris) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1182,12 +1530,12 @@ int UVCCamera::setIris(int iris) {
 	RETURN(ret, int);
 }
 
-// 絞り(絶対値)の現在値を取得
+// Get current absolute iris
 int UVCCamera::getIris() {
 	ENTER();
 	if (mCtrlSupports & CTRL_IRIS_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mIris, uvc_get_iris_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_iris_abs(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1198,7 +1546,7 @@ int UVCCamera::getIris() {
 }
 
 //======================================================================
-// 絞り(相対値)調整
+// Adjust relative iris
 int UVCCamera::updateIrisRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1208,7 +1556,7 @@ int UVCCamera::updateIrisRelLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 絞り(相対値)を設定
+// Set relative iris
 int UVCCamera::setIrisRel(int iris_rel) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1218,12 +1566,12 @@ int UVCCamera::setIrisRel(int iris_rel) {
 	RETURN(ret, int);
 }
 
-// 絞り(相対値)の現在値を取得
+// Get current relative iris
 int UVCCamera::getIrisRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_IRIS_REL) {
 		int ret = update_ctrl_values(mDeviceHandle, mIris, uvc_get_iris_rel);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t iris_rel;
 			ret = uvc_get_iris_rel(mDeviceHandle, &iris_rel, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1234,7 +1582,20 @@ int UVCCamera::getIrisRel() {
 }
 
 //======================================================================
-// Pan(絶対値)調整
+/**
+ * \brief Refresh cached absolute pan and tilt limits.
+ *
+ * \param[out] min Intended minimum pan; not assigned by the current implementation.
+ * \param[out] max Intended maximum pan; not assigned by the current implementation.
+ * \param[out] def Intended default pan; not assigned by the current implementation.
+ *
+ * \return UVC_ERROR_ACCESS whether or not the cached limits are refreshed.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → skip the query and return `UVC_ERROR_ACCESS`.
+ *   2. Absolute pan/tilt is supported → refresh `mPan` and `mTilt` through the two-value `update_ctrl_values` helper.
+ *   3. Leave `min`, `max`, and `def` unchanged and return the original `UVC_ERROR_ACCESS` status.
+ */
 int UVCCamera::updatePanLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1244,7 +1605,21 @@ int UVCCamera::updatePanLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Pan(絶対値)を設定
+/**
+ * \brief Set absolute pan while preserving the current or default tilt.
+ *
+ * \param[in] pan Requested absolute pan; clamped to the cached pan range before writing.
+ *
+ * \return 0 on success; negative libuvc error if limits cannot be queried or the device write fails.
+ * \return UVC_ERROR_ACCESS when absolute pan/tilt is not supported.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → return `UVC_ERROR_ACCESS`.
+ *   2. Refresh `mPan` and `mTilt` limits; if this fails, return the limit-query error.
+ *   3. Clamp `pan` to `[mPan.min, mPan.max]`.
+ *   4. Select `mTilt.current` when it is non-negative, otherwise select `mTilt.def`.
+ *   5. Write both values with `uvc_set_pantilt_abs`; on success store the written pan and tilt as current.
+ */
 int UVCCamera::setPan(int pan) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1265,12 +1640,24 @@ int UVCCamera::setPan(int pan) {
 	RETURN(ret, int);
 }
 
-// Pan(絶対値)の現在値を取得
+/**
+ * \brief Get the current absolute pan value.
+ *
+ * \return Current pan on success.
+ * \return 0 when absolute pan/tilt is unsupported, limits cannot be queried, or the current-value query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → return 0.
+ *   2. Refresh `mPan` and `mTilt` limits; if this fails, return 0.
+ *   3. Query the current pan/tilt pair with `uvc_get_pantilt_abs`.
+ *   4. Current-value query success → store both current values and return `pan`.
+ *   5. Current-value query failure → return 0.
+ */
 int UVCCamera::getPan() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PANTILT_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mPan, mTilt, uvc_get_pantilt_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int32_t pan, tilt;
 			ret = uvc_get_pantilt_abs(mDeviceHandle, &pan, &tilt, UVC_GET_CUR);
 			if (LIKELY(!ret)) {
@@ -1284,7 +1671,20 @@ int UVCCamera::getPan() {
 }
 
 //======================================================================
-// Tilt(絶対値)調整
+/**
+ * \brief Refresh cached absolute tilt and pan limits.
+ *
+ * \param[out] min Intended minimum tilt; not assigned by the current implementation.
+ * \param[out] max Intended maximum tilt; not assigned by the current implementation.
+ * \param[out] def Intended default tilt; not assigned by the current implementation.
+ *
+ * \return UVC_ERROR_ACCESS whether or not the cached limits are refreshed.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → skip the query and return `UVC_ERROR_ACCESS`.
+ *   2. Absolute pan/tilt is supported → refresh `mPan` and `mTilt` through the two-value `update_ctrl_values` helper.
+ *   3. Leave `min`, `max`, and `def` unchanged and return the original `UVC_ERROR_ACCESS` status.
+ */
 int UVCCamera::updateTiltLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1294,7 +1694,21 @@ int UVCCamera::updateTiltLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Tilt(絶対値)を設定
+/**
+ * \brief Set absolute tilt while preserving the current or default pan.
+ *
+ * \param[in] tilt Requested absolute tilt; clamped to the cached tilt range before writing.
+ *
+ * \return 0 on success; negative libuvc error if limits cannot be queried or the device write fails.
+ * \return UVC_ERROR_ACCESS when absolute pan/tilt is not supported.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → return `UVC_ERROR_ACCESS`.
+ *   2. Refresh `mPan` and `mTilt` limits; if this fails, return the limit-query error.
+ *   3. Clamp `tilt` to `[mTilt.min, mTilt.max]`.
+ *   4. Select `mPan.current` when it is non-negative, otherwise select `mPan.def`.
+ *   5. Write both values with `uvc_set_pantilt_abs`; on success store the written pan and tilt as current.
+ */
 int UVCCamera::setTilt(int tilt) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1315,12 +1729,24 @@ int UVCCamera::setTilt(int tilt) {
 	RETURN(ret, int);
 }
 
-// Tilt(絶対値)の現在値を取得
+/**
+ * \brief Get the current absolute tilt value.
+ *
+ * \return Current tilt on success.
+ * \return 0 when absolute pan/tilt is unsupported, limits cannot be queried, or the current-value query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_PANTILT_ABS` → return 0.
+ *   2. Refresh `mPan` and `mTilt` limits; if this fails, return 0.
+ *   3. Query the current pan/tilt pair with `uvc_get_pantilt_abs`.
+ *   4. Current-value query success → store both current values and return `tilt`.
+ *   5. Current-value query failure → return 0.
+ */
 int UVCCamera::getTilt() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PANTILT_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mPan, mTilt, uvc_get_pantilt_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int32_t pan, tilt;
 			ret = uvc_get_pantilt_abs(mDeviceHandle, &pan, &tilt, UVC_GET_CUR);
 			if (LIKELY(!ret)) {
@@ -1334,7 +1760,7 @@ int UVCCamera::getTilt() {
 }
 
 //======================================================================
-// Roll(絶対値)調整
+// Adjust absolute roll
 int UVCCamera::updateRollLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1344,7 +1770,7 @@ int UVCCamera::updateRollLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// Roll(絶対値)を設定
+// Set absolute roll
 int UVCCamera::setRoll(int roll) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1354,12 +1780,12 @@ int UVCCamera::setRoll(int roll) {
 	RETURN(ret, int);
 }
 
-// Roll(絶対値)の現在値を取得
+// Get current absolute roll
 int UVCCamera::getRoll() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ROLL_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mRoll, uvc_get_roll_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t roll;
 			ret = uvc_get_roll_abs(mDeviceHandle, &roll, UVC_GET_CUR);
 			if (LIKELY(!ret)) {
@@ -1429,7 +1855,7 @@ int UVCCamera::getRollRel() {
 }
 
 //======================================================================
-// プライバシーモード
+// Privacy mode
 int UVCCamera::updatePrivacyLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1439,7 +1865,7 @@ int UVCCamera::updatePrivacyLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// プライバシーモードを設定
+// Set privacy mode
 int UVCCamera::setPrivacy(int privacy) {
 	ENTER();
 	int ret = UVC_ERROR_ACCESS;
@@ -1449,12 +1875,12 @@ int UVCCamera::setPrivacy(int privacy) {
 	RETURN(ret, int);
 }
 
-// プライバシーモードの現在値を取得
+// Get current privacy mode value
 int UVCCamera::getPrivacy() {
 	ENTER();
 	if (mCtrlSupports & CTRL_PRIVACY) {
 		int ret = update_ctrl_values(mDeviceHandle, mPrivacy, uvc_get_privacy);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t privacy;
 			ret = uvc_get_privacy(mDeviceHandle, &privacy, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1473,14 +1899,14 @@ int UVCCamera::updateDigitalWindowLimit(...not defined...) {
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
-// DigitalWindowを設定
+// Set digital window
 int UVCCamera::setDigitalWindow(int top, int reft, int bottom, int right) {
 	ENTER();
 	// FIXME not implemented yet
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
-// DigitalWindowの現在値を取得
+// Get current digital window
 int UVCCamera::getDigitalWindow(int &top, int &reft, int &bottom, int &right) {
 	ENTER();
 	// FIXME not implemented yet
@@ -1497,14 +1923,14 @@ int UVCCamera::updateDigitalRoiLimit(...not defined...) {
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
-// DigitalRoiを設定
+// Set digital ROI
 int UVCCamera::setDigitalRoi(int top, int reft, int bottom, int right) {
 	ENTER();
 	// FIXME not implemented yet
 	RETURN(UVC_ERROR_ACCESS, int);
 }
 
-// DigitalRoiの現在値を取得
+// Get current digital ROI
 int UVCCamera::getDigitalRoi(int &top, int &reft, int &bottom, int &right) {
 	ENTER();
 	// FIXME not implemented yet
@@ -1523,7 +1949,7 @@ int UVCCamera::updateBacklightCompLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// backlight_compensationを設定
+// Set backlight compensation
 int UVCCamera::setBacklightComp(int backlight) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1533,12 +1959,12 @@ int UVCCamera::setBacklightComp(int backlight) {
 	RETURN(ret, int);
 }
 
-// backlight_compensationの現在値を取得
+// Get current backlight compensation
 int UVCCamera::getBacklightComp() {
 	ENTER();
 	if (mPUSupports & PU_BACKLIGHT) {
 		int ret = update_ctrl_values(mDeviceHandle, mBacklightComp, uvc_get_backlight_compensation);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t value;
 			ret = uvc_get_backlight_compensation(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1550,7 +1976,7 @@ int UVCCamera::getBacklightComp() {
 
 
 //======================================================================
-// 明るさ
+// Brightness
 int UVCCamera::updateBrightnessLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1569,12 +1995,12 @@ int UVCCamera::setBrightness(int brightness) {
 	RETURN(ret, int);
 }
 
-// 明るさの現在値を取得
+// Get current brightness value
 int UVCCamera::getBrightness() {
 	ENTER();
 	if (mPUSupports & PU_BRIGHTNESS) {
 		int ret = update_ctrl_values(mDeviceHandle, mBrightness, uvc_get_brightness);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t value;
 			ret = uvc_get_brightness(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1585,7 +2011,7 @@ int UVCCamera::getBrightness() {
 }
 
 //======================================================================
-// コントラスト調整
+// Adjust contrast
 int UVCCamera::updateContrastLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1595,7 +2021,7 @@ int UVCCamera::updateContrastLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// コントラストを設定
+// Set contrast
 int UVCCamera::setContrast(uint16_t contrast) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1605,12 +2031,12 @@ int UVCCamera::setContrast(uint16_t contrast) {
 	RETURN(ret, int);
 }
 
-// コントラストの現在値を取得
+// Get current contrast
 int UVCCamera::getContrast() {
 	ENTER();
 	if (mPUSupports & PU_CONTRAST) {
 		int ret = update_ctrl_values(mDeviceHandle, mContrast, uvc_get_contrast);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_contrast(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1621,7 +2047,7 @@ int UVCCamera::getContrast() {
 }
 
 //======================================================================
-// オートコントラスト
+// Auto contrast
 int UVCCamera::updateAutoContrastLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1631,7 +2057,7 @@ int UVCCamera::updateAutoContrastLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オートコントラストをon/off
+// Turn auto contrast on/off
 int UVCCamera::setAutoContrast(bool autoContrast) {
 	ENTER();
 
@@ -1642,7 +2068,7 @@ int UVCCamera::setAutoContrast(bool autoContrast) {
 	RETURN(r, int);
 }
 
-// オートコントラストのon/off状態を取得
+// Get auto contrast on/off state
 bool UVCCamera::getAutoContrast() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1656,7 +2082,7 @@ bool UVCCamera::getAutoContrast() {
 }
 
 //======================================================================
-// シャープネス調整
+// Adjust sharpness
 int UVCCamera::updateSharpnessLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1666,7 +2092,7 @@ int UVCCamera::updateSharpnessLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// シャープネスを設定
+// Set sharpness
 int UVCCamera::setSharpness(int sharpness) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1676,12 +2102,12 @@ int UVCCamera::setSharpness(int sharpness) {
 	RETURN(ret, int);
 }
 
-// シャープネスの現在値を取得
+// Get current sharpness
 int UVCCamera::getSharpness() {
 	ENTER();
 	if (mPUSupports & PU_SHARPNESS) {
 		int ret = update_ctrl_values(mDeviceHandle, mSharpness, uvc_get_sharpness);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_sharpness(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1692,7 +2118,7 @@ int UVCCamera::getSharpness() {
 }
 
 //======================================================================
-// ゲイン調整
+// Adjust gain
 int UVCCamera::updateGainLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1702,7 +2128,7 @@ int UVCCamera::updateGainLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ゲインを設定
+// Set gain
 int UVCCamera::setGain(int gain) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1713,12 +2139,12 @@ int UVCCamera::setGain(int gain) {
 	RETURN(ret, int);
 }
 
-// ゲインの現在値を取得
+// Get current gain
 int UVCCamera::getGain() {
 	ENTER();
 	if (mPUSupports & PU_GAIN) {
 		int ret = update_ctrl_values(mDeviceHandle, mGain, uvc_get_gain);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_gain(mDeviceHandle, &value, UVC_GET_CUR);
 //			LOGI("gain:%d", value);
@@ -1730,7 +2156,7 @@ int UVCCamera::getGain() {
 }
 
 //======================================================================
-// オートホワイトバランス(temp)
+// Auto white balance (temperature)
 int UVCCamera::updateAutoWhiteBlanceLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1740,7 +2166,7 @@ int UVCCamera::updateAutoWhiteBlanceLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オートホワイトバランス(temp)をon/off
+// Turn auto white balance (temperature) on/off
 int UVCCamera::setAutoWhiteBlance(bool autoWhiteBlance) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1750,7 +2176,7 @@ int UVCCamera::setAutoWhiteBlance(bool autoWhiteBlance) {
 	RETURN(r, int);
 }
 
-// オートホワイトバランス(temp)のon/off状態を取得
+// Get auto white balance (temperature) on/off state
 bool UVCCamera::getAutoWhiteBlance() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1764,7 +2190,7 @@ bool UVCCamera::getAutoWhiteBlance() {
 }
 
 //======================================================================
-// オートホワイトバランス(compo)
+// Auto white balance (component)
 int UVCCamera::updateAutoWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1774,7 +2200,7 @@ int UVCCamera::updateAutoWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オートホワイトバランス(compo)をon/off
+// Turn auto white balance (component) on/off
 int UVCCamera::setAutoWhiteBlanceCompo(bool autoWhiteBlanceCompo) {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1784,7 +2210,7 @@ int UVCCamera::setAutoWhiteBlanceCompo(bool autoWhiteBlanceCompo) {
 	RETURN(r, int);
 }
 
-// オートホワイトバランス(compo)のon/off状態を取得
+// Get auto white balance (component) on/off state
 bool UVCCamera::getAutoWhiteBlanceCompo() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -1798,7 +2224,7 @@ bool UVCCamera::getAutoWhiteBlanceCompo() {
 }
 
 //======================================================================
-// ホワイトバランス色温度調整
+// Adjust white balance color temperature
 int UVCCamera::updateWhiteBlanceLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1808,7 +2234,7 @@ int UVCCamera::updateWhiteBlanceLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ホワイトバランス色温度を設定
+// Set white balance color temperature
 int UVCCamera::setWhiteBlance(int white_blance) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1819,12 +2245,12 @@ int UVCCamera::setWhiteBlance(int white_blance) {
 	RETURN(ret, int);
 }
 
-// ホワイトバランス色温度の現在値を取得
+// Get current white balance color temperature
 int UVCCamera::getWhiteBlance() {
 	ENTER();
 	if (mPUSupports & PU_WB_TEMP) {
 		int ret = update_ctrl_values(mDeviceHandle, mWhiteBlance, uvc_get_white_balance_temperature);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_white_balance_temperature(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1835,7 +2261,7 @@ int UVCCamera::getWhiteBlance() {
 }
 
 //======================================================================
-// ホワイトバランスcompo調整
+// Adjust white balance component
 int UVCCamera::updateWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1845,7 +2271,7 @@ int UVCCamera::updateWhiteBlanceCompoLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ホワイトバランスcompoを設定
+// Set white balance component
 int UVCCamera::setWhiteBlanceCompo(int white_blance_compo) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1856,12 +2282,12 @@ int UVCCamera::setWhiteBlanceCompo(int white_blance_compo) {
 	RETURN(ret, int);
 }
 
-// ホワイトバランスcompoの現在値を取得
+// Get current white balance component
 int UVCCamera::getWhiteBlanceCompo() {
 	ENTER();
 	if (mPUSupports & PU_WB_COMPO) {
 		int ret = update_ctrl_values(mDeviceHandle, mWhiteBlanceCompo, uvc_get_white_balance_component);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint32_t white_blance_compo;
 			ret = uvc_get_white_balance_component(mDeviceHandle, &white_blance_compo, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1872,7 +2298,7 @@ int UVCCamera::getWhiteBlanceCompo() {
 }
 
 //======================================================================
-// ガンマ調整
+// Adjust gamma
 int UVCCamera::updateGammaLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1882,7 +2308,7 @@ int UVCCamera::updateGammaLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ガンマを設定
+// Set gamma
 int UVCCamera::setGamma(int gamma) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1893,12 +2319,12 @@ int UVCCamera::setGamma(int gamma) {
 	RETURN(ret, int);
 }
 
-// ガンマの現在値を取得
+// Get current gamma
 int UVCCamera::getGamma() {
 	ENTER();
 	if (mPUSupports & PU_GAMMA) {
 		int ret = update_ctrl_values(mDeviceHandle, mGamma, uvc_get_gamma);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_gamma(mDeviceHandle, &value, UVC_GET_CUR);
 //			LOGI("gamma:%d", ret);
@@ -1910,7 +2336,7 @@ int UVCCamera::getGamma() {
 }
 
 //======================================================================
-// 彩度調整
+// Adjust saturation
 int UVCCamera::updateSaturationLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1920,7 +2346,7 @@ int UVCCamera::updateSaturationLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 彩度を設定
+// Set saturation
 int UVCCamera::setSaturation(int saturation) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1930,12 +2356,12 @@ int UVCCamera::setSaturation(int saturation) {
 	RETURN(ret, int);
 }
 
-// 彩度の現在値を取得
+// Get current saturation
 int UVCCamera::getSaturation() {
 	ENTER();
 	if (mPUSupports & PU_SATURATION) {
 		int ret = update_ctrl_values(mDeviceHandle, mSaturation, uvc_get_saturation);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_saturation(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1946,7 +2372,7 @@ int UVCCamera::getSaturation() {
 }
 
 //======================================================================
-// 色相調整
+// Adjust hue
 int UVCCamera::updateHueLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1956,7 +2382,7 @@ int UVCCamera::updateHueLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 色相を設定
+// Set hue
 int UVCCamera::setHue(int hue) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1966,12 +2392,12 @@ int UVCCamera::setHue(int hue) {
 	RETURN(ret, int);
 }
 
-// 色相の現在値を取得
+// Get current hue
 int UVCCamera::getHue() {
 	ENTER();
 	if (mPUSupports & PU_HUE) {
 		int ret = update_ctrl_values(mDeviceHandle, mHue, uvc_get_hue);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int16_t value;
 			ret = uvc_get_hue(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -1982,7 +2408,7 @@ int UVCCamera::getHue() {
 }
 
 //======================================================================
-// オート色相
+// Auto hue
 int UVCCamera::updateAutoHueLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -1992,7 +2418,7 @@ int UVCCamera::updateAutoHueLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// オート色相をon/off
+// Turn auto hue on/off
 int UVCCamera::setAutoHue(bool autoHue) {
 	ENTER();
 
@@ -2003,7 +2429,7 @@ int UVCCamera::setAutoHue(bool autoHue) {
 	RETURN(r, int);
 }
 
-// オート色相のon/off状態を取得
+// Get auto hue on/off state
 bool UVCCamera::getAutoHue() {
 	ENTER();
 	int r = UVC_ERROR_ACCESS;
@@ -2017,7 +2443,22 @@ bool UVCCamera::getAutoHue() {
 }
 
 //======================================================================
-// 電源周波数によるチラつき補正
+/**
+ * \brief Query powerline-frequency limits and assign them to the output references.
+ *
+ * \param[out] min Receives the cached minimum on successful limit refresh.
+ * \param[out] max Receives the cached maximum on successful limit refresh.
+ * \param[out] def Receives the cached default on successful limit refresh.
+ *
+ * \return 0 on successful limit refresh.
+ * \return UVC_ERROR_IO when `mCtrlSupports` lacks `PU_POWER_LF` or the limit query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `PU_POWER_LF` → skip the query and return `UVC_ERROR_IO`.
+ *   2. Supported → call `update_ctrl_values` for `mPowerlineFrequency` with `uvc_get_powerline_freqency`.
+ *   3. Query success → assign `min`, `max`, and `def` from `mPowerlineFrequency`.
+ *   4. Query failure → leave the outputs unchanged and return the libuvc error.
+ */
 int UVCCamera::updatePowerlineFrequencyLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2027,7 +2468,22 @@ int UVCCamera::updatePowerlineFrequencyLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// 電源周波数によるチラつき補正を設定
+/**
+ * \brief Set powerline-frequency flicker correction.
+ *
+ * \param[in] frequency Frequency to set; negative values trigger a default-value query.
+ *
+ * \return The setter status on the normal write path.
+ * \return UVC_ERROR_IO when `mPUSupports` lacks `PU_POWER_LF`.
+ * \return UVC_SUCCESS when a negative-frequency default query returns zero.
+ *
+ * Code Paths:
+ *   1. `mPUSupports` lacks `PU_POWER_LF` → return `UVC_ERROR_IO`.
+ *   2. `frequency < 0` → query `UVC_GET_DEF` with `uvc_get_powerline_freqency`.
+ *   3. If that query returns nonzero, continue using the getter's `value`; if it returns zero, return `UVC_SUCCESS` immediately.
+ *   4. Write the selected frequency with `uvc_set_powerline_freqency`.
+ *   5. Return the setter status.
+ */
 int UVCCamera::setPowerlineFrequency(int frequency) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2047,7 +2503,18 @@ int UVCCamera::setPowerlineFrequency(int frequency) {
 	RETURN(ret, int);
 }
 
-// 電源周波数によるチラつき補正値を取得
+/**
+ * \brief Get the current powerline-frequency flicker correction value.
+ *
+ * \return Current frequency on successful query.
+ * \return 0 when `mPUSupports` lacks `PU_POWER_LF` or the current-value query fails.
+ *
+ * Code Paths:
+ *   1. `mPUSupports` lacks `PU_POWER_LF` → return 0.
+ *   2. Query the current value with `uvc_get_powerline_freqency`.
+ *   3. Query success → return the queried `value`.
+ *   4. Query failure → return 0.
+ */
 int UVCCamera::getPowerlineFrequency() {
 	ENTER();
 	if (mPUSupports & PU_POWER_LF) {
@@ -2061,7 +2528,22 @@ int UVCCamera::getPowerlineFrequency() {
 }
 
 //======================================================================
-// ズーム(abs)調整
+/**
+ * \brief Query absolute-zoom limits and assign them to the output references.
+ *
+ * \param[out] min Receives the cached minimum on successful limit refresh.
+ * \param[out] max Receives the cached maximum on successful limit refresh.
+ * \param[out] def Receives the cached default on successful limit refresh.
+ *
+ * \return 0 on successful limit refresh.
+ * \return UVC_ERROR_IO when `mCtrlSupports` lacks `CTRL_ZOOM_ABS` or the limit query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_ZOOM_ABS` → skip the query and return `UVC_ERROR_IO`.
+ *   2. Supported → call `update_ctrl_values` for `mZoom` with `uvc_get_zoom_abs`.
+ *   3. Query success → assign `min`, `max`, and `def` from `mZoom`.
+ *   4. Query failure → leave the outputs unchanged and return the libuvc error.
+ */
 int UVCCamera::updateZoomLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2071,7 +2553,19 @@ int UVCCamera::updateZoomLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ズーム(abs)を設定
+/**
+ * \brief Set absolute zoom.
+ *
+ * \param[in] zoom Requested zoom value; clamped to the cached zoom range before writing.
+ *
+ * \return The `internalSetCtrlValue` status when absolute zoom is supported.
+ * \return UVC_ERROR_IO when `mCtrlSupports` lacks `CTRL_ZOOM_ABS`.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_ZOOM_ABS` → return `UVC_ERROR_IO`.
+ *   2. Supported → refresh `mZoom` limits, clamp `zoom`, and write it through `internalSetCtrlValue`.
+ *   3. Return the limit-query status from `internalSetCtrlValue`.
+ */
 int UVCCamera::setZoom(int zoom) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2081,12 +2575,24 @@ int UVCCamera::setZoom(int zoom) {
 	RETURN(ret, int);
 }
 
-// ズーム(abs)の現在値を取得
+/**
+ * \brief Get the current absolute zoom value.
+ *
+ * \return Current zoom on successful query.
+ * \return 0 when absolute zoom is unsupported, limits cannot be queried, or the current-value query fails.
+ *
+ * Code Paths:
+ *   1. `mCtrlSupports` lacks `CTRL_ZOOM_ABS` → return 0.
+ *   2. Refresh `mZoom` limits with `update_ctrl_values`; if this fails, return 0.
+ *   3. Query the current value with `uvc_get_zoom_abs`.
+ *   4. Current-value query success → return the queried `value`.
+ *   5. Current-value query failure → return 0.
+ */
 int UVCCamera::getZoom() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ZOOM_ABS) {
 		int ret = update_ctrl_values(mDeviceHandle, mZoom, uvc_get_zoom_abs);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t value;
 			ret = uvc_get_zoom_abs(mDeviceHandle, &value, UVC_GET_CUR);
 			if (LIKELY(!ret))
@@ -2097,7 +2603,7 @@ int UVCCamera::getZoom() {
 }
 
 //======================================================================
-// ズーム(相対値)調整
+// Adjust relative zoom
 int UVCCamera::updateZoomRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2107,7 +2613,7 @@ int UVCCamera::updateZoomRelLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// ズーム(相対値)を設定
+// Set relative zoom
 int UVCCamera::setZoomRel(int zoom) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2119,12 +2625,12 @@ int UVCCamera::setZoomRel(int zoom) {
 	RETURN(ret, int);
 }
 
-// ズーム(相対値)の現在値を取得
+// Get current relative zoom
 int UVCCamera::getZoomRel() {
 	ENTER();
 	if (mCtrlSupports & CTRL_ZOOM_REL) {
 		int ret = update_ctrl_values(mDeviceHandle, mZoomRel, uvc_get_zoom_rel);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			int8_t zoom;
 			uint8_t isdigital;
 			uint8_t speed;
@@ -2137,7 +2643,7 @@ int UVCCamera::getZoomRel() {
 }
 
 //======================================================================
-// digital multiplier調整
+// Adjust digital multiplier
 int UVCCamera::updateDigitalMultiplierLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2147,7 +2653,7 @@ int UVCCamera::updateDigitalMultiplierLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// digital multiplierを設定
+// Set digital multiplier
 int UVCCamera::setDigitalMultiplier(int multiplier) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2158,12 +2664,12 @@ int UVCCamera::setDigitalMultiplier(int multiplier) {
 	RETURN(ret, int);
 }
 
-// digital multiplierの現在値を取得
+// Get current digital multiplier
 int UVCCamera::getDigitalMultiplier() {
 	ENTER();
 	if (mPUSupports & PU_DIGITAL_MULT) {
 		int ret = update_ctrl_values(mDeviceHandle, mMultiplier, uvc_get_digital_multiplier);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t multiplier;
 			ret = uvc_get_digital_multiplier(mDeviceHandle, &multiplier, UVC_GET_CUR);
 //			LOGI("multiplier:%d", multiplier);
@@ -2175,7 +2681,7 @@ int UVCCamera::getDigitalMultiplier() {
 }
 
 //======================================================================
-// digital multiplier limit調整
+// Adjust digital multiplier limit
 int UVCCamera::updateDigitalMultiplierLimitLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2185,7 +2691,7 @@ int UVCCamera::updateDigitalMultiplierLimitLimit(int &min, int &max, int &def) {
 	RETURN(ret, int);
 }
 
-// digital multiplier limitを設定
+// Set digital multiplier limit
 int UVCCamera::setDigitalMultiplierLimit(int multiplier_limit) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
@@ -2196,12 +2702,12 @@ int UVCCamera::setDigitalMultiplierLimit(int multiplier_limit) {
 	RETURN(ret, int);
 }
 
-// digital multiplier limitの現在値を取得
+// Get current digital multiplier limit
 int UVCCamera::getDigitalMultiplierLimit() {
 	ENTER();
 	if (mPUSupports & PU_DIGITAL_LIMIT) {
 		int ret = update_ctrl_values(mDeviceHandle, mMultiplierLimit, uvc_get_digital_multiplier_limit);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint16_t multiplier_limit;
 			ret = uvc_get_digital_multiplier_limit(mDeviceHandle, &multiplier_limit, UVC_GET_CUR);
 //			LOGI("multiplier_limit:%d", multiplier_limit);
@@ -2237,7 +2743,7 @@ int UVCCamera::getAnalogVideoStandard() {
 	ENTER();
 	if (mPUSupports & PU_AVIDEO_STD) {
 		int ret = update_ctrl_values(mDeviceHandle, mAnalogVideoStandard, uvc_get_analog_video_standard);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t standard;
 			ret = uvc_get_analog_video_standard(mDeviceHandle, &standard, UVC_GET_CUR);
 //			LOGI("standard:%d", standard);
@@ -2273,7 +2779,7 @@ int UVCCamera::getAnalogVideoLockState() {
 	ENTER();
 	if (mPUSupports & PU_AVIDEO_LOCK) {
 		int ret = update_ctrl_values(mDeviceHandle, mAnalogVideoLockState, uvc_get_analog_video_lockstate);
-		if (LIKELY(!ret)) {	// 正常に最小・最大値を取得出来た時
+		if (LIKELY(!ret)) {	// When min/max values were retrieved successfully
 			uint8_t status;
 			ret = uvc_get_analog_video_lockstate(mDeviceHandle, &status, UVC_GET_CUR);
 //			LOGI("status:%d", status);

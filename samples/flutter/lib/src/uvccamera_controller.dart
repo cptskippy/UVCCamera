@@ -16,7 +16,39 @@ import 'uvccamera_platform_interface.dart';
 import 'uvccamera_resolution_preset.dart';
 import 'uvccamera_status_event.dart';
 
-/// A controller for a connected [UvcCameraDevice].
+/// Controls a connected [UvcCameraDevice] and manages its lifecycle from initialization to disposal.
+///
+/// The controller wraps platform interactions for opening the camera, attaching event streams,
+/// capturing pictures, and recording video. It exposes state via [UvcCameraControllerState] and
+/// notifies listeners when state changes.
+///
+/// Lifecycle:
+///   Uninitialized → Initializing → Initialized → Disposed
+///   Initialized may enter Recording or TakingPicture sub-states.
+///
+/// State Machine:
+///   Uninitialized → Initializing (on initialize) → Initialized
+///   Initialized → Disposed (on dispose)
+///   Initialized → Recording → Initialized
+///   Initialized → TakingPicture → Initialized
+///   Error transitions from any state on platform failures.
+///
+/// Thread Safety:
+///   Must be used on the main isolate. Platform calls are forwarded to the native thread.
+///   State mutations happen on the main isolate via [ValueNotifier]. Not safe for concurrent initialize/dispose.
+///
+/// Properties:
+///   device: The UVC device controlled by this controller. Immutable after construction.
+///   resolutionPreset: Requested resolution preset for camera open. Immutable after construction.
+///   cameraId: Platform camera identifier assigned after successful initialization.
+///   textureId: OpenGL texture identifier for preview rendering.
+///
+/// Usage:
+///   ```dart
+///   final controller = UvcCameraController(device: device);
+///   await controller.initialize();
+///   final preview = controller.buildPreview();
+///   ```
 class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
   /// The camera device controlled by this controller.
   final UvcCameraDevice device;
@@ -42,11 +74,35 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
   /// Stream of camera button events.
   Stream<UvcCameraButtonEvent>? _cameraButtonEventStream;
 
-  /// Creates a new [UvcCameraController] object.
+  /// Create a new [UvcCameraController] instance for the given device.
+  ///
+  /// Args:
+  ///   device: The [UvcCameraDevice] to control. Must be a valid UVC device discovered via [UvcCamera.getDevices].
+  ///   resolutionPreset: Desired resolution preset for camera open. Defaults to [UvcCameraResolutionPreset.max].
+  ///
+  /// The controller starts in the Uninitialized state. Call [initialize] to open the device.
   UvcCameraController({required this.device, this.resolutionPreset = UvcCameraResolutionPreset.max})
     : super(UvcCameraControllerState.uninitialized(device));
 
-  /// Initializes the controller on the device.
+  /// Initialize the controller on the device.
+  ///
+  /// Opens the camera, obtains texture ID, attaches event streams, and transitions state to Initialized.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerInitializedException]: If initialize has already been called.
+  ///   [UvcCameraControllerDisposedException]: If the controller has been disposed.
+  ///   PlatformException: If the native platform fails to open the camera.
+  ///
+  /// Side Effects:
+  ///   - Opens the camera via platform interface.
+  ///   - Attaches error, status, and button event streams.
+  ///   - Updates [value] to reflect initialized state and preview mode.
+  ///
+  /// Code Paths:
+  ///   1. If already initializing → throws [UvcCameraControllerInitializedException].
+  ///   2. If disposed → throws [UvcCameraControllerDisposedException].
+  ///   3. On success → sets cameraId, textureId, attaches streams, updates state to Initialized.
+  ///   4. On error → completes future with error, state remains Uninitialized.
   Future<void> initialize() => _initialize(device);
 
   /// Initializes the controller on the specified device.
@@ -79,6 +135,22 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
     }
   }
 
+  /// Dispose the controller and release all platform resources.
+  ///
+  /// Closes the camera, detaches event streams, and marks the controller as disposed.
+  ///
+  /// Side Effects:
+  ///   - Closes the camera via platform interface.
+  ///   - Detaches error, status, and button callbacks.
+  ///   - Clears cameraId and textureId.
+  ///
+  /// Code Paths:
+  ///   1. If already disposed → returns immediately.
+  ///   2. If initializing → awaits initialization completion before cleanup.
+  ///   3. On success → clears streams, closes camera, notifies listeners.
+  ///
+  /// Throws:
+  ///   PlatformException: If native close fails.
   @override
   Future<void> dispose() async {
     if (_isDisposed) {
@@ -122,37 +194,92 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
     }
   }
 
-  /// Returns the camera ID.
+  /// Get the platform camera identifier.
+  ///
+  /// Returns:
+  ///   The integer camera ID assigned by the platform after successful initialization.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
   int get cameraId {
     _ensureInitializedNotDisposed();
     return _cameraId!;
   }
 
-  /// Returns the texture ID.
+  /// Get the OpenGL texture identifier for preview rendering.
+  ///
+  /// Returns:
+  ///   The texture ID used by [buildPreview] to render the camera feed.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
   int get textureId {
     _ensureInitializedNotDisposed();
     return _textureId!;
   }
 
-  /// Returns a stream of camera error events.
+  /// Get a stream of camera error events.
+  ///
+  /// Returns:
+  ///   A broadcast stream of [UvcCameraErrorEvent] emitted by the platform when errors occur.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
   Stream<UvcCameraErrorEvent> get cameraErrorEvents {
     _ensureInitializedNotDisposed();
     return _cameraErrorEventStream!;
   }
 
-  /// Returns a stream of camera status events.
+  /// Get a stream of camera status events.
+  ///
+  /// Returns:
+  ///   A broadcast stream of [UvcCameraStatusEvent] emitted by the platform for status changes.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
   Stream<UvcCameraStatusEvent> get cameraStatusEvents {
     _ensureInitializedNotDisposed();
     return _cameraStatusEventStream!;
   }
 
-  /// Returns a stream of camera button events.
+  /// Get a stream of camera button events.
+  ///
+  /// Returns:
+  ///   A broadcast stream of [UvcCameraButtonEvent] emitted when physical buttons on the device change state.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
   Stream<UvcCameraButtonEvent> get cameraButtonEvents {
     _ensureInitializedNotDisposed();
     return _cameraButtonEventStream!;
   }
 
-  /// Takes a picture.
+  /// Take a picture using the current camera configuration.
+  ///
+  /// Captures a single image from the camera and returns the file.
+  ///
+  /// Returns:
+  ///   An [XFile] referencing the captured image file on the device.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
+  ///   [UvcCameraControllerIllegalStateException]: If a picture is already being taken.
+  ///   PlatformException: If the native capture fails.
+  ///
+  /// Side Effects:
+  ///   - Sets [UvcCameraControllerState.isTakingPicture] to true during capture.
+  ///   - Updates state back to false after completion.
+  ///
+  /// Code Paths:
+  ///   1. If already taking picture → throws IllegalStateException.
+  ///   2. On success → returns XFile and resets isTakingPicture.
+  ///   3. On error → resets isTakingPicture and rethrows.
   Future<XFile> takePicture() async {
     _ensureInitializedNotDisposed();
 
@@ -171,7 +298,25 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
     }
   }
 
-  /// Starts video recording.
+  /// Start video recording with the specified mode.
+  ///
+  /// Args:
+  ///   videoRecordingMode: The [UvcCameraMode] to use for recording. Must be supported by the device.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
+  ///   [UvcCameraControllerIllegalStateException]: If video recording is already in progress.
+  ///   PlatformException: If the native start fails.
+  ///
+  /// Side Effects:
+  ///   - Sets [UvcCameraControllerState.isRecordingVideo] to true.
+  ///   - Stores videoRecordingMode and videoRecordingFile in state.
+  ///
+  /// Code Paths:
+  ///   1. If already recording → throws IllegalStateException.
+  ///   2. On success → updates state with file path from platform.
+  ///   3. On error → resets recording state and rethrows.
   Future<void> startVideoRecording(UvcCameraMode videoRecordingMode) async {
     _ensureInitializedNotDisposed();
 
@@ -192,7 +337,25 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
     }
   }
 
-  /// Stops video recording.
+  /// Stop video recording and return the recorded file.
+  ///
+  /// Returns:
+  ///   The [XFile] referencing the video file created during recording.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
+  ///   [UvcCameraControllerIllegalStateException]: If video recording is not in progress.
+  ///   PlatformException: If the native stop fails.
+  ///
+  /// Side Effects:
+  ///   - Resets recording state flags.
+  ///   - Clears videoRecordingMode and videoRecordingFile.
+  ///
+  /// Code Paths:
+  ///   1. If not recording → throws IllegalStateException.
+  ///   2. On success → returns file and resets state.
+  ///   3. On error → resets state and rethrows.
   Future<XFile> stopVideoRecording() async {
     _ensureInitializedNotDisposed();
 
@@ -213,7 +376,14 @@ class UvcCameraController extends ValueNotifier<UvcCameraControllerState> {
     }
   }
 
-  /// Returns a widget showing a live camera preview.
+  /// Build a widget showing a live camera preview.
+  ///
+  /// Returns:
+  ///   A [Texture] widget rendering the camera feed using the platform texture ID.
+  ///
+  /// Throws:
+  ///   [UvcCameraControllerDisposedException]: If the controller is disposed.
+  ///   [UvcCameraControllerNotInitializedException]: If the controller is not initialized.
   Widget buildPreview() {
     _ensureInitializedNotDisposed();
 

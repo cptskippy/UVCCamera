@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -24,6 +24,7 @@ import android.support.annotation.Nullable;
 /**
  * Hold shared texture that has camera frame and draw them to registered surface if needs<br>
  */
+
 public class RendererHolder extends AbstractRendererHolder {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = RendererHolder.class.getSimpleName();
@@ -52,10 +53,10 @@ public class RendererHolder extends AbstractRendererHolder {
 		return new MyRendererTask(this, width, height,
 			maxClientVersion, sharedContext, flags);
 	}
-	
-//================================================================================
-// 実装
-//================================================================================
+
+	//================================================================================
+	// 実装
+	//================================================================================
 	/**
 	 * ワーカースレッド上でOpenGL|ESを用いてマスター映像を分配描画するためのインナークラス
 	 */

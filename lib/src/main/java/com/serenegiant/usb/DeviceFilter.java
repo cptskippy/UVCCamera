@@ -38,34 +38,122 @@ import android.hardware.usb.UsbInterface;
 import android.text.TextUtils;
 import android.util.Log;
 
+/**
+ * Define USB device filter criteria for matching UVC cameras.
+ *
+ * Provides immutable filter criteria used to match UsbDevice instances
+ * against vendor/product/class/subclass/protocol and optional name fields.
+ * Used by USBMonitor and DeviceFilter parsing to select or exclude devices.
+ *
+ * Lifecycle:
+ *   Creation → use for matching → garbage collected. Instances are immutable
+ *   after construction and require no explicit cleanup.
+ *
+ * Key invariants:
+ *   - mVendorId / mProductId / mClass / mSubclass / mProtocol use -1 to mean
+ *     unspecified (wildcard match).
+ *   - String fields are null when unspecified.
+ *   - isExclude indicates whether a matching device should be excluded.
+ *
+ * Thread safety:
+ *   Instances are immutable after construction and safe for concurrent use.
+ *
+ * Properties:
+ *     mVendorId: USB vendor ID, -1 for unspecified.
+ *     mProductId: USB product ID, -1 for unspecified.
+ *     mClass: USB device/interface class, -1 for unspecified.
+ *     mSubclass: USB device/interface subclass, -1 for unspecified.
+ *     mProtocol: USB device/interface protocol, -1 for unspecified.
+ *     mManufacturerName: Manufacturer name string or null.
+ *     mProductName: Product name string or null.
+ *     mSerialNumber: Serial number string or null.
+ *     isExclude: True if matching devices should be excluded.
+ *
+ * Subclassing:
+ *   Class is final and not intended for subclassing.
+ */
 public final class DeviceFilter {
 
 	private static final String TAG = "DeviceFilter";
 
-	// USB Vendor ID (or -1 for unspecified)
+	/**
+	 * USB vendor ID used for matching. -1 means unspecified (wildcard).
+	 */
 	public final int mVendorId;
-	// USB Product ID (or -1 for unspecified)
+	/**
+	 * USB product ID used for matching. -1 means unspecified (wildcard).
+	 */
 	public final int mProductId;
-	// USB device or interface class (or -1 for unspecified)
+	/**
+	 * USB device or interface class used for matching. -1 means unspecified.
+	 */
 	public final int mClass;
-	// USB device subclass (or -1 for unspecified)
+	/**
+	 * USB device or interface subclass used for matching. -1 means unspecified.
+	 */
 	public final int mSubclass;
-	// USB device protocol (or -1 for unspecified)
+	/**
+	 * USB device or interface protocol used for matching. -1 means unspecified.
+	 */
 	public final int mProtocol;
-	// USB device manufacturer name string (or null for unspecified)
+	/**
+	 * USB device manufacturer name used for matching. Null means unspecified.
+	 */
 	public final String mManufacturerName;
-	// USB device product name string (or null for unspecified)
+	/**
+	 * USB device product name used for matching. Null means unspecified.
+	 */
 	public final String mProductName;
-	// USB device serial number string (or null for unspecified)
+	/**
+	 * USB device serial number used for matching. Null means unspecified.
+	 */
 	public final String mSerialNumber;
-	// set true if specific device(s) should exclude
+	/**
+	 * True if matching devices should be excluded rather than included.
+	 */
 	public final boolean isExclude;
 
+	/**
+	 * Create a device filter with explicit criteria.
+	 *
+	 * Args:
+	 *     vid: USB vendor ID, -1 for unspecified.
+	 *     pid: USB product ID, -1 for unspecified.
+	 *     clasz: USB class, -1 for unspecified.
+	 *     subclass: USB subclass, -1 for unspecified.
+	 *     protocol: USB protocol, -1 for unspecified.
+	 *     manufacturer: Manufacturer name or null.
+	 *     product: Product name or null.
+	 *     serialNum: Serial number or null.
+	 *
+	 * Code Paths:
+	 *     1. Delegates to full constructor with isExclude=false.
+	 */
 	public DeviceFilter(final int vid, final int pid, final int clasz, final int subclass,
 			final int protocol, final String manufacturer, final String product, final String serialNum) {
 		this(vid, pid, clasz, subclass, protocol, manufacturer, product, serialNum, false);
 	}
 
+	/**
+	 * Create a device filter with explicit criteria and exclusion flag.
+	 *
+	 * Args:
+	 *     vid: USB vendor ID, -1 for unspecified.
+	 *     pid: USB product ID, -1 for unspecified.
+	 *     clasz: USB class, -1 for unspecified.
+	 *     subclass: USB subclass, -1 for unspecified.
+	 *     protocol: USB protocol, -1 for unspecified.
+	 *     manufacturer: Manufacturer name or null.
+	 *     product: Product name or null.
+	 *     serialNum: Serial number or null.
+	 *     isExclude: True to exclude matching devices.
+	 *
+	 * Side Effects:
+	 *     - Assigns immutable fields.
+	 *
+	 * Code Paths:
+	 *     1. Stores parameters directly into final fields.
+	 */
 	public DeviceFilter(final int vid, final int pid, final int clasz, final int subclass,
 			final int protocol, final String manufacturer, final String product, final String serialNum, final boolean isExclude) {
 		mVendorId = vid;
@@ -81,10 +169,33 @@ public final class DeviceFilter {
 			mVendorId, mProductId, mClass, mSubclass, mProtocol)); */
 	}
 
+	/**
+	 * Create a device filter from an existing UsbDevice.
+	 *
+	 * Args:
+	 *     device: UsbDevice to copy vendor/product/class info from.
+	 *
+	 * Code Paths:
+	 *     1. Delegates to UsbDevice constructor with isExclude=false.
+	 */
 	public DeviceFilter(final UsbDevice device) {
 		this(device, false);
 	}
 
+	/**
+	 * Create a device filter from an existing UsbDevice with exclusion flag.
+	 *
+	 * Args:
+	 *     device: UsbDevice to copy vendor/product/class info from.
+	 *     isExclude: True to exclude matching devices.
+	 *
+	 * Side Effects:
+	 *     - Assigns immutable fields from device properties.
+	 *
+	 * Code Paths:
+	 *     1. Copies vendor/product/class/subclass/protocol from device.
+	 *     2. String fields remain null (device names not retrieved here).
+	 */
 	public DeviceFilter(final UsbDevice device, final boolean isExclude) {
 		mVendorId = device.getVendorId();
 		mProductId = device.getProductId();
@@ -100,10 +211,23 @@ public final class DeviceFilter {
 	}
 
 	/**
-	 * 指定したxmlリソースからDeviceFilterリストを生成する
-	 * @param context
-	 * @param deviceFilterXmlId
-	 * @return
+	 * Parse device filters from XML resource.
+	 *
+	 * Args:
+	 *     context: Android Context to access resources.
+	 *     deviceFilterXmlId: Resource ID of XML defining device filters.
+	 *
+	 * Returns:
+	 *     Unmodifiable list of DeviceFilter parsed from XML.
+	 *
+	 * Side Effects:
+	 *     - Reads XML resource via Context.getResources().
+	 *     - Logs XmlPullParserException and IOException at debug level.
+	 *
+	 * Code Paths:
+	 *     1. Parses XML stream, creates DeviceFilter for each usb-device entry.
+	 *     2. On XmlPullParserException → logs and returns partial list.
+	 *     3. On IOException → logs and returns partial list.
 	 */
 	public static List<DeviceFilter> getDeviceFilters(final Context context, final int deviceFilterXmlId) {
 		final XmlPullParser parser = context.getResources().getXml(deviceFilterXmlId);
@@ -131,11 +255,15 @@ public final class DeviceFilter {
 	/**
 	 * read as integer values with default value from xml(w/o exception throws)
 	 * resource integer id is also resolved into integer
-	 * @param parser
-	 * @param namespace
-	 * @param name
-	 * @param defaultValue
-	 * @return
+	 *
+	 * Args:
+	 *     parser: XML pull parser positioned at the attribute to read.
+	 *     namespace: XML namespace for the attribute; empty string means no namespace.
+	 *     name: Attribute name to read.
+	 *     defaultValue: Value returned when the attribute is missing, empty, or invalid.
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private static final int getAttributeInteger(final Context context, final XmlPullParser parser, final String namespace, final String name, final int defaultValue) {
 		int result = defaultValue;
@@ -171,12 +299,16 @@ public final class DeviceFilter {
 	 * read as boolean values with default value from xml(w/o exception throws)
 	 * resource boolean id is also resolved into boolean
 	 * if the value is zero, return false, if the value is non-zero integer, return true
-	 * @param context
-	 * @param parser
-	 * @param namespace
-	 * @param name
-	 * @param defaultValue
-	 * @return
+	 *
+	 * Args:
+	 *     context: Android context used to resolve resources or system services.
+	 *     parser: XML pull parser positioned at the attribute to read.
+	 *     namespace: XML namespace for the attribute; empty string means no namespace.
+	 *     name: Attribute name to read.
+	 *     defaultValue: Value returned when the attribute is missing, empty, or invalid.
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private static final boolean getAttributeBoolean(final Context context, final XmlPullParser parser, final String namespace, final String name, final boolean defaultValue) {
 		boolean result = defaultValue;
@@ -216,11 +348,15 @@ public final class DeviceFilter {
 	/**
 	 * read as String attribute with default value from xml(w/o exception throws)
 	 * resource string id is also resolved into string
-	 * @param parser
-	 * @param namespace
-	 * @param name
-	 * @param defaultValue
-	 * @return
+	 *
+	 * Args:
+	 *     parser: XML pull parser positioned at the attribute to read.
+	 *     namespace: XML namespace for the attribute; empty string means no namespace.
+	 *     name: Attribute name to read.
+	 *     defaultValue: Value returned when the attribute is missing, empty, or invalid.
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	private static final String getAttributeString(final Context context, final XmlPullParser parser, final String namespace, final String name, final String defaultValue) {
 		String result = defaultValue;
@@ -244,6 +380,28 @@ public final class DeviceFilter {
 		return result;
 	}
 
+	/**
+	 * Read a single device filter entry from XML parser.
+	 *
+	 * Args:
+	 *     context: Android Context for resource resolution.
+	 *     parser: XmlPullParser positioned at start of usb-device element.
+	 *
+	 * Returns:
+	 *     DeviceFilter instance or null if no entry found.
+	 *
+	 * Raises:
+	 *     XmlPullParserException: If XML parsing fails.
+	 *     IOException: If I/O error occurs while reading XML.
+	 *
+	 * Side Effects:
+	 *     - Advances parser to end of usb-device element.
+	 *
+	 * Code Paths:
+	 *     1. If tag is usb-device and START_TAG → parses attributes, returns filter.
+	 *     2. If tag is usb-device and END_TAG and hasValue → returns built filter.
+	 *     3. Otherwise continues parsing until document end, returns null.
+	 */
 	public static DeviceFilter readEntryOne(final Context context, final XmlPullParser parser)
 			throws XmlPullParserException, IOException {
 		int vendorId = -1;
@@ -332,12 +490,18 @@ public final class DeviceFilter {
 	} */
 
 	/**
-	 * 指定したクラス・サブクラス・プロトコルがこのDeviceFilterとマッチするかどうかを返す
-	 * mExcludeフラグは別途#isExcludeか自前でチェックすること
-	 * @param clasz
-	 * @param subclass
-	 * @param protocol
-	 * @return
+	 * Check whether the given class, subclass, and protocol match this filter.
+	 *
+	 * Args:
+	 *     clasz: USB class value to match.
+	 *     subclass: USB subclass value to match.
+	 *     protocol: USB protocol value to match.
+	 *
+	 * Returns:
+	 *     True if all specified filter fields match; false otherwise.
+	 *
+	 * Note:
+	 *     This method does not consider the exclude flag; check isExclude separately.
 	 */
 	private boolean matches(final int clasz, final int subclass, final int protocol) {
 		return ((mClass == -1 || clasz == mClass)
@@ -345,10 +509,23 @@ public final class DeviceFilter {
 	}
 
 	/**
-	 * 指定したUsbDeviceがこのDeviceFilterにマッチするかどうかを返す
-	 * mExcludeフラグは別途#isExcludeか自前でチェックすること
-	 * @param device
-	 * @return
+	 * Check if a UsbDevice matches this filter.
+	 *
+	 * Args:
+	 *     device: UsbDevice to test against filter criteria.
+	 *
+	 * Returns:
+	 *     True if device matches vendor/product and class/subclass/protocol.
+	 *
+	 * Code Paths:
+	 *     1. Vendor ID mismatches and is specified → returns false.
+	 *     2. Product ID mismatches and is specified → returns false.
+	 *     3. Device class/subclass/protocol matches → returns true.
+	 *     4. No device match → checks each interface for class/subclass/protocol match.
+	 *     5. No matches found → returns false.
+	 *
+	 * Note:
+	 *     isExclude flag is not evaluated here; check separately via isExclude().
 	 */
 	public boolean matches(final UsbDevice device) {
 		if (mVendorId != -1 && device.getVendorId() != mVendorId) {
@@ -391,18 +568,37 @@ public final class DeviceFilter {
 	}
 
 	/**
-	 * このDeviceFilterに一致してかつmExcludeがtrueならtrueを返す
-	 * @param device
-	 * @return
+	 * Check if a UsbDevice should be excluded by this filter.
+	 *
+	 * Args:
+	 *     device: UsbDevice to test.
+	 *
+	 * Returns:
+	 *     True if filter matches device and isExclude is true.
+	 *
+	 * Code Paths:
+	 *     1. If isExclude is false → returns false.
+	 *     2. If device matches filter → returns true.
+	 *     3. Otherwise → returns false.
 	 */
 	public boolean isExclude(final UsbDevice device) {
 		return isExclude && matches(device);
 	}
 
 	/**
-	 * これって要らんかも, equalsでできる気が
-	 * @param f
-	 * @return
+	 * Compare this filter with another filter for equivalence.
+	 *
+	 * Args:
+	 *     f: DeviceFilter to compare against.
+	 *
+	 * Returns:
+	 *     True if both filters have matching criteria and exclusion flag.
+	 *
+	 * Code Paths:
+	 *     1. If isExclude differs → returns false.
+	 *     2. If vendor/product/manufacturer/product/serial criteria differ → returns false.
+	 *     3. If class/subclass/protocol match → returns true.
+	 *     4. Otherwise → returns false.
 	 */
 	public boolean matches(final DeviceFilter f) {
 		if (isExclude != f.isExclude) {
@@ -440,6 +636,21 @@ public final class DeviceFilter {
 		return matches(f.mClass, f.mSubclass, f.mProtocol);
 	}
 
+	/**
+	 * Compare this filter with another object for equality.
+	 *
+	 * Args:
+	 *     obj: Object to compare, expected DeviceFilter or UsbDevice.
+	 *
+	 * Returns:
+	 *     True if objects are equal per filter criteria.
+	 *
+	 * Code Paths:
+	 *     1. If wildcard fields present → returns false.
+	 *     2. If obj is DeviceFilter → compares vendor/product/class/subclass/protocol and strings.
+	 *     3. If obj is UsbDevice → compares device properties against filter.
+	 *     4. Otherwise → returns false.
+	 */
 	@Override
 	public boolean equals(final Object obj) {
 		// can't compare if we have wildcard strings
@@ -506,12 +717,30 @@ public final class DeviceFilter {
 		return false;
 	}
 
+	/**
+	 * Compute hash code for this filter.
+	 *
+	 * Returns:
+	 *     Integer hash based on vendor, product, class, subclass, and protocol.
+	 *
+	 * Side Effects:
+	 *     None.
+	 */
 	@Override
 	public int hashCode() {
 		return (((mVendorId << 16) | mProductId) ^ ((mClass << 16)
 				| (mSubclass << 8) | mProtocol));
 	}
 
+	/**
+	 * Return string representation of this filter.
+	 *
+	 * Returns:
+	 *     String containing all filter fields for debugging.
+	 *
+	 * Side Effects:
+	 *     None.
+	 */
 	@Override
 	public String toString() {
 		return "DeviceFilter[mVendorId=" + mVendorId + ",mProductId="

@@ -40,6 +40,7 @@ import android.util.Log;
  * never execute color space conversion. This means that color tone of resulted movie will be different
  * from that you expected/can see on screen.
  */
+
 public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncoder {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MediaVideoBufferEncoder";
@@ -59,8 +60,15 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
 		mHeight = height;
 	}
 
+	/**
+	 * Encode the given NV21(YUV420SP) frame.
+	 *
+	 * Args:
+	 *     buffer: the NV21(YUV420SP) frame to encode; ignored when not capturing.
+	 */
+
 	public void encode(final ByteBuffer buffer) {
-//    	if (DEBUG) Log.v(TAG, "encode:buffer=" + buffer);
+	//    	if (DEBUG) Log.v(TAG, "encode:buffer=" + buffer);
 		synchronized (mSync) {
 			if (!mIsCapturing || mRequestStop) return;
 		}
@@ -106,16 +114,20 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
 		return bitrate;
 	}
 
-    /**
-     * select the first codec that match a specific MIME type
-     * @param mimeType
-     * @return null if no codec matched
-     */
+/**
+ * select the first codec that match a specific MIME type
+ *
+ * Args:
+ *     mimeType: The mime type value.
+ *
+ * Returns:
+ *     null if no codec matched.
+ */
     @SuppressWarnings("deprecation")
 	protected final MediaCodecInfo selectVideoCodec(final String mimeType) {
     	if (DEBUG) Log.v(TAG, "selectVideoCodec:");
 
-    	// get the list of available codecs
+	// get the list of available codecs
         final int numCodecs = MediaCodecList.getCodecCount();
         for (int i = 0; i < numCodecs; i++) {
         	final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
@@ -123,7 +135,7 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
             if (!codecInfo.isEncoder()) {	// skipp decoder
                 continue;
             }
-            // select first codec that match a specific MIME type and color format
+// select first codec that match a specific MIME type and color format
             final String[] types = codecInfo.getSupportedTypes();
             for (int j = 0; j < types.length; j++) {
                 if (types[j].equalsIgnoreCase(mimeType)) {
@@ -139,10 +151,12 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
         return null;
     }
 
-    /**
-     * select color format available on specific codec and we can use.
-     * @return 0 if no colorFormat is matched
-     */
+/**
+ * select color format available on specific codec and we can use.
+ *
+ * Returns:
+ *     0 if no colorFormat is matched.
+ */
     protected static final int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
 		if (DEBUG) Log.i(TAG, "selectColorFormat: ");
     	int result = 0;
@@ -173,10 +187,10 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
     protected static int[] recognizedFormats;
 	static {
 		recognizedFormats = new int[] {
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
         	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
         	MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
+	//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
 		};
 	}
 

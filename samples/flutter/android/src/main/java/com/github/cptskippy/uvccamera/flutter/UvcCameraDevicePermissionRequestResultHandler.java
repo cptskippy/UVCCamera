@@ -6,11 +6,12 @@ package com.github.cptskippy.uvccamera.flutter;
 @FunctionalInterface
 /* package-private */ interface UvcCameraDevicePermissionRequestResultHandler {
 
-    /**
-     * Called when the device permission request result is available
-     *
-     * @param granted true if the device permission is granted
-     */
+/**
+ * Report the result of a device permission request.
+ *
+ * Args:
+ *     granted: true if the device permission was granted, false otherwise
+ */
     void onResult(boolean granted);
 
 }

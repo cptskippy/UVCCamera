@@ -5,30 +5,34 @@ import android.util.Log;
 import io.flutter.plugin.common.EventChannel;
 
 /**
- * "uvccamera/device_events" event stream handler
+ * Handle the "uvccamera/device_events" event channel.
+ *
+ * Stores the event sink while the Dart side is listening so the platform can cast device attach, detach,
+ * connect, and disconnect events.
  */
 /* package-private */ class UvcCameraDeviceEventStreamHandler implements EventChannel.StreamHandler {
 
-    /**
-     * Log tag
-     */
+/**
+ * Log tag
+ */
     private static final String TAG = UvcCameraDeviceEventStreamHandler.class.getCanonicalName();
 
-    /**
-     * The event sink
-     */
+/**
+ * The event sink
+ */
     private EventChannel.EventSink eventSink;
 
-    /**
-     * Lock for {@link #eventSink}
-     */
+/**
+ * Lock for {@link #eventSink}
+ */
     private final Object eventSinkLock = new Object();
 
-    /**
-     * Returns the event sink
-     *
-     * @return the event sink
-     */
+/**
+ * Get the current event sink.
+ *
+ * Returns:
+ *     the event sink while the Dart side is listening, or null otherwise
+ */
     public EventChannel.EventSink getEventSink() {
         synchronized (eventSinkLock) {
             return eventSink;

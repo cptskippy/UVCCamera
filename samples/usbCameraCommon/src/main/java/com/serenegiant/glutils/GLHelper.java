@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -39,14 +39,18 @@ import java.io.IOException;
 /**
  * OpenGL|ES2/3用のヘルパークラス
  */
+
 public final class GLHelper {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = "GLHelper";
 
 	/**
 	 * OpenGL|ESのエラーをチェックしてlogCatに出力する
-	 * @param op
+	 *
+	 * Args:
+	 *     op: The op value.
 	 */
+
     public static void checkGlError(final String op) {
         final int error = GLES20.glGetError();
         if (error != GLES20.GL_NO_ERROR) {
@@ -61,10 +65,15 @@ public final class GLHelper {
 
 	/**
 	 * テクスチャ名を生成, テクスチャユニットはGL_TEXTURE0, クランプ方法はGL_CLAMP_TO_EDGE
-	 * @param texTarget
-	 * @param filter_param テクスチャの補完方法を指定, min/mag共に同じ値になる, GL_LINEARとかGL_NEAREST
-	 * @return
+	 *
+	 * Args:
+	 *     texTarget: The tex target value.
+	 *     filter_param: テクスチャの補完方法を指定, min/mag共に同じ値になる, GL_LINEARとかGL_NEAREST.
+	 *
+	 * Returns:
+	 *     The init tex.
 	 */
+
 	public static int initTex(final int texTarget, final int filter_param) {
 		return initTex(texTarget, GLES20.GL_TEXTURE0,
 			filter_param, filter_param, GLES20.GL_CLAMP_TO_EDGE);
@@ -72,17 +81,22 @@ public final class GLHelper {
 
 	/**
 	 * テクスチャ名を生成(GL_TEXTURE0のみ)
-	 * @param texTarget
-	 * @param texUnit テクスチャユニット, GL_TEXTURE0...GL_TEXTURE31
-	 * @param min_filter テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST
-	 * @param mag_filter テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST
-	 * @param wrap テクスチャのクランプ方法, GL_CLAMP_TO_EDGE
-	 * @return
+	 *
+	 * Args:
+	 *     texTarget: The tex target value.
+	 *     texUnit: テクスチャユニット, GL_TEXTURE0...GL_TEXTURE31.
+	 *     min_filter: テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST.
+	 *     mag_filter: テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST.
+	 *     wrap: テクスチャのクランプ方法, GL_CLAMP_TO_EDGE.
+	 *
+	 * Returns:
+	 *     The init tex.
 	 */
+
 	public static int initTex(final int texTarget, final int texUnit,
 		final int min_filter, final int mag_filter, final int wrap) {
 
-//		if (DEBUG) Log.v(TAG, "initTex:target=" + texTarget);
+		//		if (DEBUG) Log.v(TAG, "initTex:target=" + texTarget);
 		final int[] tex = new int[1];
 		GLES20.glActiveTexture(texUnit);
 		GLES20.glGenTextures(1, tex, 0);
@@ -93,59 +107,79 @@ public final class GLHelper {
 		GLES20.glTexParameteri(texTarget, GLES20.GL_TEXTURE_MAG_FILTER, mag_filter);
 		return tex[0];
 	}
-	
+
 	/**
 	 * テクスチャ名配列を生成(前から順にGL_TEXTURE0, GL_TEXTURE1, ...)
-	 * @param n 生成するテキスチャ名の数, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
-	 * @param texTarget
-	 * @param filter_param
-	 * @return
+	 *
+	 * Args:
+	 *     n: 生成するテキスチャ名の数, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下).
+	 *     texTarget: The tex target value.
+	 *     filter_param: The filter param value.
+	 *
+	 * Returns:
+	 *     The init texes.
 	 */
+
 	public static int[] initTexes(final int n,
 		final int texTarget, final int filter_param) {
-		
+
 		return initTexes(new int[n], texTarget,
 			filter_param, filter_param, GLES20.GL_CLAMP_TO_EDGE);
 	}
 
 	/**
 	 * テクスチャ名配列を生成(前から順にGL_TEXTURE0, GL_TEXTURE1, ...)
-	 * @param texIds テクスチャ名配列, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
-	 * @param texTarget
-	 * @param filter_param
-	 * @return
+	 *
+	 * Args:
+	 *     texIds: テクスチャ名配列, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下).
+	 *     texTarget: The tex target value.
+	 *     filter_param: The filter param value.
+	 *
+	 * Returns:
+	 *     The init texes.
 	 */
+
 	public static int[] initTexes(@NonNull final int[] texIds,
 		final int texTarget, final int filter_param) {
-		
+
 		return initTexes(texIds, texTarget,
 			filter_param, filter_param, GLES20.GL_CLAMP_TO_EDGE);
 	}
 
 	/**
 	 * テクスチャ名配列を生成(前から順にGL_TEXTURE0, GL_TEXTURE1, ...)
- 	 * @param n 生成するテキスチャ名の数, 最大32
-	 * @param texTarget
-	 * @param min_filter
-	 * @param mag_filter
-	 * @param wrap
-	 * @return
+	 *
+	 * Args:
+	 *     n: 生成するテキスチャ名の数, 最大32.
+	 *     texTarget: The tex target value.
+	 *     min_filter: The min filter value.
+	 *     mag_filter: The mag filter value.
+	 *     wrap: The wrap value.
+	 *
+	 * Returns:
+	 *     The init texes.
 	 */
+
 	public static int[] initTexes(final int n,
 		final int texTarget, final int min_filter, final int mag_filter, final int wrap) {
-		
+
 		return initTexes(new int[n], texTarget, min_filter, mag_filter, wrap);
 	}
 
 	/**
 	 * テクスチャ名配列を生成(前から順にGL_TEXTURE0, GL_TEXTURE1, ...)
-	 * @param texIds テクスチャ名配列, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
-	 * @param texTarget
-	 * @param min_filter
-	 * @param mag_filter
-	 * @param wrap
-	 * @return
+	 *
+	 * Args:
+	 *     texIds: テクスチャ名配列, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下).
+	 *     texTarget: The tex target value.
+	 *     min_filter: The min filter value.
+	 *     mag_filter: The mag filter value.
+	 *     wrap: The wrap value.
+	 *
+	 * Returns:
+	 *     The init texes.
 	 */
+
 	public static int[] initTexes(@NonNull final int[] texIds,
 		final int texTarget, final int min_filter, final int mag_filter, final int wrap) {
 
@@ -160,17 +194,22 @@ public final class GLHelper {
 		}
 		return texIds;
 	}
-	
+
 	/**
 	 * テクスチャ名配列を生成(こっちは全部同じテクスチャユニット)
-	 * @param n 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
-	 * @param texTarget
-	 * @param texUnit
-	 * @param min_filter
-	 * @param mag_filter
-	 * @param wrap
-	 * @return
+	 *
+	 * Args:
+	 *     n: 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下).
+	 *     texTarget: The tex target value.
+	 *     texUnit: The tex unit value.
+	 *     min_filter: The min filter value.
+	 *     mag_filter: The mag filter value.
+	 *     wrap: The wrap value.
+	 *
+	 * Returns:
+	 *     The init texes.
 	 */
+
 	public static int[] initTexes(final int n,
 		final int texTarget, final int texUnit,
 			final int min_filter, final int mag_filter, final int wrap) {
@@ -178,32 +217,42 @@ public final class GLHelper {
 		return initTexes(new int[n], texTarget, texUnit,
 			min_filter, mag_filter, wrap);
 	}
-	
+
 	/**
 	 * テクスチャ名配列を生成(こっちは全部同じテクスチャユニット)
-	 * @param texIds 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
-	 * @param texTarget
-	 * @param texUnit
-	 * @param filter_param
-	 * @return
+	 *
+	 * Args:
+	 *     texIds: 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下).
+	 *     texTarget: The tex target value.
+	 *     texUnit: The tex unit value.
+	 *     filter_param: The filter param value.
+	 *
+	 * Returns:
+	 *     The init texes.
 	 */
+
 	public static int[] initTexes(@NonNull final int[] texIds,
 		final int texTarget, final int texUnit, final int filter_param) {
-		
+
 		return initTexes(texIds, texTarget, texUnit,
 			filter_param, filter_param, GLES20.GL_CLAMP_TO_EDGE);
 	}
-	
+
 	/**
 	 * テクスチャ名配列を生成(こっちは全部同じテクスチャユニット)
-	 * @param texIds
-	 * @param texTarget
-	 * @param texUnit
-	 * @param min_filter
-	 * @param mag_filter
-	 * @param wrap
-	 * @return
+	 *
+	 * Args:
+	 *     texIds: The tex ids value.
+	 *     texTarget: The tex target value.
+	 *     texUnit: The tex unit value.
+	 *     min_filter: The min filter value.
+	 *     mag_filter: The mag filter value.
+	 *     wrap: The wrap value.
+	 *
+	 * Returns:
+	 *     The init texes.
 	 */
+
 	public static int[] initTexes(@NonNull final int[] texIds,
 		final int texTarget, final int texUnit,
 		final int min_filter, final int mag_filter, final int wrap) {
@@ -222,8 +271,9 @@ public final class GLHelper {
 	/**
 	 * delete specific texture
 	 */
+
 	public static void deleteTex(final int hTex) {
-//		if (DEBUG) Log.v(TAG, "deleteTex:");
+	//		if (DEBUG) Log.v(TAG, "deleteTex:");
 		final int[] tex = new int[] {hTex};
 		GLES20.glDeleteTextures(1, tex, 0);
 	}
@@ -231,19 +281,21 @@ public final class GLHelper {
 	/**
 	 * delete specific texture
 	 */
+
 	public static void deleteTex(@NonNull final int[] tex) {
-//		if (DEBUG) Log.v(TAG, "deleteTex:");
+	//		if (DEBUG) Log.v(TAG, "deleteTex:");
 		GLES20.glDeleteTextures(tex.length, tex, 0);
 	}
 
 	public static int loadTextureFromResource(final Context context, final int resId) {
 		return loadTextureFromResource(context, resId, null);
 	}
-	
+
 	@SuppressLint("NewApi")
 	@SuppressWarnings("deprecation")
+
 	public static int loadTextureFromResource(final Context context, final int resId, final Resources.Theme theme) {
-		// Create an empty, mutable bitmap
+	// Create an empty, mutable bitmap
 		final Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
 		// get a canvas to paint over the bitmap
 		final Canvas canvas = new Canvas(bitmap);
@@ -273,13 +325,13 @@ public final class GLHelper {
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
 			GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 
-		//Different possible texture parameters, e.g. GLES20.GL_CLAMP_TO_EDGE
+			//Different possible texture parameters, e.g. GLES20.GL_CLAMP_TO_EDGE
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
 			GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
 			GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
 
-		//Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
+			//Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
 		GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
 		//Clean up
 		bitmap.recycle();
@@ -288,7 +340,7 @@ public final class GLHelper {
 	}
 
 	public static int createTextureWithTextContent (final String text) {
-		// Create an empty, mutable bitmap
+	// Create an empty, mutable bitmap
 		final Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
 		// get a canvas to paint over the bitmap
 		final Canvas canvas = new Canvas(bitmap);
@@ -305,11 +357,11 @@ public final class GLHelper {
 		final int texture = initTex(GLES20.GL_TEXTURE_2D,
 			GLES20.GL_TEXTURE0, GLES20.GL_NEAREST, GLES20.GL_LINEAR, GLES20.GL_REPEAT);
 
-		// Alpha blending
-		// GLES20.glEnable(GLES20.GL_BLEND);
-		// GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+			// Alpha blending
+			// GLES20.glEnable(GLES20.GL_BLEND);
+			// GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
-		// Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
+			// Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
 		GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
 		// Clean up
 		bitmap.recycle();
@@ -319,11 +371,16 @@ public final class GLHelper {
 
 	/**
 	 * load, compile and link shader from Assets files
-	 * @param context
-	 * @param vss_asset source file name in Assets of vertex shader
-	 * @param fss_asset source file name in Assets of fragment shader
-	 * @return
+	 *
+	 * Args:
+	 *     context: The context value.
+	 *     vss_asset: source file name in Assets of vertex shader.
+	 *     fss_asset: source file name in Assets of fragment shader.
+	 *
+	 * Returns:
+	 *     The load shader.
 	 */
+
 	public static int loadShader(@NonNull final Context context,
 		final String vss_asset, final String fss_asset) {
 
@@ -339,12 +396,17 @@ public final class GLHelper {
 
 	/**
 	 * load, compile and link shader
-	 * @param vss source of vertex shader
-	 * @param fss source of fragment shader
-	 * @return
+	 *
+	 * Args:
+	 *     vss: source of vertex shader.
+	 *     fss: source of fragment shader.
+	 *
+	 * Returns:
+	 *     The load shader.
 	 */
+
 	public static int loadShader(final String vss, final String fss) {
-//		if (DEBUG) Log.v(TAG, "loadShader:");
+	//		if (DEBUG) Log.v(TAG, "loadShader:");
 		final int[] compiled = new int[1];
 		// 頂点シェーダーをコンパイル
 		final int vs = loadShader(GLES20.GL_VERTEX_SHADER, vss);
@@ -379,10 +441,12 @@ public final class GLHelper {
 	}
 
 	/**
-	  * Compiles the provided shader source.
-	  *
-	  * @return A handle to the shader, or 0 on failure.
-	  */
+	 * Compiles the provided shader source.
+	 *
+	 * Returns:
+	 *     A handle to the shader, or 0 on failure.
+	 */
+
 	public static int loadShader(final int shaderType, final String source) {
 		int shader = GLES20.glCreateShader(shaderType);
 		checkGlError("glCreateShader type=" + shaderType);
@@ -405,6 +469,7 @@ public final class GLHelper {
 	 * <p>
 	 * Throws a RuntimeException if the location is invalid.
 	 */
+
 	public static void checkLocation(final int location, final String label) {
 		if (location < 0) {
 			throw new RuntimeException("Unable to locate '" + label + "' in program");
@@ -415,6 +480,7 @@ public final class GLHelper {
 	 * Writes GL version info to the log.
 	 */
 	@SuppressLint("InlinedApi")
+
 	public static void logVersionInfo() {
 		Log.i(TAG, "vendor  : " + GLES20.glGetString(GLES20.GL_VENDOR));
 		Log.i(TAG, "renderer: " + GLES20.glGetString(GLES20.GL_RENDERER));

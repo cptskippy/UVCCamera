@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.opengl.GLES20;
 
@@ -24,6 +24,7 @@ import android.opengl.GLES20;
  * Created by saki on 16/08/26.
  * フラグメントシェーダーとかの文字列定数達を集める
  */
+
 public class ShaderConst {
 	public static final int GL_TEXTURE_EXTERNAL_OES	= 0x8D65;
 	public static final int GL_TEXTURE_2D           = 0x0DE1;
@@ -60,7 +61,7 @@ public class ShaderConst {
 		GLES20.GL_TEXTURE30, GLES20.GL_TEXTURE31,
 	};
 
-// 関数文字列定義
+	// 関数文字列定義
 	/**
 	 * RGBをHSVに変換
 	 * {R[0.0-1.0], G[0.0-1.0], B([0.0-1.0]} => {H[0.0-1.0], S[0.0-1.0], V[0.0-1.0]}
@@ -96,7 +97,7 @@ public class ShaderConst {
 			"return dot(c.rgb, luminanceWeighting);\n" +
 		"}\n";
 
-// 頂点シェーダー
+		// 頂点シェーダー
 	/**
 	 * モデルビュー変換行列とテクスチャ変換行列適用するだけの頂点シェーダー
 	 */
@@ -111,7 +112,7 @@ public class ShaderConst {
 		"    vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n" +
 		"}\n";
 
-// フラグメントシェーダー
+		// フラグメントシェーダー
 	public static final String FRAGMENT_SHADER_SIMPLE_OES
 		= SHADER_VERSION
 		+ HEADER_OES
@@ -132,8 +133,8 @@ public class ShaderConst {
 		+ "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n"
 		+ "}";
 
-//
-	// Simple fragment shader for use with "normal" 2D textures.
+		//
+		// Simple fragment shader for use with "normal" 2D textures.
 	private static final String FRAGMENT_SHADER_BASE = SHADER_VERSION +
 		"%s" +
 		"precision mediump float;\n" +
@@ -147,7 +148,7 @@ public class ShaderConst {
 	public static final String FRAGMENT_SHADER_EXT
 		= String.format(FRAGMENT_SHADER_BASE, HEADER_OES, SAMPLER_OES);
 
-	// Fragment shader that converts color to black & white with a simple transformation.
+		// Fragment shader that converts color to black & white with a simple transformation.
 	private static final String FRAGMENT_SHADER_BW_BASE = SHADER_VERSION +
 		"%s" +
 		"precision mediump float;\n" +
@@ -163,7 +164,7 @@ public class ShaderConst {
 	public static final String FRAGMENT_SHADER_EXT_BW
 		= String.format(FRAGMENT_SHADER_BW_BASE, HEADER_OES, SAMPLER_OES);
 
-	// Fragment shader that attempts to produce a high contrast image
+		// Fragment shader that attempts to produce a high contrast image
 	private static final String FRAGMENT_SHADER_NIGHT_BASE = SHADER_VERSION +
 		"%s" +
 		"precision mediump float;\n" +
@@ -179,7 +180,7 @@ public class ShaderConst {
 	public static final String FRAGMENT_SHADER_EXT_NIGHT
 		= String.format(FRAGMENT_SHADER_NIGHT_BASE, HEADER_OES, SAMPLER_OES);
 
-	// Fragment shader that applies a Chroma Key effect, making green pixels transparent
+		// Fragment shader that applies a Chroma Key effect, making green pixels transparent
 	private static final String FRAGMENT_SHADER_CHROMA_KEY_BASE = SHADER_VERSION +
 		"%s" +
 		"precision mediump float;\n" +
@@ -365,10 +366,10 @@ public class ShaderConst {
 		"    vec3 sumH = t0 * uKernel[0] + t1 * uKernel[1] + t2 * uKernel[2]\n" +
 		"              + t3 * uKernel[3] + t4 * uKernel[4] + t5 * uKernel[5]\n" +
 		"              + t6 * uKernel[6] + t7 * uKernel[7] + t8 * uKernel[8];\n" +
-//		"    vec3 sumV = t0 * uKernel[ 9] + t1 * uKernel[10] + t2 * uKernel[11]\n" +
-//		"              + t3 * uKernel[12] + t4 * uKernel[13] + t5 * uKernel[14]\n" +
-//		"              + t6 * uKernel[15] + t7 * uKernel[16] + t8 * uKernel[17];\n" +
-//		"    float mag = length(abs(sumH) + abs(sumV));\n" +
+		//		"    vec3 sumV = t0 * uKernel[ 9] + t1 * uKernel[10] + t2 * uKernel[11]\n" +
+		//		"              + t3 * uKernel[12] + t4 * uKernel[13] + t5 * uKernel[14]\n" +
+		//		"              + t6 * uKernel[15] + t7 * uKernel[16] + t8 * uKernel[17];\n" +
+		//		"    float mag = length(abs(sumH) + abs(sumV));\n" +
 		"    float mag = length(sumH);\n" +
 		"    gl_FragColor = vec4(vec3(mag), 1.0);\n" +
 		"}\n";

@@ -18,6 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/*!
+ * \brief String buffer for RapidJSON writers.
+ *
+ * Provides a growable string buffer implementing the Stream concept for building JSON strings in memory.
+ *
+ * Exports:
+ *     GenericStringBuffer: Templated string buffer with encoding support
+ *     StringBuffer: UTF8 specialization
+ *
+ * Dependencies:
+ *     - rapidjson.h: Core definitions
+ *     - internal/stack.h: Stack allocator
+ *
+ * Architecture Note:
+ *     StringBuffer is used by writers to accumulate output before retrieving as a C string. It is not thread-safe.
+ */
+
 #ifndef RAPIDJSON_STRINGBUFFER_H_
 #define RAPIDJSON_STRINGBUFFER_H_
 

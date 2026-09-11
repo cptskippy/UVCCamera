@@ -32,6 +32,11 @@ import static org.junit.Assert.*;
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
+/**
+ * Example unit tests for usbCameraTest8.
+ *
+ * Provides placeholder tests.
+ */
 public class ExampleUnitTest {
 	@Test
 	public void addition_isCorrect() throws Exception {

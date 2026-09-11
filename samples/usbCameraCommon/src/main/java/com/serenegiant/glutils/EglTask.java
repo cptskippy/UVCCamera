@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.support.annotation.Nullable;
 
@@ -29,15 +29,15 @@ public abstract class EglTask extends MessageTask {
 	public static final int EGL_FLAG_DEPTH_BUFFER = 0x01;
 	public static final int EGL_FLAG_RECORDABLE = 0x02;
 	public static final int EGL_FLAG_STENCIL_1BIT = 0x04;
-//	public static final int EGL_FLAG_STENCIL_2BIT = 0x08;
-//	public static final int EGL_FLAG_STENCIL_4BIT = 0x10;
+	//	public static final int EGL_FLAG_STENCIL_2BIT = 0x08;
+	//	public static final int EGL_FLAG_STENCIL_4BIT = 0x10;
 	public static final int EGL_FLAG_STENCIL_8BIT = 0x20;
 
 	private EGLBase mEgl = null;
 	private EGLBase.IEglSurface mEglHolder;
 
 	public EglTask(final EGLBase.IContext sharedContext, final int flags) {
-//		if (DEBUG) Log.i(TAG, "shared_context=" + shared_context);
+	//		if (DEBUG) Log.i(TAG, "shared_context=" + shared_context);
 		init(flags, 3, sharedContext);
 	}
 
@@ -49,9 +49,11 @@ public abstract class EglTask extends MessageTask {
 	}
 
 	/**
-	 * @param flags
-	 * @param maxClientVersion
-	 * @param sharedContext
+	 *
+	 * Args:
+	 *     flags: The flags value.
+	 *     maxClientVersion: The max client version value.
+	 *     sharedContext: The shared context value.
 	 */
 	@Override
 	protected void onInit(final int flags,

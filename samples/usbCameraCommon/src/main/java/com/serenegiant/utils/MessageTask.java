@@ -16,17 +16,23 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.util.Log;
 
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * Queue and process message tasks on a worker thread.
+ */
 public abstract class MessageTask implements Runnable {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = MessageTask.class.getSimpleName();
 
+	/**
+	 * Signals the message-processing loop to stop after the current request.
+	 */
 	public static class TaskBreak extends RuntimeException {
 	}
 
@@ -43,10 +49,11 @@ public abstract class MessageTask implements Runnable {
 		}
 
 		/**
-		 * @param _request minus value is reserved internal use
-		 * @param _arg1
-		 * @param _arg2
-		 * @param _obj
+		 * Args:
+		 * _request: minus value is reserved internal use
+		 * _arg1: first argument passed to processRequest
+		 * _arg2: second argument passed to processRequest
+		 * _obj: object passed to processRequest
 		 */
 		public Request(final int _request, final int _arg1, final int _arg2, final Object _obj) {
 			request = _request;
@@ -56,6 +63,9 @@ public abstract class MessageTask implements Runnable {
 			request_for_result = REQUEST_TASK_NON;
 		}
 
+		/**
+		 * Set the result and notify the waiting thread.
+		 */
 		public void setResult(final Object result) {
 			synchronized (this) {
 				this.result = result;
@@ -65,6 +75,9 @@ public abstract class MessageTask implements Runnable {
 		}
 
 		@Override
+		/**
+		 * Returns true if the given object is a Request with the same fields.
+		 */
 		public boolean equals(final Object o) {
 			return (o instanceof Request)
 				? (request == ((Request) o).request)
@@ -90,7 +103,6 @@ public abstract class MessageTask implements Runnable {
 	private final LinkedBlockingDeque<Request> mRequestQueue;
 	private volatile boolean mIsRunning, mFinished;
 	private Thread mWorkerThread;
-
 	/**
 	 * コンストラクタ
 	 * プール&キューのサイズは無制限
@@ -105,7 +117,8 @@ public abstract class MessageTask implements Runnable {
 	/**
 	 * コンストラクタ
 	 * プール&キューのサイズは無制限
-	 * @param init_num　プールするRequestの初期数を指定
+	 * Args:
+	 * init_num: initial number of Request objects in the pool
 	 */
 	public MessageTask(final int init_num) {
 		mMaxRequest = -1;
@@ -119,8 +132,9 @@ public abstract class MessageTask implements Runnable {
 	/**
 	 * コンストラクタ
 	 * プール及びキュー可能な最大サイズを指定して初期化
-	 * @param max_request キューの最大サイズを指定
-	 * @param init_num プールするRequestの初期数を指定, max_requestよりも大きければ切り捨てる
+	 * Args:
+	 * max_request: maximum size of the request queue
+	 * init_num: initial number of Request objects in the pool, truncated if larger than max_request
 	 */
 	public MessageTask(final int max_request, final int init_num) {
 		mMaxRequest = max_request;
@@ -134,50 +148,49 @@ public abstract class MessageTask implements Runnable {
 	/**
 	 * 初期化要求。継承クラスのコンストラクタから呼び出すこと
 	 * パラメータはonInitに引き渡される
-	 * @param arg1
-	 * @param arg2
-	 * @param obj
+	 * Args:
+	 * arg1: first argument passed to onInit
+	 * arg2: second argument passed to onInit
+	 * obj: object passed to onInit
 	 */
 	protected void init(final int arg1, final int arg2, final Object obj) {
 		mFinished = false;
 		mRequestQueue.offer(obtain(REQUEST_TASK_START, arg1, arg2, obj));
-//		offer(REQUEST_TASK_START, arg1, arg2, obj);
+		//		offer(REQUEST_TASK_START, arg1, arg2, obj);
 	}
 
 	/** 初期化処理 */
 	protected abstract void onInit(final int arg1, final int arg2, final Object obj);
-
-	/** 要求処理ループ開始直前に呼ばれる */
 	protected abstract void onStart();
 
 	/** onStopの直前に呼び出される, interruptされた時は呼び出されない */
 	protected void onBeforeStop() {}
-
-	/** 停止処理, interruptされた時は呼び出されない */
 	protected abstract void onStop();
 
 	/** onStop後に呼び出される。onStopで例外発生しても呼ばれる */
 	protected abstract void onRelease();
-
 	/**
 	 * メッセージ処理ループ中でのエラー発生時の処理
 	 * デフフォルトはtrueを返しメッセージ処理ループを終了する
-	 * @return trueを返すとメッセージ処理ループを終了する
+	 * Returns:
+	 * true if the message processing loop should be terminated
 	 */
 	protected boolean onError(final Exception e) {
-//		if (DEBUG) Log.w(TAG, e);
+	//		if (DEBUG) Log.w(TAG, e);
 		return true;
 	}
 
 	/** 要求メッセージの処理(内部メッセージは来ない)
-	 * TaskBreakをthrowすると要求メッセージ処理ループを終了する */
+	 */
 	protected abstract Object processRequest(final int request, final int arg1, final int arg2, final Object obj) throws TaskBreak;
 
 	/** 要求メッセージを取り出す処理(要求メッセージがなければブロックされる) */
 	protected Request takeRequest() throws InterruptedException {
-		return mRequestQueue.take();
+	return mRequestQueue.take();
 	}
-
+	/**
+	 * Wait for the worker thread to start, and return whether it is running.
+	 */
 	public boolean waitReady() {
 		synchronized (mSync) {
 			for ( ; !mIsRunning && !mFinished ; ) {
@@ -191,15 +204,24 @@ public abstract class MessageTask implements Runnable {
 		}
 	}
 
+	/**
+	 * Returns whether the worker thread is running.
+	 */
 	public boolean isRunning() {
 		return mIsRunning;
 	}
 
+	/**
+	 * Returns whether the worker thread has finished.
+	 */
 	public boolean isFinished() {
 		return mFinished;
 	}
 
 	@Override
+	/**
+	 * Run the request processing loop on the worker thread.
+	 */
 	public void run() {
 		Request request = null;
 		mIsRunning = true;
@@ -296,7 +318,7 @@ LOOP:	for (; mIsRunning; ) {
 		try {
 			onRelease();
 		} catch (final Exception e) {
-			// callOnError(e);
+		// callOnError(e);
 		}
 		synchronized (mSync) {
 			mSync.notifyAll();
@@ -306,14 +328,16 @@ LOOP:	for (; mIsRunning; ) {
 	/**
 	 * エラー処理。onErrorを呼び出す。
 	 * trueを返すと要求メッセージ処理ループを終了する
-	 * @param e
-	 * @return
+	 * Args:
+	 * e: exception that occurred during request processing
+	 * Returns:
+	 * true if the request processing loop should be terminated
 	 */
 	protected boolean callOnError(final Exception e) {
 		try {
 			return onError(e);
 		} catch (final Exception e2) {
-//			if (DEBUG) Log.e(TAG, "exception occurred in callOnError", e);
+		//			if (DEBUG) Log.e(TAG, "exception occurred in callOnError", e);
 		}
 		return true;
 	}
@@ -321,11 +345,13 @@ LOOP:	for (; mIsRunning; ) {
 	/**
 	 * RequestプールからRequestを取得する
 	 * プールが空の場合は新規に生成する
-	 * @param request minus values and zero are reserved
-	 * @param arg1
-	 * @param arg2
-	 * @param obj
-	 * @return Request
+	 * Args:
+	 * request: minus values and zero are reserved
+	 * arg1: first argument passed to processRequest
+	 * arg2: second argument passed to processRequest
+	 * obj: object passed to processRequest
+	 * Returns:
+	 * Request
 	 */
 	protected Request obtain(final int request, final int arg1, final int arg2, final Object obj) {
 		Request req = mRequestPool.poll();
@@ -342,11 +368,13 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * offer request to run on worker thread
-	 * @param request minus values and zero are reserved
-	 * @param arg1
-	 * @param arg2
-	 * @param obj
-	 * @return true if success offer
+	 * Args:
+	 * request: minus values and zero are reserved
+	 * arg1: first argument passed to processRequest
+	 * arg2: second argument passed to processRequest
+	 * obj: object passed to processRequest
+	 * Returns:
+	 * true if the request was offered successfully
 	 */
 	public boolean offer(final int request, final int arg1, final int arg2, final Object obj) {
 		return !mFinished && mRequestQueue.offer(obtain(request, arg1, arg2, obj));
@@ -354,10 +382,12 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * offer request to run on worker thread
-	 * @param request minus values and zero are reserved
-	 * @param arg1
-	 * @param obj
-	 * @return true if success offer
+	 * Args:
+	 * request: minus values and zero are reserved
+	 * arg1: first argument passed to processRequest
+	 * obj: object passed to processRequest
+	 * Returns:
+	 * true if the request was offered successfully
 	 */
 	public boolean offer(final int request, final int arg1, final Object obj) {
 		return !mFinished && mRequestQueue.offer(obtain(request, arg1, 0, obj));
@@ -365,10 +395,12 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * offer request to run on worker thread
-	 * @param request minus values and zero are reserved
-	 * @param arg1
-	 * @param arg2
-	 * @return true if success offer
+	 * Args:
+	 * request: minus values and zero are reserved
+	 * arg1: first argument passed to processRequest
+	 * arg2: second argument passed to processRequest
+	 * Returns:
+	 * true if the request was offered successfully
 	 */
 	public boolean offer(final int request, final int arg1, final int arg2) {
 		return !mFinished && mIsRunning && mRequestQueue.offer(obtain(request, arg1, arg2, null));
@@ -376,9 +408,11 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * offer request to run on worker thread
-	 * @param request minus values and zero are reserved
-	 * @param arg1
-	 * @return true if success offer
+	 * Args:
+	 * request: minus values and zero are reserved
+	 * arg1: first argument passed to processRequest
+	 * Returns:
+	 * true if the request was offered successfully
 	 */
 	public boolean offer(final int request, final int arg1) {
 		return !mFinished && mIsRunning && mRequestQueue.offer(obtain(request, arg1, 0, null));
@@ -386,8 +420,10 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * offer request to run on worker thread
-	 * @param request minus values and zero are reserved
-	 * @return true if success offer
+	 * Args:
+	 * request: minus values and zero are reserved
+	 * Returns:
+	 * true if the request was offered successfully
 	 */
 	public boolean offer(final int request) {
 		return !mFinished && mIsRunning && mRequestQueue.offer(obtain(request, 0, 0, null));
@@ -395,9 +431,11 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * offer request to run on worker thread
-	 * @param request minus values and zero are reserved
-	 * @param obj
-	 * @return true if success offer
+	 * Args:
+	 * request: minus values and zero are reserved
+	 * obj: object passed to processRequest
+	 * Returns:
+	 * true if the request was offered successfully
 	 */
 	public boolean offer(final int request, final Object obj) {
 		return !mFinished && mIsRunning && mRequestQueue.offer(obtain(request, 0, 0, obj));
@@ -405,9 +443,11 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * offer request to run on worker thread on top of the request queue
-	 * @param request minus values and zero are reserved
-	 * @param arg1
-	 * @param arg2
+	 * Args:
+	 * request: minus values and zero are reserved
+	 * arg1: first argument passed to processRequest
+	 * arg2: second argument passed to processRequest
+	 * obj: object passed to processRequest
 	 */
 	public boolean offerFirst(final int request, final int arg1, final int arg2, final Object obj) {
 		return !mFinished && mIsRunning && mRequestQueue.offerFirst(obtain(request, arg1, arg2, obj));
@@ -417,11 +457,13 @@ LOOP:	for (; mIsRunning; ) {
 	 * offer request to run on worker thread and wait for result
 	 * caller thread is blocked until the request finished running on worker thread
 	 * FIXME このメソッドはMessageTaskを実行中のスレッド上で呼び出すとデッドロックする
-	 * @param request
-	 * @param arg1
-	 * @param arg2
-	 * @param obj
-	 * @return
+	 * Args:
+	 * request: request id to run, minus values and zero are reserved
+	 * arg1: first argument passed to processRequest
+	 * arg2: second argument passed to processRequest
+	 * obj: object passed to processRequest
+	 * Returns:
+	 * the result of the request, or null if the request was not queued
 	 */
 	public Object offerAndWait(final int request, final int arg1, final int arg2, final Object obj) {
 		if (!mFinished && (request > REQUEST_TASK_NON)) {
@@ -446,13 +488,18 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * request to run on worker thread
-	 * @param task
-	 * @return true if success queue
+	 * Args:
+	 * task: runnable to execute on the worker thread
+	 * Returns:
+	 * true if the task was queued successfully
 	 */
 	public boolean queueEvent(final Runnable task) {
 		return !mFinished && (task != null) && offer(REQUEST_TASK_RUN, task);
 	}
 
+	/**
+	 * Remove the given request from the queue and return it to the pool.
+	 */
 	public void removeRequest(final Request request) {
 		for (final Request req: mRequestQueue) {
 			if (!mIsRunning || mFinished) break;
@@ -463,6 +510,9 @@ LOOP:	for (; mIsRunning; ) {
 		}
 	}
 
+	/**
+	 * Remove requests with the given request id from the queue and return them to the pool.
+	 */
 	public void removeRequest(final int request) {
 		for (final Request req: mRequestQueue) {
 			if (!mIsRunning || mFinished) break;
@@ -482,7 +532,8 @@ LOOP:	for (; mIsRunning; ) {
 
 	/**
 	 * request terminate worker thread and release all related resources
-	 * @param interrupt trueなら実行中のタスクをinterruptする
+	 * Args:
+	 * interrupt: if true, interrupt the running task
 	 */
 	public void release(final boolean interrupt) {
 		final boolean b = mIsRunning;
@@ -502,7 +553,7 @@ LOOP:	for (; mIsRunning; ) {
 							try {
 								mSync.wait(300);
 							} catch (final InterruptedException e) {
-								// ignore
+							// ignore
 							}
 						}
 					}
@@ -525,7 +576,8 @@ LOOP:	for (; mIsRunning; ) {
 	/**
 	 * processRequest内でメッセージループを非常終了させるためのヘルパーメソッド
 	 * 単にTaskBreakをthrowするだけ
-	 * @throws TaskBreak
+	 * Raises:
+	 * TaskBreak: always thrown to break the message processing loop
 	 */
 	public void userBreak() throws TaskBreak {
 		throw new TaskBreak();

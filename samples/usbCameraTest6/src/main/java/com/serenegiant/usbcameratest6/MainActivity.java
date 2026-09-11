@@ -52,6 +52,37 @@ import com.serenegiant.usbcameracommon.UVCCameraHandlerMultiSurface;
 import com.serenegiant.widget.CameraViewInterface;
 import com.serenegiant.widget.UVCCameraTextureView;
 
+/**
+ * Demonstrate one USB UVC camera rendered to two preview surfaces.
+ *
+ * This Activity uses UVCCameraHandlerMultiSurface with encoderType 1 (MediaVideoEncoder)
+ * and UVCCamera.DEFAULT_PREVIEW_WIDTH/HEIGHT. mUVCCameraViewL and mUVCCameraViewR are
+ * client surfaces added through CameraViewInterface.Callback#onSurfaceCreated; the
+ * handler starts preview on its internal RendererHolder master surface, not directly
+ * on one of these views. This is multi-surface output, not simultaneous two-camera capture.
+ *
+ * Properties:
+ *     mSync: Activity lock guarding handler/monitor lifecycle and user-driven camera calls.
+ *     mUSBMonitor: USBMonitor that watches for UVC device attach/connect events.
+ *     mCameraHandler: UVCCameraHandlerMultiSurface that owns the camera and renderer surfaces.
+ *     mUVCCameraViewL: Left CameraViewInterface client surface.
+ *     mUVCCameraViewR: Right CameraViewInterface client surface.
+ *     mCameraButton: ToggleButton that requests camera open/close through CameraDialog.
+ *     mCaptureButton: ImageButton that toggles video recording while the camera is open.
+ *     mCallback: CameraViewInterface.Callback that adds/removes client surfaces by hashCode.
+ *
+ * State Machine:
+ *     Created → Monitoring (onStart) → CameraDialog → Previewing → Recording (optional)
+ *     Previewing → Monitoring (device disconnect or user turn-off)
+ *     Monitoring/Previewing → Stopped (onStop: close and unregister under mSync)
+ *     Stopped → Released (onDestroy: handler and USBMonitor released under mSync)
+ *
+ * Thread Safety:
+ *     mSync guards mCameraHandler/mUSBMonitor access in lifecycle, button, long-press,
+ *     and surface-destroy paths. Camera operations are also executed sequentially on the
+ *     handler thread; UI mutations are marshalled with runOnUiThread. Long-press capture
+ *     writes an explicit PNG file chosen by MediaMuxerWrapper.getCaptureFile.
+ */
 public final class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MainActivity";
@@ -314,7 +345,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 	/**
 	 * to access from CameraDialog
-	 * @return
+	 *
+	 * Returns:
+	 *     The resulting value.
 	 */
 	@Override
 	public USBMonitor getUSBMonitor() {

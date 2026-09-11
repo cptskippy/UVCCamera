@@ -3,6 +3,10 @@
 #include <unistd.h>
 #include "utilbase.h"
 #include "UVCButtonCallback.h"
+
+// Implementation for UVCButtonCallback.h; see the header for the callback interface.
+
+
 #include "libuvc_internal.h"
 
 #define	LOCAL_DEBUG 0

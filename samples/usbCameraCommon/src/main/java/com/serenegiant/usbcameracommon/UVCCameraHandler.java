@@ -27,16 +27,23 @@ import android.app.Activity;
 
 import com.serenegiant.usb.UVCCamera;
 import com.serenegiant.widget.CameraViewInterface;
+/**
+ * Manage a UVCCamera handler for preview, capture, and recording.
+ */
 
 public class UVCCameraHandler extends AbstractUVCCameraHandler {
 
 	/**
-	 * create UVCCameraHandler, use MediaVideoEncoder, try MJPEG, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param width
-	 * @param height
-	 * @return
+	 * Create a UVCCameraHandler that uses MediaVideoEncoder with MJPEG frames and the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used to capture still images.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *
+	 * Returns:
+	 *     the created UVCCameraHandler.
 	 */
 	public static final UVCCameraHandler createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -46,13 +53,17 @@ public class UVCCameraHandler extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandler, use MediaVideoEncoder, try MJPEG
-	 * @param parent
-	 * @param cameraView
-	 * @param width
-	 * @param height
-	 * @param bandwidthFactor
-	 * @return
+	 * Create a UVCCameraHandler that uses MediaVideoEncoder with MJPEG frames.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used to capture still images.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     bandwidthFactor: the bandwidth factor passed to setPreviewSize.
+	 *
+	 * Returns:
+	 *     the created UVCCameraHandler.
 	 */
 	public static final UVCCameraHandler createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -62,13 +73,17 @@ public class UVCCameraHandler extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandler, try MJPEG, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder
-	 * @param width
-	 * @param height
-	 * @return
+	 * Create a UVCCameraHandler with MJPEG frames and the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used to capture still images.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *
+	 * Returns:
+	 *     the created UVCCameraHandler.
 	 */
 	public static final UVCCameraHandler createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -78,14 +93,18 @@ public class UVCCameraHandler extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandler, default bandwidth
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder
-	 * @param width
-	 * @param height
-	 * @param format either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1)
-	 * @return
+	 * Create a UVCCameraHandler with the default bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used to capture still images.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     format: either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1).
+	 *
+	 * Returns:
+	 *     the created UVCCameraHandler.
 	 */
 	public static final UVCCameraHandler createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -95,15 +114,19 @@ public class UVCCameraHandler extends AbstractUVCCameraHandler {
 	}
 
 	/**
-	 * create UVCCameraHandler
-	 * @param parent
-	 * @param cameraView
-	 * @param encoderType 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder
-	 * @param width
-	 * @param height
-	 * @param format either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1)
-	 * @param bandwidthFactor
-	 * @return
+	 * Create a UVCCameraHandler with the given encoder, format, and bandwidth.
+	 *
+	 * Args:
+	 *     parent: the parent Activity.
+	 *     cameraView: the camera view used to capture still images.
+	 *     encoderType: 0: use MediaSurfaceEncoder, 1: use MediaVideoEncoder, 2: use MediaVideoBufferEncoder.
+	 *     width: the preview width in pixels.
+	 *     height: the preview height in pixels.
+	 *     format: either UVCCamera.FRAME_FORMAT_YUYV(0) or UVCCamera.FRAME_FORMAT_MJPEG(1).
+	 *     bandwidthFactor: the bandwidth factor passed to setPreviewSize.
+	 *
+	 * Returns:
+	 *     the created UVCCameraHandler.
 	 */
 	public static final UVCCameraHandler createHandler(
 			final Activity parent, final CameraViewInterface cameraView,
@@ -119,16 +142,31 @@ public class UVCCameraHandler extends AbstractUVCCameraHandler {
 	}
 
 	@Override
+	/**
+	 * Start the preview on the given surface.
+	 *
+	 * Args:
+	 *     surface: a SurfaceHolder, Surface, or SurfaceTexture for the preview.
+	 */
 	public void startPreview(final Object surface) {
 		super.startPreview(surface);
 	}
 
 	@Override
+	/**
+	 * Capture a still image and save it as a PNG file in the DCIM directory.
+	 */
 	public void captureStill() {
 		super.captureStill();
 	}
 
 	@Override
+	/**
+	 * Capture a still image and save it as a PNG file to the given path.
+	 *
+	 * Args:
+	 *     path: the output file path, or a generated path in the DCIM directory if empty.
+	 */
 	public void captureStill(final String path) {
 		super.captureStill(path);
 	}

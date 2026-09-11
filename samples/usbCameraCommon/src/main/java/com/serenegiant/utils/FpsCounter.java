@@ -16,7 +16,10 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
+/**
+ * Count frames and calculate FPS.
+ */
 
 public class FpsCounter {
 	private int cnt, prevCnt;
@@ -25,7 +28,9 @@ public class FpsCounter {
 	public FpsCounter() {
 		reset();
 	}
-
+	/**
+	 * Reset the counter.
+	 */
 	public synchronized FpsCounter reset() {
 		cnt = prevCnt = 0;
 		startTime = prevTime = Time.nanoTime() - 1;
@@ -41,7 +46,6 @@ public class FpsCounter {
 
 	/**
 	 * FPSの値を更新, 1秒程度毎に呼び出す
-	 * @return
 	 */
 	public synchronized FpsCounter update() {
 		final long t = Time.nanoTime();
@@ -51,11 +55,15 @@ public class FpsCounter {
 		totalFps = cnt * 1000000000.0f / (t - startTime);
 		return this;
 	}
-
+	/**
+	 * Get current fps.
+	 */
 	public synchronized float getFps() {
 		return fps;
 	}
-
+	/**
+	 * Get total fps.
+	 */
 	public synchronized float getTotalFps() {
 		return totalFps;
 	}

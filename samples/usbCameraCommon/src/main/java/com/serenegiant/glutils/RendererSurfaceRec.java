@@ -16,7 +16,7 @@ package com.serenegiant.glutils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
@@ -30,10 +30,14 @@ class RendererSurfaceRec {
 
 	/**
 	 * ファクトリーメソッド
-	 * @param egl
-	 * @param surface
-	 * @param maxFps 0以下なら最大描画フレームレート制限なし, あまり正確じゃない
-	 * @return
+	 *
+	 * Args:
+	 *     egl: The EGL value.
+	 *     surface: The surface value.
+	 *     maxFps: 0以下なら最大描画フレームレート制限なし, あまり正確じゃない.
+	 *
+	 * Returns:
+	 *     The new instance.
 	 */
 	static RendererSurfaceRec newInstance(final EGLBase egl,
 		final Object surface, final int maxFps) {
@@ -45,15 +49,16 @@ class RendererSurfaceRec {
 
 	/** 元々の分配描画用Surface */
 	private Object mSurface;
-	/** 分配描画用Surfaceを元に生成したOpenGL|ESで描画する為のEglSurface */
 	private EGLBase.IEglSurface mTargetSurface;
 	final float[] mMvpMatrix = new float[16];
 	protected volatile boolean mEnable = true;
 
 	/**
 	 * コンストラクタ, ファクトリーメソッドの使用を強制するためprivate
-	 * @param egl
-	 * @param surface
+	 *
+	 * Args:
+	 *     egl: The EGL value.
+	 *     surface: The surface value.
 	 */
 	private RendererSurfaceRec(final EGLBase egl, final Object surface) {
 		mSurface = surface;
@@ -64,6 +69,7 @@ class RendererSurfaceRec {
 	/**
 	 * 生成したEglSurfaceを破棄する
 	 */
+
 	public void release() {
 		if (mTargetSurface != null) {
 			mTargetSurface.release();
@@ -71,37 +77,47 @@ class RendererSurfaceRec {
 		}
 		mSurface = null;
 	}
-	
+
 	/**
 	 * Surfaceが有効かどうかを取得する
-	 * @return
+	 *
+	 * Returns:
+	 *     Whether the valid condition is true.
 	 */
+
 	public boolean isValid() {
 		return (mTargetSurface != null) && mTargetSurface.isValid();
 	}
-	
+
 	private void check() throws IllegalStateException {
 		if (mTargetSurface == null) {
 			throw new IllegalStateException("already released");
 		}
 	}
-	
+
 	/**
 	 * Surfaceへの描画が有効かどうかを取得する
-	 * @return
+	 *
+	 * Returns:
+	 *     Whether the enabled condition is true.
 	 */
+
 	public boolean isEnabled() {
 		return mEnable;
 	}
-	
+
 	/**
 	 * Surfaceへの描画を一時的に有効/無効にする
-	 * @param enable
+	 *
+	 * Args:
+	 *     enable: Whether the feature is enabled.
 	 */
+
 	public void setEnabled(final boolean enable) {
 		mEnable = enable;
 	}
-	
+
+
 	public boolean canDraw() {
 		return mEnable;
 	}
@@ -117,11 +133,14 @@ class RendererSurfaceRec {
 			mTargetSurface.swap();
 		}
 	}
-	
+
 	/**
 	 * 指定した色で全面を塗りつぶす
-	 * @param color
+	 *
+	 * Args:
+	 *     color: The color value.
 	 */
+
 	public void clear(final int color) {
 		if (mTargetSurface != null) {
 			mTargetSurface.makeCurrent();
@@ -135,12 +154,13 @@ class RendererSurfaceRec {
 			mTargetSurface.swap();
 		}
 	}
-	
+
 	/**
 	 * #drawの代わりにOpenGL|ES2を使って自前で描画する場合は
 	 * #makeCurrentでレンダリングコンテキストを切り替えてから
 	 * 描画後#swapを呼ぶ
 	 */
+
 	public void makeCurrent() throws IllegalStateException {
 		check();
 		mTargetSurface.makeCurrent();
@@ -151,6 +171,7 @@ class RendererSurfaceRec {
 	 * #makeCurrentでレンダリングコンテキストを切り替えてから
 	 * 描画後#swapを呼ぶ
 	 */
+
 	public void swap() throws IllegalStateException {
 		check();
 		mTargetSurface.swap();
@@ -162,9 +183,11 @@ class RendererSurfaceRec {
 
 		/**
 		 * コンストラクタ, ファクトリーメソッドの使用を強制するためprivate
-		 * @param egl
-		 * @param surface
-		 * @param maxFps 正数
+		 *
+		 * Args:
+		 *     egl: The EGL value.
+		 *     surface: The surface value.
+		 *     maxFps: 正数.
 		 */
 		private RendererSurfaceRecHasWait(final EGLBase egl,
 			final Object surface, final int maxFps) {
@@ -175,11 +198,15 @@ class RendererSurfaceRec {
 		}
 
 		@Override
+
+
 		public boolean canDraw() {
 			return mEnable && (Time.nanoTime() - mNextDraw > 0);
 		}
 
 		@Override
+
+
 		public void draw(final GLDrawer2D drawer,
 			final int textId, final float[] texMatrix) {
 

@@ -2,24 +2,44 @@ import 'uvccamera_device.dart';
 import 'uvccamera_device_event.dart';
 import 'uvccamera_platform_interface.dart';
 
-/// UVC Camera plugin
+/// UVC Camera plugin entry point.
+///
+/// Provides static helpers for device discovery and permission.
+///
+/// Thread Safety:
+///   Static methods are safe to call from main isolate.
 class UvcCamera {
-  /// Checks if UVC camera is supported on the current device.
+  /// Check if UVC camera is supported on the current device.
+  ///
+  /// Returns:
+  ///   True if UVC cameras are supported.
   static Future<bool> isSupported() {
     return UvcCameraPlatformInterface.instance.isSupported();
   }
 
-  /// Gets a list of all UVC camera devices connected to the device.
+  /// Get all UVC camera devices connected to the device.
+  ///
+  /// Returns:
+  ///   Map of device name to [UvcCameraDevice].
   static Future<Map<String, UvcCameraDevice>> getDevices() {
     return UvcCameraPlatformInterface.instance.getDevices();
   }
 
-  /// Requests permission to access the UVC camera device.
+  /// Request permission to access a UVC camera device.
+  ///
+  /// Args:
+  ///   uvcCameraDevice: Device to request permission for.
+  ///
+  /// Returns:
+  ///   True if permission granted.
   static Future<bool> requestDevicePermission(UvcCameraDevice uvcCameraDevice) {
     return UvcCameraPlatformInterface.instance.requestDevicePermission(uvcCameraDevice);
   }
 
-  /// Device event stream.
+  /// Get device event stream.
+  ///
+  /// Returns:
+  ///   Stream of [UvcCameraDeviceEvent] for attach/detach events.
   static Stream<UvcCameraDeviceEvent> get deviceEventStream {
     return UvcCameraPlatformInterface.instance.deviceEventStream;
   }

@@ -28,8 +28,21 @@ import android.graphics.SurfaceTexture;
 import android.view.Surface;
 
 import com.serenegiant.encoder.IVideoEncoder;
+/**
+ * Define the contract shared by camera preview surface views.
+ *
+ * Implementations (UVCCameraTextureView, AspectRatioTextureView) wrap a
+ * SurfaceTexture/Surface pair and report surface lifecycle events through
+ * Callback so the owning activity can start and stop camera preview in step
+ * with the view.
+ */
+
+
 
 public interface CameraViewInterface extends IAspectRatioView {
+	/**
+	 * Receives camera-view surface lifecycle events.
+	 */
 	public interface Callback {
 		public void onSurfaceCreated(CameraViewInterface view, Surface surface);
 		public void onSurfaceChanged(CameraViewInterface view, Surface surface, int width, int height);

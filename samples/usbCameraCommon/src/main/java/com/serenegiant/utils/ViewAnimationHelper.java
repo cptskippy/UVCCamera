@@ -16,7 +16,7 @@ package com.serenegiant.utils;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
@@ -27,6 +27,9 @@ import android.util.Log;
 import android.view.View;
 
 import com.serenegiant.usbcameracommon.R;
+/**
+ * Run fade and zoom view animations.
+ */
 
 public class ViewAnimationHelper {
 	private static final String TAG = ViewAnimationHelper.class.getSimpleName();
@@ -39,6 +42,9 @@ public class ViewAnimationHelper {
 	public static final int ANIMATION_ZOOM_IN = 2;
 	public static final int ANIMATION_ZOOM_OUT = 3;
 
+	/**
+	 * Receives view-animation lifecycle callbacks.
+	 */
 	public interface ViewAnimationListener {
 		public void onAnimationStart(@NonNull final Animator animator, @NonNull final View target, final int animationType);
 		public void onAnimationEnd(@NonNull final Animator animator, @NonNull final View target, final int animationType);
@@ -47,17 +53,22 @@ public class ViewAnimationHelper {
 
 	/**
 	 * アルファ値を0→1まで変化(Viewをフェードイン)させる
-	 * @param target
-	 * @param duration 0以下ならデフォルト値(0.5秒)
-	 * @param startDelay
-	 * @param listener
+	 *
+	 * Args:
+	 *     target: View to fade in; no-op if null.
+	 *     duration: 0以下ならデフォルト値(0.5秒).
+	 *     startDelay: Start delay in ms; 0 if <= 0.
+	 *     listener: Callback for animation start/end/cancel.
 	 */
 	@SuppressLint("NewApi")
 	public static void fadeIn(final View target, final long duration, final long startDelay, final ViewAnimationListener listener) {
-//		if (DEBUG) Log.v(TAG, "fadeIn:target=" + target);
+	//		if (DEBUG) Log.v(TAG, "fadeIn:target=" + target);
 		if (target == null) return;
 		target.postDelayed(new Runnable() {
 			@Override
+			/**
+			 * Make the view visible and animate its alpha from 0 to 1.
+			 */
 			public void run() {
 				target.setVisibility(View.VISIBLE);
 				target.setTag(R.id.anim_type, ANIMATION_FADE_IN);	// フェードインの時の印
@@ -78,17 +89,22 @@ public class ViewAnimationHelper {
 
 	/**
 	 * アルファ値を1→0まで変化(Viewをフェードアウト)させる
-	 * @param target
-	 * @param duration 0以下ならデフォルト値(0.5秒)
-	 * @param startDelay
-	 * @param listener
+	 *
+	 * Args:
+	 *     target: View to fade out; no-op if null or not visible.
+	 *     duration: 0以下ならデフォルト値(0.5秒).
+	 *     startDelay: Start delay in ms; 0 if <= 0.
+	 *     listener: Callback for animation start/end/cancel.
 	 */
 	@SuppressLint("NewApi")
 	public static void fadeOut(final View target, final long duration, final long startDelay, final ViewAnimationListener listener) {
-//		if (DEBUG) Log.v(TAG, "fadeOut,target=" + target);
+	//		if (DEBUG) Log.v(TAG, "fadeOut,target=" + target);
 		if ((target != null) && (target.getVisibility() == View.VISIBLE)) {
 			target.postDelayed(new Runnable() {
 				@Override
+				/**
+				 * Animate the view's alpha from 1 to 0.
+				 */
 				public void run() {
 					target.setTag(R.id.anim_type, ANIMATION_FADE_OUT);	// フェードアウトの印
 					target.setTag(R.id.anim_listener, listener);
@@ -109,17 +125,22 @@ public class ViewAnimationHelper {
 
 	/**
 	 * スケールを0→1まで変化(Viewをズームイン)させる
-	 * @param target
-	 * @param duration 0以下ならデフォルト値(0.5秒)
-	 * @param startDelay
-	 * @param listener
+	 *
+	 * Args:
+	 *     target: View to zoom in; no-op if null.
+	 *     duration: 0以下ならデフォルト値(0.5秒).
+	 *     startDelay: Start delay in ms; 0 if <= 0.
+	 *     listener: Callback for animation start/end/cancel.
 	 */
 	@SuppressLint("NewApi")
 	public static void zoomIn(final View target, final long duration, final long startDelay, final ViewAnimationListener listener) {
-//		if (DEBUG) Log.v(TAG, "zoomIn:target=" + target);
+	//		if (DEBUG) Log.v(TAG, "zoomIn:target=" + target);
 		if (target == null) return;
 		target.postDelayed(new Runnable() {
 			@Override
+			/**
+			 * Make the view visible and animate its scale from 0 to 1.
+			 */
 			public void run() {
 				target.setVisibility(View.VISIBLE);
 				target.setTag(R.id.anim_type, ANIMATION_ZOOM_IN);	// ズームインの時の印
@@ -142,17 +163,22 @@ public class ViewAnimationHelper {
 
 	/**
 	 * スケールを1→0まで変化(Viewをズームアウト)させる
-	 * @param target
-	 * @param duration 0以下ならデフォルト値(0.5秒)
-	 * @param startDelay
-	 * @param listener
+	 *
+	 * Args:
+	 *     target: View to zoom out; no-op if null.
+	 *     duration: 0以下ならデフォルト値(0.5秒).
+	 *     startDelay: Start delay in ms; 0 if <= 0.
+	 *     listener: Callback for animation start/end/cancel.
 	 */
 	@SuppressLint("NewApi")
 	public static void zoomOut(final View target, final long duration, final long startDelay, final ViewAnimationListener listener) {
-//		if (DEBUG) Log.v(TAG, "zoomIn:target=" + target);
+	//		if (DEBUG) Log.v(TAG, "zoomIn:target=" + target);
 		if (target == null) return;
 		target.postDelayed(new Runnable() {
 			@Override
+			/**
+			 * Animate the view's scale from 1 to 0.
+			 */
 			public void run() {
 				target.setVisibility(View.VISIBLE);
 				target.setTag(R.id.anim_type, ANIMATION_ZOOM_OUT);	// ズームアウトの時の印
@@ -178,18 +204,30 @@ public class ViewAnimationHelper {
 	 */
 	private static final Animator.AnimatorListener mAnimatorListener = new Animator.AnimatorListener() {
 		@Override
+		/**
+		 * Forward the start event to the target view's listener.
+		 */
 		public void onAnimationStart(final Animator animator) {
 			onAnimation(animator, 0);
 		}
 		@Override
+		/**
+		 * Forward the end event to the target view's listener.
+		 */
 		public void onAnimationEnd(final Animator animator) {
 			onAnimation(animator, 1);
 		}
 		@Override
+		/**
+		 * Forward the cancel event to the target view's listener.
+		 */
 		public void onAnimationCancel(final Animator animator) {
 			onAnimation(animator, 2);
 		}
 		@Override
+		/**
+		 * No-op; the animations do not repeat.
+		 */
 		public void onAnimationRepeat(final Animator animation) {
 		}
 	};
@@ -210,6 +248,9 @@ public class ViewAnimationHelper {
 			if (listener != null) {
 				target.postDelayed(new Runnable() {
 					@Override
+					/**
+					 * Dispatch the animation event to the view's listener.
+					 */
 					public void run() {
 						try {
 							switch (event) {

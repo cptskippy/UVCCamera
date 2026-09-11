@@ -3,6 +3,10 @@
 //
 
 #if 1	// set 1 if you don't need debug message
+
+// Implementation for ConvertPipeline.h; see the header for the public pipeline interface.
+
+
 	#ifndef LOG_NDEBUG
 		#define	LOG_NDEBUG		// ignore LOGV/LOGD/MARK
 	#endif
@@ -45,6 +49,22 @@ ConvertPipeline::~ConvertPipeline() {
 	EXIT();
 }
 
+/**
+ * \brief Select the frame conversion function for the current target pixel format.
+ *
+ * Called at construction and in on_start() to (re)bind mFrameConvFunc based
+ * on target_pixel_format.
+ *
+ * Code Paths:
+ *   1. Acquire pipeline_mutex, reset mFrameConvFunc to NULL.
+ *   2. PIXEL_FORMAT_RAW → no conversion (mFrameConvFunc stays NULL).
+ *   3. PIXEL_FORMAT_YUV → uvc_any2yuyv.
+ *   4. PIXEL_FORMAT_RGB565 → uvc_any2rgb565.
+ *   5. PIXEL_FORMAT_RGBX → uvc_any2rgbx.
+ *   6. PIXEL_FORMAT_YUV20SP → uvc_any2yuv420SP.
+ *   7. PIXEL_FORMAT_NV21 → uvc_any2iyuv420SP.
+ *   8. Unrecognised format → mFrameConvFunc remains NULL (no conversion).
+ */
 void ConvertPipeline::updateConvFunc() {
 	ENTER();
 
@@ -93,6 +113,20 @@ void ConvertPipeline::on_stop() {
 	EXIT();
 }
 
+/**
+ * \brief Convert the frame to the target pixel format and forward downstream.
+ *
+ * \param[in] frame Input frame in any UVC source format.
+ * \return 1 (frame consumed, do not chain further).
+ *
+ * Code Paths:
+ *   1. next_pipeline is null → no-op, return 1.
+ *   2. mFrameConvFunc is null (RAW) → queueFrame the original frame.
+ *   3. mFrameConvFunc set → get_frame() for a destination buffer; if
+ *      allocation fails, fall through and queueFrame the original frame.
+ *   4. Conversion fails → recycle the destination, fall back to the original.
+ *   5. Success → queueFrame the converted copy.
+ */
 int ConvertPipeline::handle_frame(uvc_frame_t *frame) {
 	ENTER();
 

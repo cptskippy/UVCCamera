@@ -22,7 +22,22 @@
  */
 
 package com.serenegiant.encoder;
+/**
+ * Contract for video encoders in the USB camera recording stack.
+ *
+ * Implemented by MediaVideoEncoder, MediaSurfaceEncoder, and
+ * MediaVideoBufferEncoder. Implementations register with a shared
+ * MediaMuxerWrapper through the MediaEncoder constructor; the caller
+ * invokes frameAvailableSoon() after each frame so the worker thread
+ * drains the codec output.
+ */
 
 public interface IVideoEncoder {
+	/**
+	 * Signal that a new video frame is available for encoding.
+	 *
+	 * Returns:
+	 *     true if the encoder is capturing and the frame will be encoded.
+	 */
 	public boolean frameAvailableSoon();
 }

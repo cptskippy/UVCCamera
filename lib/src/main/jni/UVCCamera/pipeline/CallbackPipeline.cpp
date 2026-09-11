@@ -3,6 +3,10 @@
 //
 
 #if 1	// set 1 if you don't need debug message
+
+// Implementation for CallbackPipeline.h; see the header for the public pipeline interface.
+
+
 	#ifndef LOG_NDEBUG
 		#define	LOG_NDEBUG		// ignore LOGV/LOGD/MARK
 	#endif
@@ -42,6 +46,26 @@ CallbackPipeline::~CallbackPipeline() {
 	EXIT();
 }
 
+/**
+ * \brief Install (or replace) the Java IFrameCallback for frame delivery.
+ *
+ * Ensures the capture thread is quiesced before swapping the global
+ * reference. Resolves the onFrame method ID from the callback object.
+ *
+ * \param[in] env JNI environment.
+ * \param[in] frame_callback_obj Global-ref Java IFrameCallback, or null to clear.
+ * \param[in] pixel_format Target pixel format for callback frames.
+ * \return 0 on success.
+ *
+ * Code Paths:
+ *   1. Acquire capture_mutex.
+ *   2. If running and capturing → set mIsCapturing=false, signal capture_sync,
+ *      wait for the capture thread to finish its current frame.
+ *   3. If the callback object changed → delete the old global ref, store the
+ *      new one, resolve onFrame method ID.
+ *   4. Method ID not found → delete the new global ref, set to NULL, log error.
+ *   5. Update mPixelFormat if a non-null callback was provided.
+ */
 int CallbackPipeline::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format) {
 
 	ENTER();
@@ -119,6 +143,26 @@ void CallbackPipeline::callbackPixelFormatChanged(const uint32_t &width, const u
 	}
 }
 
+/**
+ * \brief Capture loop: wait for frames, convert if needed, and invoke the Java callback.
+ *
+ * Runs on the capture thread (started by CaptureBasePipeline). Allocates a
+ * temporary conversion buffer, then repeatedly waits for capture frames,
+ * converts them to the target pixel format, wraps them in a DirectByteBuffer,
+ * and calls IFrameCallback#onFrame.
+ *
+ * Code Paths:
+ *   1. get_frame() for a conversion buffer; if null, exit immediately.
+ *   2. Loop while running and capturing: waitCaptureFrame() blocks.
+ *   3. Frame dimensions changed → rebind conversion function, resize temp buffer.
+ *   4. No Java callback set → recycle frame, continue.
+ *   5. Conversion needed (mFrameCallbackFunc set) → convert into temp;
+ *      on failure skip to recycle (goto SKIP).
+ *   6. Create DirectByteBuffer, call onFrame, clear JNI exceptions,
+ *      delete local ref.
+ *   7. Recycle the capture frame.
+ *   8. Exit loop → recycle the temp conversion buffer.
+ */
 void CallbackPipeline::do_capture(JNIEnv *env) {
 	ENTER();
 

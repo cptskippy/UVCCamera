@@ -21,6 +21,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/**
+ * \brief Provide public USB device access API for libusb.
+ *
+ * Public header exposing libusb core types, descriptors, and API functions
+ * for USB device enumeration, control, bulk, interrupt, and isochronous
+ * transfers. Forms the primary interface for applications using libusb.
+ *
+ * Exports:
+ *   libusb_context, libusb_device, libusb_device_handle: Core opaque types
+ *   libusb_init, libusb_exit, libusb_get_device_list: Session management
+ *   libusb_open, libusb_close, libusb_claim_interface: Device I/O
+ *   libusb_control_transfer, libusb_bulk_transfer, libusb_interrupt_transfer: Synchronous I/O
+ *   libusb_alloc_transfer, libusb_submit_transfer: Asynchronous I/O
+ *   libusb_get_device_descriptor, libusb_get_config_descriptor: Descriptor access
+ *   libusb_hotplug_register_callback: Hotplug support
+ *
+ * Dependencies:
+ *   - libusbi.h: Internal libusb implementation
+ *   - OS-specific backends: linux_usbfs, windows_usb, darwin_usb, etc.
+ *   - Standard C library: stdint.h, sys/types.h
+ *
+ * Architecture Note:
+ *   This header defines the stable public API surface. Implementation details
+ *   are hidden in libusbi.h and OS-specific modules. All public functions
+ *   are declared with LIBUSB_CALL calling convention for Windows compatibility.
+ */
+
 #ifndef LIBUSB_H
 #define LIBUSB_H
 

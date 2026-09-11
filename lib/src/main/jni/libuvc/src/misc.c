@@ -29,8 +29,12 @@
 *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-*  POSSIBILITY OF SUCH DAMAGE.
-*********************************************************************/
+ * POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
+
+// Implementation for libuvc platform compatibility helpers; see libuvc/libuvc_internal.h for internal declarations.
+
+
 #include <string.h>
 #include <stdlib.h>
 

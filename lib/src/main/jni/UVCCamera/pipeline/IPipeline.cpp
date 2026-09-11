@@ -66,6 +66,10 @@ int IPipeline::setPipeline(IPipeline *pipeline) {
  * set frame to next_pipeline
  * if you don't need this, override this function
  */
+
+// Implementation for IPipeline.h; see the header for the public pipeline interface.
+
+
 int IPipeline::chain_frame(uvc_frame_t *frame) {
 	ENTER();
 

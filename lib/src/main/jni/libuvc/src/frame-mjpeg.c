@@ -39,6 +39,10 @@
 /**
  * @defgroup frame Frame processing
  */
+
+// Implementation for MJPEG frame conversion; see libuvc/libuvc.h for the public API.
+
+
 #include "libuvc/libuvc.h"
 #include "libuvc/libuvc_internal.h"
 #include <jpeglib.h>

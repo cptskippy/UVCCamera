@@ -1,3 +1,24 @@
+/// UVC camera plugin for Flutter.
+///
+/// Provides a platform-agnostic API to discover, open, preview, and capture from
+/// USB Video Class (UVC) cameras. The plugin wraps the native Android UVC stack
+/// behind a small Dart API:
+///
+/// - [UvcCamera] — static helpers for device discovery and permissions.
+/// - [UvcCameraController] — manages a single camera's lifecycle: open, preview,
+///   capture, record, and close.
+/// - [UvcCameraDevice] and the `*Event`/`*Error`/`*Status` types — immutable data
+///   models for devices and attach/detach, error, status, and button events.
+///
+/// Typical usage:
+///   ```dart
+///   final devices = await UvcCamera.getDevices();
+///   await UvcCamera.requestDevicePermission(devices['device name']);
+///
+///   final controller = UvcCameraController(device: devices['device name']);
+///   await controller.initialize();
+///   final preview = controller.buildPreview();
+///   ```
 library;
 
 export 'src/uvccamera.dart' show UvcCamera;

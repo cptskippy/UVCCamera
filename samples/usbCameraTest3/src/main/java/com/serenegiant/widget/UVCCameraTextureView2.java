@@ -39,6 +39,17 @@ import com.serenegiant.encoder.MediaEncoder;
  * you can show this view in the center of screen and keep the aspect ratio of content
  * XXX it is better that can set the aspect raton a a xml property
  */
+/**
+ * TextureView for UVC camera preview with aspect ratio handling.
+ *
+ * Manages preview surface and aspect ratio.
+ *
+ * Properties:
+ *     mRequestedAspect: Desired aspect ratio.
+ *
+ * Thread Safety:
+ *     Must be used on UI thread.
+ */
 public class UVCCameraTextureView2 extends TextureView	// API >= 14
 	implements CameraViewInterface, TextureView.SurfaceTextureListener {
 

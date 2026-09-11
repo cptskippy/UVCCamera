@@ -16,7 +16,7 @@ package com.serenegiant.dialog;
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -30,20 +30,54 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.serenegiant.utils.BuildCheck;
+/**
+ * Show a permission-explanation dialog using the V4 support library.
+ */
+
+
 
 public class MessageDialogFragmentV4 extends DialogFragment {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
 	private static final String TAG = MessageDialogFragmentV4.class.getSimpleName();
 
+	/**
+	 * Receives the result of a V4 message dialog.
+	 */
 	public static interface MessageDialogListener {
 		public void onMessageDialogResult(final MessageDialogFragmentV4 dialog, final int requestCode, final String[] permissions, final boolean result);
 	}
+	/**
+	 * Show the dialog in the given activity and return the created fragment.
+	 *
+	 * Args:
+	 *     parent: Activity the dialog is shown in.
+	 *     requestCode: Request code passed to onMessageDialogResult.
+	 *     id_title: Resource ID of the title text.
+	 *     id_message: Resource ID of the message text.
+	 *     permissions: Permission names passed to onMessageDialogResult, or null.
+	 *
+	 * Returns:
+	 *     The shown dialog fragment.
+	 */
 
 	public static MessageDialogFragmentV4 showDialog(final FragmentActivity parent, final int requestCode, final int id_title, final int id_message, final String[] permissions) {
 		final MessageDialogFragmentV4 dialog = newInstance(requestCode, id_title, id_message, permissions);
 		dialog.show(parent.getSupportFragmentManager(), TAG);
 		return dialog;
 	}
+	/**
+	 * Show the dialog bound to the given fragment and return the created fragment.
+	 *
+	 * Args:
+	 *     parent: Fragment the dialog is bound to.
+	 *     requestCode: Request code passed to onMessageDialogResult.
+	 *     id_title: Resource ID of the title text.
+	 *     id_message: Resource ID of the message text.
+	 *     permissions: Permission names passed to onMessageDialogResult, or null.
+	 *
+	 * Returns:
+	 *     The shown dialog fragment.
+	 */
 
 	public static MessageDialogFragmentV4 showDialog(final Fragment parent, final int requestCode, final int id_title, final int id_message, final String[] permissions) {
 		final MessageDialogFragmentV4 dialog = newInstance(requestCode, id_title, id_message, permissions);
@@ -51,6 +85,18 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 		dialog.show(parent.getFragmentManager(), TAG);
 		return dialog;
 	}
+	/**
+	 * Create a dialog fragment preconfigured with the given arguments.
+	 *
+	 * Args:
+	 *     requestCode: Request code passed to onMessageDialogResult.
+	 *     id_title: Resource ID of the title text.
+	 *     id_message: Resource ID of the message text.
+	 *     permissions: Permission names passed to onMessageDialogResult, or null.
+	 *
+	 * Returns:
+	 *     The new dialog fragment.
+	 */
 
 	public static MessageDialogFragmentV4 newInstance(final int requestCode, final int id_title, final int id_message, final String[] permissions) {
 		final MessageDialogFragmentV4 fragment = new MessageDialogFragmentV4();
@@ -73,6 +119,16 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 
 	@SuppressLint("NewApi")
 	@Override
+	/**
+	 * Look up the MessageDialogListener from the context or target fragments.
+	 *
+	 * Args:
+	 *     context: Context the fragment is attached to.
+	 *
+	 * Raises:
+	 *     ClassCastException: If no MessageDialogListener is found.
+	 */
+
 	public void onAttach(final Context context) {
 		super.onAttach(context);
 		// コールバックインターフェースを取得
@@ -94,18 +150,28 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 			}
 		}
 		if (mDialogListener == null) {
-//			Log.w(TAG, "caller activity/fragment must implement PermissionDetailDialogFragmentListener");
+		//			Log.w(TAG, "caller activity/fragment must implement PermissionDetailDialogFragmentListener");
         	throw new ClassCastException(context.toString());
 		}
 	}
 
-//	@Override
-//	public void onCreate(final Bundle savedInstanceState) {
-//		super.onCreate(savedInstanceState);
-//		final Bundle args = savedInstanceState != null ? savedInstanceState : getArguments();
-//	}
+	//	@Override
+	//	public void onCreate(final Bundle savedInstanceState) {
+	//		super.onCreate(savedInstanceState);
+	//		final Bundle args = savedInstanceState != null ? savedInstanceState : getArguments();
+	//	}
 
 	@Override
+/**
+ * Build the alert dialog from the fragment arguments.
+ *
+ * Args:
+ *     savedInstanceState: Saved state, or null.
+ *
+ * Returns:
+ *     The dialog with OK and cancel buttons.
+ */
+
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
 		final Bundle args = savedInstanceState != null ? savedInstanceState : getArguments();
 		final int requestCode = getArguments().getInt("requestCode");
@@ -121,9 +187,13 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 			.setPositiveButton(android.R.string.ok,
 				new DialogInterface.OnClickListener() {
 					@Override
+					/**
+					 * Notify the listener that the dialog was confirmed.
+					 */
+
 					public void onClick(final DialogInterface dialog, final int whichButton) {
-						// 本当はここでパーミッション要求をしたいだけどこのダイアログがdismissしてしまって結果を受け取れないので
-						// 呼び出し側へ返してそこでパーミッション要求する。なのでこのダイアログは単にメッセージを表示するだけ
+					// 本当はここでパーミッション要求をしたいだけどこのダイアログがdismissしてしまって結果を受け取れないので
+					// 呼び出し側へ返してそこでパーミッション要求する。なのでこのダイアログは単にメッセージを表示するだけ
 						try {
 							mDialogListener.onMessageDialogResult(MessageDialogFragmentV4.this, requestCode, permissions, true);
 						} catch (final Exception e) {
@@ -135,6 +205,10 @@ public class MessageDialogFragmentV4 extends DialogFragment {
 			.setNegativeButton(android.R.string.cancel,
 				new DialogInterface.OnClickListener() {
 					@Override
+					/**
+					 * Notify the listener that the dialog was cancelled.
+					 */
+
 					public void onClick(final DialogInterface dialog, int whichButton) {
 						try {
 							mDialogListener.onMessageDialogResult(MessageDialogFragmentV4.this, requestCode, permissions, false);

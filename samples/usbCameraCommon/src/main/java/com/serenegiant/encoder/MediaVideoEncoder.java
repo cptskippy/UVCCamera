@@ -41,6 +41,7 @@ import com.serenegiant.glutils.RenderHandler;
  * This class render texture images into recording surface
  * camera from MediaCodec encoder using Open GL|ES
  */
+
 public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MediaVideoEncoder";
@@ -62,6 +63,15 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 		mHeight = height;
 	}
 
+	/**
+	 * Draw the frame with the given texture matrix when a frame is available soon.
+	 *
+	 * Args:
+	 *     tex_matrix: the texture transformation matrix for drawing
+	 *
+	 * Returns:
+	 *     true if a frame was available soon and drawn
+	 */
 	public boolean frameAvailableSoon(final float[] tex_matrix) {
 		boolean result;
 		if (result = super.frameAvailableSoon())
@@ -72,7 +82,6 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 	/**
 	 * This method does not work correctly on this class,
 	 * use #frameAvailableSoon(final float[]) instead
-	 * @return
 	 */
 	@Override
 	public boolean frameAvailableSoon() {
@@ -104,8 +113,8 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 
         mMediaCodec = MediaCodec.createEncoderByType(MIME_TYPE);
         mMediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        // get Surface for encoder input
-        // this method only can call between #configure and #start
+// get Surface for encoder input
+// this method only can call between #configure and #start
         mSurface = mMediaCodec.createInputSurface();	// API >= 18
         mMediaCodec.start();
         if (DEBUG) Log.i(TAG, "prepare finishing");
@@ -118,6 +127,13 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
         }
 	}
 
+	/**
+	 * Set the shared EGL context and texture id used for rendering.
+	 *
+	 * Args:
+	 *     sharedContext: the EGL context shared with the render handler
+	 *     tex_id: the texture id to render
+	 */
 	public void setEglContext(final EGLBase.IContext sharedContext, final int tex_id) {
 		mRenderHandler.setEglContext(sharedContext, tex_id, mSurface, true);
 	}
@@ -142,15 +158,19 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 		return bitrate;
 	}
 
-    /**
-     * select the first codec that match a specific MIME type
-     * @param mimeType
-     * @return null if no codec matched
-     */
+/**
+ * select the first codec that match a specific MIME type
+ *
+ * Args:
+ *     mimeType: The mime type value.
+ *
+ * Returns:
+ *     null if no codec matched.
+ */
     protected static final MediaCodecInfo selectVideoCodec(final String mimeType) {
     	if (DEBUG) Log.v(TAG, "selectVideoCodec:");
 
-    	// get the list of available codecs
+	// get the list of available codecs
         final int numCodecs = MediaCodecList.getCodecCount();
         for (int i = 0; i < numCodecs; i++) {
         	final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
@@ -158,7 +178,7 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
             if (!codecInfo.isEncoder()) {	// skipp decoder
                 continue;
             }
-            // select first codec that match a specific MIME type and color format
+// select first codec that match a specific MIME type and color format
             final String[] types = codecInfo.getSupportedTypes();
             for (int j = 0; j < types.length; j++) {
                 if (types[j].equalsIgnoreCase(mimeType)) {
@@ -173,10 +193,12 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
         return null;
     }
 
-    /**
-     * select color format available on specific codec and we can use.
-     * @return 0 if no colorFormat is matched
-     */
+/**
+ * select color format available on specific codec and we can use.
+ *
+ * Returns:
+ *     0 if no colorFormat is matched.
+ */
     protected static final int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
 		if (DEBUG) Log.i(TAG, "selectColorFormat: ");
     	int result = 0;
@@ -207,9 +229,9 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
     protected static int[] recognizedFormats;
 	static {
 		recognizedFormats = new int[] {
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
-//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
-//        	MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
+		//        	MediaCodecInfo.CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
         	MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface,
 		};
 	}

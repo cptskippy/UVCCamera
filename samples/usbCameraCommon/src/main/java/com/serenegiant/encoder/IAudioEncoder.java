@@ -22,6 +22,13 @@
  */
 
 package com.serenegiant.encoder;
+/**
+ * Marker interface for audio encoders in the USB camera recording stack.
+ *
+ * Implemented by MediaAudioEncoder. Video encoders implement IVideoEncoder
+ * instead; both register themselves with a shared MediaMuxerWrapper through
+ * the MediaEncoder constructor and feed encoded frames into the same file.
+ */
 
 public interface IAudioEncoder {
 }

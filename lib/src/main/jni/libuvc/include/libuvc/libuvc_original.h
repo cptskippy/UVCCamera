@@ -1,6 +1,21 @@
 #ifndef LIBUVC_H
 #define LIBUVC_H
 
+/**
+ * \brief Original libuvc public API header (legacy).
+ *
+ * Maintained for backward compatibility. New code should use libuvc.h.
+ *
+ * Exports:
+ *   Legacy UVC types and functions mirroring libuvc.h
+ *
+ * Dependencies:
+ *   - libusb-1.0
+ *   - libuvc/libuvc_config.h
+ *
+ * Architecture Note:
+ *   Deprecated header; kept for upstream compatibility.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
